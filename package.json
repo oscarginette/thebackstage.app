@@ -10,9 +10,12 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
+    "@vercel/postgres": "^0.10.0",
     "next": "16.1.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
