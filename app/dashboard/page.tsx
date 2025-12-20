@@ -329,35 +329,35 @@ export default function Dashboard() {
         </div>
 
         {/* All Tracks Section */}
-        <div className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#262626] rounded-3xl p-8 mb-6 shadow-sm">
+        <div className="bg-[#FFFBF5] border border-[#E8DCC8] rounded-2xl p-6 mb-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl font-semibold text-[#3E3E3E]">
               Todas las Canciones
             </h2>
             <button
               onClick={loadAllTracks}
               disabled={loadingTracks}
-              className="px-4 py-2 text-sm font-medium rounded-xl border border-gray-200 dark:border-[#262626] hover:bg-gray-50 dark:hover:bg-[#1a1a1a] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="px-4 py-2.5 text-sm font-medium rounded-xl border-2 border-[#D4A574] text-[#8B6F47] hover:bg-[#D4A574] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loadingTracks ? 'Cargando...' : showAllTracks ? 'Recargar' : 'Mostrar Tracks'}
             </button>
           </div>
 
           {!showAllTracks ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+            <p className="text-[#8B7355] text-center py-12">
               Haz clic en "Mostrar Tracks" para ver todas las canciones del feed de SoundCloud
             </p>
           ) : (
             <div className="space-y-4">
               {allTracks.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                <p className="text-[#8B7355] text-center py-12">
                   No se encontraron tracks
                 </p>
               ) : (
                 allTracks.map((track) => (
                   <div
                     key={track.trackId}
-                    className="group border border-gray-200 dark:border-[#262626] rounded-2xl p-5 hover:border-[#ff5500]/30 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-all"
+                    className="group border border-[#E8DCC8] rounded-xl p-5 hover:border-[#D4A574] hover:bg-white transition-all"
                   >
                     <div className="flex gap-5">
                       {/* Cover Image */}
@@ -366,12 +366,12 @@ export default function Dashboard() {
                           <img
                             src={track.coverImage}
                             alt={track.title}
-                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-gray-200 dark:border-[#262626] shadow-sm"
+                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover border border-[#E8DCC8] shadow-sm"
                           />
                         </div>
                       ) : (
-                        <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gradient-to-br from-[#ff5500] to-[#ff8800] flex items-center justify-center border border-gray-200 dark:border-[#262626]">
-                          <svg className="w-10 h-10 text-white/80" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-gradient-to-br from-[#D4A574] to-[#C69363] flex items-center justify-center border border-[#E8DCC8]">
+                          <svg className="w-10 h-10 text-white/90" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
                         </div>
@@ -380,23 +380,23 @@ export default function Dashboard() {
                       {/* Track Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3 mb-2">
-                          <h3 className="font-semibold text-base sm:text-lg truncate">
+                          <h3 className="font-semibold text-base sm:text-lg truncate text-[#3E3E3E]">
                             {track.title}
                           </h3>
                           {track.alreadySent && (
-                            <span className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <span className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32] border border-[#81C784]">
                               Enviado
                             </span>
                           )}
                         </div>
 
                         {track.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                          <p className="text-sm text-[#6B6B6B] mb-3 line-clamp-2">
                             {track.description}
                           </p>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-[#8B7355] mb-3">
                           <div className="flex items-center gap-1.5">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -410,12 +410,12 @@ export default function Dashboard() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           {!track.alreadySent && (
                             <button
                               onClick={() => handleSendTrack(track)}
                               disabled={sendingTrackId === track.trackId || selectedLists.length === 0}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff5500] text-white text-sm font-medium rounded-xl hover:bg-[#ff6b1a] disabled:bg-gray-300 dark:disabled:bg-[#262626] disabled:text-gray-400 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-[#D4A574] text-white text-sm font-medium rounded-xl hover:bg-[#C69363] disabled:bg-[#E8DCC8] disabled:text-[#A89580] disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
                             >
                               {sendingTrackId === track.trackId ? (
                                 <>
@@ -436,7 +436,7 @@ export default function Dashboard() {
                             href={track.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-[#262626] text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-all"
+                            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-[#D4A574] text-[#8B6F47] text-sm font-medium rounded-xl hover:bg-[#D4A574] hover:text-white transition-all"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

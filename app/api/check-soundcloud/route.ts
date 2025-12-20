@@ -73,9 +73,10 @@ export async function GET() {
     // Usar messageVersions para enviar a múltiples listas
     sendSmtpEmail.messageVersions = listIds.map((listId) => ({
       to: [{
+        email: '',
         listId: listId
       }]
-    }));
+    })) as any;
 
     sendSmtpEmail.templateId = Number(process.env.BREVO_TEMPLATE_ID);
     sendSmtpEmail.params = {
