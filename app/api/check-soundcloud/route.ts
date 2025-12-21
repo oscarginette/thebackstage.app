@@ -23,23 +23,11 @@ export async function GET() {
 
     const latestTrack = feed.items[0];
 
-    // 2. Verificar si ya existe en DB
+    // 2. Obtener track ID
     const trackId = latestTrack.guid || latestTrack.link;
 
     if (!trackId) {
       throw new Error('Track ID not found in RSS feed');
-    }
-
-    const existing = await sql`
-      SELECT * FROM soundcloud_tracks WHERE track_id = ${trackId}
-    `;
-
-    if (existing.rows.length > 0) {
-      // Ya procesado
-      return NextResponse.json({
-        message: 'No new tracks',
-        lastTrack: latestTrack.title
-      });
     }
 
     // 3. Obtener listas de Brevo configuradas
@@ -82,7 +70,7 @@ export async function GET() {
 
     console.log('Email sent:', data?.id);
 
-    // 5. Guardar en DB
+    // 5. Guardar en DB (o actualizar si ya existe)
     const publishedDate = latestTrack.pubDate
       ? new Date(latestTrack.pubDate).toISOString()
       : new Date().toISOString();
@@ -95,6 +83,8 @@ export async function GET() {
         ${latestTrack.link || ''},
         ${publishedDate}
       )
+      ON CONFLICT (track_id) DO UPDATE
+      SET title = EXCLUDED.title, url = EXCLUDED.url
     `;
 
     // 6. Log de ejecución
