@@ -76,13 +76,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Top Row: Header Left, Stats Right */}
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
-          <div className="flex-1">
-             <Header />
-          </div>
-          <div className="w-full lg:w-auto min-w-[450px] mb-6">
-             <StatCards activeListsCount={selectedLists.length} />
+        {/* Header Section */}
+        <div className="mb-8">
+          <Header />
+          <div className="w-full max-w-md">
+            <StatCards />
           </div>
         </div>
 
