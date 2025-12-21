@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
-import Parser from 'rss-parser';
 import { Resend } from 'resend';
 import NewTrackEmail from '@/emails/new-track';
+import { CheckNewTracksUseCase } from '@/domain/services/CheckNewTracksUseCase';
+import { trackRepository } from '@/infrastructure/database/repositories';
+import { soundCloudRepository } from '@/infrastructure/music-platforms';
 
 // Permitir hasta 60s de ejecución
 export const maxDuration = 60;
@@ -12,25 +14,33 @@ export async function GET() {
   const startTime = Date.now();
 
   try {
-    // 1. Parsear RSS de SoundCloud
-    const parser = new Parser();
-    const rssUrl = `https://feeds.soundcloud.com/users/soundcloud:users:${process.env.SOUNDCLOUD_USER_ID}/sounds.rss`;
-    const feed = await parser.parseURL(rssUrl);
+    const userId = process.env.SOUNDCLOUD_USER_ID;
 
-    if (!feed.items || feed.items.length === 0) {
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'SOUNDCLOUD_USER_ID not configured' },
+        { status: 400 }
+      );
+    }
+
+    // 1. Check for new tracks using Clean Architecture
+    const useCase = new CheckNewTracksUseCase(
+      soundCloudRepository,
+      trackRepository
+    );
+
+    const result = await useCase.execute({
+      artistIdentifier: userId,
+      platform: 'soundcloud'
+    });
+
+    if (!result.latestTrack) {
       return NextResponse.json({ message: 'No tracks found in feed' });
     }
 
-    const latestTrack = feed.items[0];
+    const latestTrack = result.latestTrack;
 
-    // 2. Obtener track ID
-    const trackId = latestTrack.guid || latestTrack.link;
-
-    if (!trackId) {
-      throw new Error('Track ID not found in RSS feed');
-    }
-
-    // 3. Obtener suscriptores activos (no desuscritos)
+    // 2. Obtener suscriptores activos (no desuscritos)
     const subscribersResult = await sql`
       SELECT email, name FROM subscribers WHERE unsubscribed = false
     `;
@@ -41,7 +51,7 @@ export async function GET() {
       });
     }
 
-    // 4. Enviar emails via Resend
+    // 3. Enviar emails via Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
 
@@ -58,9 +68,9 @@ export async function GET() {
           to: [subscriber.email],
           subject: 'Hey mate',
           react: NewTrackEmail({
-            trackName: latestTrack.title || 'Sin título',
-            trackUrl: latestTrack.link || '',
-            coverImage: latestTrack.itunes?.image || latestTrack.enclosure?.url || '',
+            trackName: latestTrack.title,
+            trackUrl: latestTrack.url,
+            coverImage: latestTrack.coverImage || '',
             unsubscribeUrl
           })
         });
@@ -78,24 +88,20 @@ export async function GET() {
       }
     }
 
-    // 5. Guardar en DB (o actualizar si ya existe)
-    const publishedDate = latestTrack.pubDate
-      ? new Date(latestTrack.pubDate).toISOString()
-      : new Date().toISOString();
-
+    // 4. Guardar en DB (o actualizar si ya existe)
     await sql`
       INSERT INTO soundcloud_tracks (track_id, title, url, published_at)
       VALUES (
-        ${trackId},
-        ${latestTrack.title || 'Sin título'},
-        ${latestTrack.link || ''},
-        ${publishedDate}
+        ${latestTrack.id},
+        ${latestTrack.title},
+        ${latestTrack.url},
+        ${latestTrack.publishedAt}
       )
       ON CONFLICT (track_id) DO UPDATE
       SET title = EXCLUDED.title, url = EXCLUDED.url
     `;
 
-    // 6. Log de ejecución
+    // 5. Log de ejecución
     await sql`
       INSERT INTO execution_logs (new_tracks, emails_sent, duration_ms)
       VALUES (1, ${emailsSent}, ${Date.now() - startTime})
@@ -106,7 +112,8 @@ export async function GET() {
       track: latestTrack.title,
       emailsSent,
       emailsFailed,
-      totalSubscribers: subscribersResult.rows.length
+      totalSubscribers: subscribersResult.rows.length,
+      newTracksFound: result.newTracksFound
     });
 
   } catch (error: any) {
