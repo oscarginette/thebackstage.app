@@ -26,11 +26,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Eliminar contactos
-    const result = await sql`
-      DELETE FROM contacts
-      WHERE id = ANY(${ids}::int[])
-    `;
+    // Eliminar contactos usando IN con un array de IDs
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+    const result = await sql.query(
+      `DELETE FROM contacts WHERE id IN (${placeholders})`,
+      ids
+    );
 
     return NextResponse.json({
       success: true,
