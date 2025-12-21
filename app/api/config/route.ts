@@ -20,7 +20,11 @@ export async function GET() {
 
     let listIds: number[] = [];
     if (result.rows.length > 0 && result.rows[0].brevo_list_ids) {
-      listIds = JSON.parse(result.rows[0].brevo_list_ids);
+      const brevoListIds = result.rows[0].brevo_list_ids;
+      // Si es JSONB viene como objeto, si es string lo parseamos
+      listIds = typeof brevoListIds === 'string'
+        ? JSON.parse(brevoListIds)
+        : brevoListIds;
     }
 
     return NextResponse.json({ listIds });

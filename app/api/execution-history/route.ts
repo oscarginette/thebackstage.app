@@ -21,14 +21,16 @@ export async function GET() {
         st.title,
         st.url,
         st.published_at,
+        st.cover_image,
+        st.description,
         st.created_at,
         el.emails_sent,
         el.duration_ms,
-        el.created_at as execution_time
+        el.executed_at
       FROM soundcloud_tracks st
-      LEFT JOIN execution_logs el ON el.created_at >= st.created_at
+      LEFT JOIN execution_logs el ON el.executed_at >= st.created_at
       WHERE el.new_tracks = 1
-      ORDER BY st.created_at DESC
+      ORDER BY el.executed_at DESC
       LIMIT 20
     `;
 
@@ -43,22 +45,34 @@ export async function GET() {
       console.error('Failed to fetch RSS feed:', error);
     }
 
-    // Enriquecer datos con información del RSS
+    // Enriquecer datos con información del RSS si es necesario
     const enrichedHistory = result.rows.map((row) => {
-      const rssTrack = feed?.items.find(
-        (item) => item.link === row.url || item.guid === row.track_id
-      );
+      // Si ya tenemos cover_image y description en la DB, usarlos
+      let coverImage = row.cover_image;
+      let description = row.description;
+
+      // Si no, intentar obtener del RSS
+      if ((!coverImage || !description) && feed) {
+        const rssTrack = feed.items.find(
+          (item) => item.link === row.url || item.guid === row.track_id
+        );
+
+        if (rssTrack) {
+          coverImage = coverImage || rssTrack.itunes?.image || rssTrack.enclosure?.url || null;
+          description = description || rssTrack.contentSnippet || rssTrack.content || null;
+        }
+      }
 
       return {
         trackId: row.track_id,
         title: row.title,
         url: row.url,
         publishedAt: row.published_at,
-        executedAt: row.execution_time,
-        emailsSent: row.emails_sent,
-        durationMs: row.duration_ms,
-        coverImage: rssTrack?.itunes?.image || rssTrack?.enclosure?.url || null,
-        description: rssTrack?.contentSnippet || rssTrack?.content || null
+        executedAt: row.executed_at,
+        emailsSent: row.emails_sent || 0,
+        durationMs: row.duration_ms || 0,
+        coverImage,
+        description
       };
     });
 
