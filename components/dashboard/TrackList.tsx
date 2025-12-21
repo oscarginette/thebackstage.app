@@ -56,10 +56,10 @@ export default function TrackList({
             tracks.map((track) => (
               <div
                 key={track.trackId}
-                className="group relative flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 bg-[#FDFCF8] rounded-[24px] border border-transparent hover:border-[#E8E6DF] hover:bg-white transition-all duration-300"
+                className="group relative flex flex-col sm:flex-row items-center sm:items-start gap-5 p-4 bg-[#FDFCF8] rounded-[20px] border border-transparent hover:border-[#E8E6DF] hover:bg-white transition-all duration-300"
               >
                 {/* Artwork */}
-                <div className="relative shrink-0 w-full sm:w-32 h-32 sm:h-32 rounded-2xl overflow-hidden shadow-sm">
+                <div className="relative shrink-0 w-full sm:w-20 h-20 sm:h-20 rounded-xl overflow-hidden shadow-sm">
                    {track.coverImage ? (
                     <img
                       src={track.coverImage}
@@ -68,33 +68,33 @@ export default function TrackList({
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                       <svg className="w-10 h-10 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
+                       <svg className="w-8 h-8 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
                     </div>
                   )}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 w-full text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
-                    <h3 className="font-serif text-2xl text-[#1c1c1c] leading-tight">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-2">
+                    <h3 className="font-serif text-xl text-[#1c1c1c] leading-tight">
                       {track.title}
                     </h3>
                     {track.alreadySent && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#E8E6DF] text-gray-600">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#E8E6DF] text-gray-600">
                         Enviado
                       </span>
                     )}
                   </div>
                   
-                  <div className="flex items-center justify-center sm:justify-start gap-3 mb-6">
-                    <span className="text-sm font-medium text-gray-400">
+                  <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
+                    <span className="text-xs font-medium text-gray-400">
                        {new Date(track.publishedAt).toLocaleDateString(undefined, {
                          year: 'numeric',
                          month: 'long',
                          day: 'numeric'
                        })}
                     </span>
-                    <a href={track.url} target="_blank" className="text-sm font-medium text-[#FF5500] hover:underline">
+                    <a href={track.url} target="_blank" className="text-xs font-medium text-[#FF5500] hover:underline">
                       SoundCloud ↗
                     </a>
                   </div>
@@ -104,17 +104,17 @@ export default function TrackList({
                       <button
                         onClick={() => onSend(track)}
                         disabled={sendingTrackId === track.trackId || !hasSelectedLists}
-                        className="inline-flex items-center gap-3 px-6 py-3 bg-[#1c1c1c] text-white text-sm font-medium rounded-full hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-black/10 hover:-translate-y-0.5"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#1c1c1c] text-white text-xs font-bold rounded-full hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-black/10 hover:-translate-y-0.5"
                       >
                         {sendingTrackId === track.trackId ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             <span>Enviando...</span>
                           </>
                         ) : (
                           <>
                             <span>Enviar Campaña</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
                           </>

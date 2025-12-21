@@ -46,7 +46,7 @@ export default function Dashboard() {
         <div className="absolute top-0 left-0 w-full h-full bg-aurora-light"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 sm:py-24">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-10 sm:py-16">
         
         {/* Global Message Toast */}
         {message && (
@@ -76,27 +76,20 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
-          {/* Left Column (Header & Branding) */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24 self-start">
+        {/* Top Row: Header Left, Stats Right */}
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16">
+          <div className="flex-1">
              <Header />
-             
-             <div className="hidden lg:block mt-12 pl-6 border-l-2 border-[#E8E6DF]">
-                <p className="text-sm text-gray-400 italic mb-4">
-                  "La música es el arte más directo, entra por el oído y va al corazón."
-                </p>
-                <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">Gee Beat System v2.0</span>
-             </div>
           </div>
+          <div className="w-full lg:w-auto min-w-[450px] mb-6">
+             <StatCards activeListsCount={selectedLists.length} />
+          </div>
+        </div>
 
-          {/* Right Column (Functional Stack) */}
-          <div className="lg:col-span-8 flex flex-col gap-8">
-            {/* 1. Stats (Top Right, Compact) */}
-            <div className="w-full">
-               <StatCards activeListsCount={selectedLists.length} />
-            </div>
+        {/* Full Width Stack */}
+        <div className="flex flex-col gap-12">
             
-            {/* 2. Audiences (Below Stats) */}
+            {/* 1. Audiences (Full Width) */}
             <div className="w-full">
               <DistributionLists 
                 lists={lists} 
@@ -109,7 +102,7 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* 3. Tracks (Below Audiences) */}
+            {/* 2. Tracks (Full Width) */}
             <div className="w-full">
               <TrackList 
                 tracks={allTracks}
@@ -123,7 +116,6 @@ export default function Dashboard() {
             </div>
             
              <ExecutionHistory history={history} />
-          </div>
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ export async function GET() {
     }
 
     console.log('Fetching Brevo lists...');
+    console.log('API Key length:', process.env.BREVO_API_KEY.length);
 
     const apiInstance = new brevo.ContactsApi();
     apiInstance.setApiKey(
@@ -35,25 +36,24 @@ export async function GET() {
     return NextResponse.json({ lists });
 
   } catch (error: any) {
-    console.error('Error fetching Brevo lists:', error);
+    console.error('Error fetching Brevo lists:', error.message);
     console.error('Error code:', error.response?.status);
+    console.error('Error body:', error.response?.body);
 
-    // Si falla la API (401 = sin permisos), retornar listas conocidas
-    // TODO: Actualizar la API key en Brevo con permisos de lectura de listas
-    const fallbackLists = [
+    let errorMessage = 'Failed to fetch Brevo lists';
+    if (error.response?.status === 401) {
+      errorMessage = 'No conectado: La API key no tiene permisos para leer listas de contactos';
+    } else if (error.response?.status === 403) {
+      errorMessage = 'No conectado: Acceso denegado a las listas de Brevo';
+    }
+
+    return NextResponse.json(
       {
-        id: 2,
-        name: 'Your First Folder',
-        totalSubscribers: 1753
+        error: errorMessage,
+        statusCode: error.response?.status || 500,
+        details: error.response?.body || error.message
       },
-      {
-        id: 3,
-        name: 'Hypeddit',
-        totalSubscribers: 3
-      }
-    ];
-
-    console.log('Using fallback lists due to API error');
-    return NextResponse.json({ lists: fallbackLists });
+      { status: error.response?.status || 500 }
+    );
   }
 }

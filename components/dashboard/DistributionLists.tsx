@@ -41,7 +41,7 @@ export default function DistributionLists({
               return (
                 <label
                   key={list.id}
-                  className={`group relative flex items-center p-5 rounded-2xl cursor-pointer transition-all duration-300 border ${
+                  className={`group relative flex items-center p-3 rounded-2xl cursor-pointer transition-all duration-300 border ${
                     isSelected
                       ? 'bg-[#1c1c1c] border-[#1c1c1c] text-white'
                       : 'bg-white border-[#E8E6DF] hover:border-gray-300 text-[#1c1c1c]'
@@ -55,23 +55,23 @@ export default function DistributionLists({
                   />
                   
                   {/* Custom Checkbox UI */}
-                  <div className={`w-6 h-6 rounded-full border flex items-center justify-center mr-5 transition-all duration-300 ${
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-4 transition-all duration-300 ${
                     isSelected
                       ? 'border-white bg-white/20'
                       : 'border-gray-300 group-hover:border-gray-400'
                   }`}>
                     {isSelected && (
-                       <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                        </svg>
                     )}
                   </div>
                   
                   <div className="flex-1">
-                    <div className="font-medium text-lg leading-tight mb-1">
+                    <div className="font-medium text-base leading-tight">
                       {list.name}
                     </div>
-                    <div className={`text-sm ${isSelected ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <div className={`text-xs ${isSelected ? 'text-gray-400' : 'text-gray-500'}`}>
                       {list.totalSubscribers.toLocaleString()} suscriptores
                     </div>
                   </div>

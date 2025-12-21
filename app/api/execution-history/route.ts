@@ -38,7 +38,7 @@ export async function GET() {
     const parser = new Parser();
     const rssUrl = `https://feeds.soundcloud.com/users/soundcloud:users:${process.env.SOUNDCLOUD_USER_ID}/sounds.rss`;
 
-    let feed: Parser.Output | undefined;
+    let feed: Parser.Output<{ [key: string]: any }> | undefined;
     try {
       feed = await parser.parseURL(rssUrl);
     } catch (error) {
@@ -54,7 +54,7 @@ export async function GET() {
       // Si no, intentar obtener del RSS
       if ((!coverImage || !description) && feed) {
         const rssTrack = feed.items.find(
-          (item) => item.link === row.url || item.guid === row.track_id
+          (item: any) => item.link === row.url || item.guid === row.track_id
         );
 
         if (rssTrack) {
