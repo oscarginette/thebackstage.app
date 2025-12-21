@@ -100,7 +100,7 @@ export function useDashboardData() {
       if (data.success) {
         setMessage({
           type: 'success',
-          text: `✅ Email enviado: "${data.track}" a ${data.listsUsed} lista(s)`
+          text: `Email enviado: "${data.track}" a ${data.listsUsed} lista(s)`
         });
         // Recargar historial después de una ejecución exitosa
         loadData();
@@ -167,7 +167,7 @@ export function useDashboardData() {
 
       setMessage({
         type: 'success',
-        text: `✅ Email enviado: "${data.track}" a ${data.listsUsed} lista(s)`
+        text: `Email enviado: "${data.track}" a ${data.listsUsed} lista(s)`
       });
 
       // Recargar datos

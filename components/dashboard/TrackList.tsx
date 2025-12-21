@@ -49,7 +49,7 @@ export default function TrackList({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
           {tracks.length === 0 ? (
             <div className="text-center py-12 text-gray-400 font-serif text-lg">No hay tracks para mostrar</div>
           ) : (

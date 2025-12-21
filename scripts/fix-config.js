@@ -7,7 +7,7 @@ async function fixConfig() {
 
     await sql`
       UPDATE app_config
-      SET brevo_list_ids = '[2,3]'::jsonb
+      SET brevo_list_ids = '[5]'::jsonb
       WHERE id = 1
     `;
 

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import Parser from 'rss-parser';
-import * as brevo from '@getbrevo/brevo';
+import { Resend } from 'resend';
+import NewTrackEmail from '@/emails/new-track';
 
 // Permitir hasta 60s de ejecución
 export const maxDuration = 60;
@@ -57,42 +58,25 @@ export async function GET() {
       throw new Error('No Brevo lists configured. Please configure lists in the dashboard.');
     }
 
-    // 4. Enviar email via Brevo usando listas
-    const apiInstance = new brevo.TransactionalEmailsApi();
-    apiInstance.setApiKey(
-      brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY!
-    );
+    // 4. Enviar email via Resend
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      email: process.env.SENDER_EMAIL!,
-      name: 'Gee Beat'
-    };
-
-    // Configurar destinatarios usando listas de Brevo
-    // Brevo requiere messageVersions para enviar a múltiples listas
-    const messageVersions: brevo.SendSmtpEmailMessageVersionsInner[] = listIds.map((listId) => {
-      // @ts-ignore: Brevo type definition might be missing listId for transactional params or we are using it creatively
-      const recipient: any = {
-        email: process.env.SENDER_EMAIL!,
-        listId: listId
-      };
-
-      return {
-        to: [recipient]
-      };
+    const { data, error } = await resend.emails.send({
+      from: 'Gee Beat <onboarding@resend.dev>', // Dominio de prueba de Resend
+      to: [process.env.SENDER_EMAIL!], // Por ahora a ti mismo para probar
+      subject: 'Hey mate',
+      react: NewTrackEmail({
+        trackName: latestTrack.title || 'Sin título',
+        trackUrl: latestTrack.link || '',
+        coverImage: latestTrack.itunes?.image || latestTrack.enclosure?.url || ''
+      })
     });
 
-    sendSmtpEmail.messageVersions = messageVersions;
-    sendSmtpEmail.templateId = Number(process.env.BREVO_TEMPLATE_ID);
-    sendSmtpEmail.params = {
-      TRACK_NAME: latestTrack.title || 'Sin título',
-      TRACK_URL: latestTrack.link || '',
-      COVER_IMAGE: latestTrack.itunes?.image || latestTrack.enclosure?.url || ''
-    };
+    if (error) {
+      throw new Error(`Resend error: ${error.message}`);
+    }
 
-    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('Email sent:', data?.id);
 
     // 5. Guardar en DB
     const publishedDate = latestTrack.pubDate
@@ -119,7 +103,7 @@ export async function GET() {
       success: true,
       track: latestTrack.title,
       listsUsed: listIds.length,
-      messageId: response.body?.messageId
+      messageId: data?.id
     });
 
   } catch (error: any) {

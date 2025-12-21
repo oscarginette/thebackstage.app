@@ -29,7 +29,7 @@ export default function DistributionLists({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto min-h-[250px] mb-8 pr-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto min-h-[60px] mb-6 pr-2 custom-scrollbar">
         {lists.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-12 bg-[#FDFCF8] rounded-2xl border border-dashed border-[#E8E6DF]">
             <p className="font-serif text-xl text-gray-400">Sin listas disponibles</p>

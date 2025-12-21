@@ -75,7 +75,8 @@ export async function POST(request: Request) {
     // Configurar destinatarios usando listas de Brevo
     // Brevo requiere messageVersions para enviar a múltiples listas
     const messageVersions: brevo.SendSmtpEmailMessageVersionsInner[] = brevoListIds.map((listId) => {
-      const recipient: brevo.SendSmtpEmailMessageVersionsInnerToInner = {
+      // @ts-ignore
+      const recipient: any = {
         email: process.env.SENDER_EMAIL!,
         listId: listId
       };

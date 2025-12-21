@@ -10,7 +10,7 @@ export async function GET() {
     if (!process.env.POSTGRES_URL) {
       console.log('No POSTGRES_URL found, using default config');
       return NextResponse.json({
-        listIds: [2, 3] // Default: ambas listas
+        listIds: [5] // Default: lista "Yo" para pruebas
       });
     }
 
@@ -33,7 +33,7 @@ export async function GET() {
     console.error('Error fetching config:', error);
     // Si falla la DB, retornar config por defecto
     return NextResponse.json({
-      listIds: [2, 3]
+      listIds: [5] // Default: lista "Yo" para pruebas
     });
   }
 }

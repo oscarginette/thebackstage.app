@@ -1,0 +1,286 @@
+brandUpdateTime: ""
+firstLoadSocialIcons: false
+hideSwapBanner: false
+campaignType: template
+fieldsHistory: []
+hasAIFeature: true
+subject: 'Hey mate!'
+ui:
+  showDeleteOption: false
+  showMoreOption: false
+user-hash: 9b4fd2f1c3870362856155d7b4f7c0ad
+author: ""
+name: ""
+id: ""
+version: 3.0.1
+fields: {}
+fonts:
+  - 'https://fonts.googleapis.com/css2?family=Monoton'
+styles:
+  default:
+    properties:
+      color: '#3b3f44'
+      font-family: 'arial,helvetica,sans-serif'
+      font-size: 16px
+      line-height: '1.5'
+    title: Paragraph
+  default-button:
+    properties:
+      background-color: '#0092FF'
+      border-radius: 4px
+      border-width: 0px
+      color: '#ffffff'
+      font-family: 'arial,helvetica,sans-serif'
+      font-size: 16px
+      remove-vml-button: optional
+      width: 50%
+    title: Button
+  default-heading1:
+    properties:
+      color: '#1F2D3D'
+      font-family: 'arial,helvetica,sans-serif'
+      font-size: 36px
+      font-weight: '400'
+    title: 'Heading 1'
+  default-heading2:
+    properties:
+      color: '#1F2D3D'
+      font-family: 'arial,helvetica,sans-serif'
+      font-size: 32px
+      font-weight: '400'
+    title: 'Heading 2'
+  default-heading3:
+    properties:
+      color: '#1F2D3D'
+      font-family: 'arial,helvetica,sans-serif'
+      font-size: 24px
+      font-weight: '400'
+    title: 'Heading 3'
+  default-heading4:
+    properties:
+      color: '#1F2D3D'
+      font-family: 'arial,helvetica,sans-serif'
+      font-size: 18px
+      font-weight: '400'
+    title: 'Heading 4'
+  default-link:
+    properties:
+      color: '#0092ff'
+      text-decoration: underline
+    title: Link
+media:
+  320px:
+    max-width: 600
+    min-width: 0
+body:
+  content:
+    -
+      type: rows
+      thumbnail: null
+      isCustomBlock: null
+      customBlockId: null
+      moduleName: null
+      sidebarSection: null
+      sync-module-id: null
+      content-type: wrapper
+      title: Wrapper
+      stylable: null
+      layout:
+        320px:
+          width: 320px
+        default:
+          align: center
+          valign: top
+      content:
+        -
+          type: grid-row
+          thumbnail: /assets/img/editor/grid_12.svg
+          isCustomBlock: null
+          customBlockId: null
+          moduleName: viewInBrowser
+          sidebarSection: null
+          sync-module-id: null
+          align: top
+          title: section
+          stylable: null
+          layout:
+            320px:
+              display: rows
+              width: 100%
+            default:
+              align: center
+              full-width: true
+              background-color: transparent
+              display: none
+              padding-bottom: 5px
+              padding-top: 5px
+              width: 100%
+              valign: top
+              padding-left: null
+              padding-right: null
+          content:
+            -
+              type: grid-column
+              thumbnail: null
+              isCustomBlock: null
+              customBlockId: null
+              moduleName: null
+              sidebarSection: null
+              sync-module-id: null
+              isEmpty: false
+              label: 'Drop content here'
+              title: 'column 1'
+              stylable: false
+              layout:
+                320px: {}
+                default:
+                  padding-left: 0px
+                  padding-right: 0px
+                  valign: top
+              content:
+                -
+                  type: text
+                  thumbnail: null
+                  isCustomBlock: null
+                  customBlockId: null
+                  moduleName: null
+                  sidebarSection: null
+                  sync-module-id: null
+                  title: Webversion
+                  stylable: null
+                  layout:
+                    320px:
+                      padding-left: 10px
+                      padding-right: 10px
+                      width: 100%
+                    default:
+                      align: center
+                      line-height: 16px
+                      padding-left: 30px
+                      padding-right: 30px
+                      text-align: center
+                      width: 100%
+                  content: "<p><a href=\"{{ mirror }}\">\n                      <span style=\"font-family: arial,helvetica,sans-serif;color:#858588;font-size: 12px; text-decoration: underline;\">\n                      View in browser</span></a></p>"
+          dist: '12'
+          gutter: 0px
+        -
+          type: grid-row
+          thumbnail: /assets/img/editor/element-header.svg
+          isCustomBlock: null
+          customBlockId: null
+          moduleName: header
+          sidebarSection: null
+          sync-module-id: null
+          align: top
+          title: Header
+          stylable: null
+          layout:
+            320px:
+              display: rows
+              width: 100%
+            default:
+              align: center
+              width: 100%
+              valign: top
+              padding-left: null
+              padding-right: null
+          content:
+            -
+              type: grid-column
+              thumbnail: null
+              isCustomBlock: null
+              customBlockId: null
+              moduleName: null
+              sidebarSection: null
+              sync-module-id: null
+              isEmpty: false
+              label: 'Drop content here'
+              title: grid-column
+              stylable: false
+              layout:
+                320px: {}
+                default:
+                  padding-left: 0px
+                  padding-right: 0px
+                  valign: top
+              content:
+                -
+                  type: text
+                  thumbnail: /assets/img/editor/element_text.svg
+                  isCustomBlock: null
+                  customBlockId: null
+                  moduleName: null
+                  sidebarSection: null
+                  sync-module-id: null
+                  title: Text
+                  stylable: null
+                  layout:
+                    320px:
+                      width: 100%
+                    default:
+                      align: left
+                      padding-bottom: 15px
+                      padding-top: 15px
+                      text-align: left
+                      text-valign: top
+                      width: 100%
+                      valign: top
+                  content: '<p>Hey mate,</p><p><br></p><p>This is my new track {{ params.TRACK_NAME }} and it''s now on Soundcloud!<br><br>Have a great day :)</p>'
+                -
+                  type: image
+                  thumbnail: /assets/img/editor/element_image.svg
+                  isCustomBlock: null
+                  customBlockId: null
+                  moduleName: null
+                  sidebarSection: null
+                  sync-module-id: null
+                  title: Image
+                  stylable: null
+                  layout:
+                    320px:
+                      max-width: 320px
+                      width: 100%
+                    default:
+                      align: center
+                      canvas-height: 469.328125px
+                      dynamic: false
+                      embed: false
+                      img-border-radius: 0px
+                      imgSize: '20491'
+                      padding-bottom: 15px
+                      padding-top: 15px
+                      width: 100%
+                      valign: top
+                      href: '{{ params.TRACK_URL }}'
+                  content:
+                    src: '{{ params.COVER_IMAGE }}'
+                -
+                  type: text
+                  thumbnail: /assets/img/editor/element_text.svg
+                  isCustomBlock: null
+                  customBlockId: null
+                  moduleName: null
+                  sidebarSection: null
+                  sync-module-id: null
+                  title: Text
+                  stylable: null
+                  layout:
+                    320px:
+                      width: 100%
+                    default:
+                      align: left
+                      padding-bottom: 15px
+                      padding-top: 15px
+                      text-align: left
+                      text-valign: top
+                      width: 100%
+                      valign: top
+                  content: '<p>Much love,<br><br>Gee Beat</p>'
+          dist: '12'
+          gutter: 0px
+  layout:
+    320px:
+      width: 320px
+    default:
+      direction: ltr
+      wrapper-width: 600px

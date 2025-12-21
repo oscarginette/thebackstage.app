@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
+    "@react-email/components": "^1.0.2",
     "@vercel/postgres": "^0.10.0",
     "next": "16.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-email": "^5.1.0",
+    "resend": "^6.6.0",
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {

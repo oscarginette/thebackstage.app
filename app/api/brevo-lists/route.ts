@@ -5,6 +5,17 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    // HARDCODED: Lista "Yo" (ID: 5) para pruebas
+    // La API key MCP no tiene permisos para leer listas de contactos
+    const lists = [
+      { id: 5, name: 'Yo', totalSubscribers: 1 }
+    ];
+
+    console.log('Returning hardcoded lists:', lists);
+    return NextResponse.json({ lists });
+
+    /* CODIGO ORIGINAL (descomentar cuando tengas API key estándar):
+
     if (!process.env.BREVO_API_KEY) {
       return NextResponse.json(
         { error: 'BREVO_API_KEY not configured' },
@@ -13,8 +24,6 @@ export async function GET() {
     }
 
     console.log('Fetching Brevo lists...');
-    console.log('API Key length:', process.env.BREVO_API_KEY.length);
-
     const apiInstance = new brevo.ContactsApi();
     apiInstance.setApiKey(
       brevo.ContactsApiApiKeys.apiKey,
@@ -22,9 +31,6 @@ export async function GET() {
     );
 
     const response = await apiInstance.getLists();
-    console.log('Brevo API response status:', response.response.statusCode);
-    console.log('Raw lists data:', JSON.stringify(response.body.lists, null, 2));
-
     const lists = response.body.lists?.map((list: any) => ({
       id: list.id,
       name: list.name,
@@ -32,28 +38,17 @@ export async function GET() {
       folderId: list.folderId || null
     })) || [];
 
-    console.log('Processed lists:', lists);
     return NextResponse.json({ lists });
+    */
 
   } catch (error: any) {
     console.error('Error fetching Brevo lists:', error.message);
-    console.error('Error code:', error.response?.status);
-    console.error('Error body:', error.response?.body);
-
-    let errorMessage = 'Failed to fetch Brevo lists';
-    if (error.response?.status === 401) {
-      errorMessage = 'No conectado: La API key no tiene permisos para leer listas de contactos';
-    } else if (error.response?.status === 403) {
-      errorMessage = 'No conectado: Acceso denegado a las listas de Brevo';
-    }
-
     return NextResponse.json(
       {
-        error: errorMessage,
-        statusCode: error.response?.status || 500,
-        details: error.response?.body || error.message
+        error: 'Failed to fetch Brevo lists',
+        details: error.message
       },
-      { status: error.response?.status || 500 }
+      { status: 500 }
     );
   }
 }
