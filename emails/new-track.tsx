@@ -14,7 +14,6 @@ interface NewTrackEmailProps {
   trackName: string;
   trackUrl: string;
   coverImage: string;
-  cloudinaryCloudName: string;
   unsubscribeUrl?: string;
 }
 
@@ -22,15 +21,13 @@ export default function NewTrackEmail({
   trackName,
   trackUrl,
   coverImage,
-  cloudinaryCloudName,
   unsubscribeUrl,
 }: NewTrackEmailProps) {
   // Logo hosted on GitHub (black version for white/light backgrounds in email)
   const logoUrl = 'https://raw.githubusercontent.com/oscarginette/soundcloud-brevo/main/public/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
 
-  // Use Cloudinary fetch for reliable image delivery in emails
-  // Resolution: 500x500 for retina, displayed at 300x300
-  const coverUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/image/fetch/f_auto,q_auto,w_500,c_limit/${encodeURIComponent(coverImage)}`;
+  // Use direct image URL - SoundCloud images work well in emails
+  const coverUrl = coverImage;
 
   return (
     <Html>
