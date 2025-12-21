@@ -74,14 +74,15 @@ export async function POST(request: Request) {
           for (const contact of contacts) {
             try {
               const email = contact.email;
-              const name = contact.attributes?.FIRSTNAME ||
-                          contact.attributes?.LASTNAME ||
-                          contact.attributes?.NAME ||
+              const attributes = contact.attributes as any || {};
+              const name = attributes.FIRSTNAME ||
+                          attributes.LASTNAME ||
+                          attributes.NAME ||
                           null;
 
               // El nombre completo si tenemos ambos
-              const fullName = contact.attributes?.FIRSTNAME && contact.attributes?.LASTNAME
-                ? `${contact.attributes.FIRSTNAME} ${contact.attributes.LASTNAME}`.trim()
+              const fullName = attributes.FIRSTNAME && attributes.LASTNAME
+                ? `${attributes.FIRSTNAME} ${attributes.LASTNAME}`.trim()
                 : name;
 
               // Estado de suscripción (si emailBlacklisted es true, está unsubscribed)
