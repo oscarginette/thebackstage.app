@@ -51,9 +51,9 @@ export async function POST() {
         coverImage: testTrack.coverImage,
         unsubscribeUrl,
         customContent: {
-          subject: '🧪 Test Email - System Check',
-          headline: 'Testing Email Tracking System',
-          description: 'This is a test email to verify email events are being tracked correctly.'
+          greeting: '🧪 Test Email - System Check',
+          message: 'Testing Email Tracking System - This is a test email to verify email events are being tracked correctly.',
+          signature: 'Test System'
         }
       })
     );
