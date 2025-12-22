@@ -7,7 +7,7 @@
  * Clean Architecture: Infrastructure layer implementation.
  */
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { IQuotaTrackingRepository } from '@/domain/repositories/IQuotaTrackingRepository';
 import { QuotaTracking } from '@/domain/entities/QuotaTracking';
 

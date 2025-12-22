@@ -8,7 +8,7 @@
  * SOLID: Implements interface from domain layer (DIP).
  */
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { IUserRepository, CreateUserData } from '@/domain/repositories/IUserRepository';
 import { User } from '@/domain/entities/User';
 

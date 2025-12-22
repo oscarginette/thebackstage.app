@@ -4,7 +4,8 @@
     "features": "Características",
     "pricing": "Precios",
     "calculator": "Calculadora",
-    "dashboard": "Ir al Dashboard"
+    "dashboard": "Ir al Dashboard",
+    "settings": "Ajustes"
   },
   "hero": {
     "badge": "Backstage para Artistas",
@@ -194,5 +195,34 @@
     "haveAccount": "¿Ya tienes una cuenta?",
     "signin": "Inicia sesión",
     "back": "Volver al inicio"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "subtitle": "Gestiona tu cuenta y conexiones de plataforma",
+    "personalInfo": "Información Personal",
+    "personalSubtitle": "Gestiona tu identidad en la plataforma",
+    "fullName": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "platforms": "Conexiones de Plataforma",
+    "platformsSubtitle": "Utilizado para automatización y obtención de datos",
+    "soundcloud": "SoundCloud ID",
+    "spotify": "Spotify Artist ID",
+    "save": "Guardar Cambios",
+    "saving": "Guardando...",
+    "saved": "¡Guardado correctamente!",
+    "back": "Volver al Dashboard"
+  },
+  "downloadGates": {
+    "title": "Download Gates",
+    "subtitle": "Gestiona tus pasarelas de descarga y aumenta tu audiencia.",
+    "create": "Crear Gate",
+    "back": "Volver al Dashboard",
+    "backToList": "Volver a mis Gates",
+    "trackTitle": "Título del Track",
+    "views": "Vistas",
+    "submissions": "Envíos",
+    "downloads": "Descargas",
+    "conversion": "Conv %",
+    "actions": "Acciones"
   }
 }

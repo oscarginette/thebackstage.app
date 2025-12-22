@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { IContactRepository, Contact } from '@/domain/repositories/IContactRepository';
 
 export class PostgresContactRepository implements IContactRepository {

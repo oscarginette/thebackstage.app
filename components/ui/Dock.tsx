@@ -12,13 +12,16 @@ import {
   History,
   Music,
   Users,
+  BarChart2,
 } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 // Configuration for the items in the dock
 const DOCK_ITEMS = [
   { id: 'drafts', icon: FileText, label: 'Borradores' },
   { id: 'tracks', icon: Music, label: 'Tracks' },
+  { id: 'gates', icon: BarChart2, label: 'Download Gates' },
   { id: 'history', icon: History, label: 'Historial' },
   { id: 'contacts', icon: Users, label: 'Contactos' },
 ];
@@ -27,6 +30,8 @@ const IDLE_TIMEOUT = 3000; // 3 seconds
 const ACTIVE_DISTANCE = 300; // Lux distance to be considered "near"
 
 export default function Dock() {
+  const router = useRouter();
+  const pathname = usePathname();
   const mouseY = useMotionValue(Infinity);
   const dockDistance = useMotionValue(Infinity);
   const [isIdle, setIsIdle] = useState(false);
@@ -93,6 +98,13 @@ export default function Dock() {
         top: offsetPosition,
         behavior: 'smooth'
       });
+    } else {
+      // If we are not on the dashboard, navigate there first
+      if (id === 'gates' && pathname !== '/dashboard/download-gates') {
+        router.push('/dashboard/download-gates');
+      } else if (pathname !== '/dashboard') {
+        router.push(`/dashboard#${id}`);
+      }
     }
   };
 

@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { IEmailEventRepository, EmailEventRecord } from '@/domain/repositories/IEmailEventRepository';
 
 export class PostgresEmailEventRepository implements IEmailEventRepository {

@@ -15,8 +15,8 @@ export default function LoginPage() {
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@backstage-art.com');
+  const [password, setPassword] = useState('admin123');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);

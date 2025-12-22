@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { IExecutionLogRepository, ExecutionLog } from '@/domain/repositories/IExecutionLogRepository';
 
 export class PostgresExecutionLogRepository implements IExecutionLogRepository {

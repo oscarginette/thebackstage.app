@@ -10,9 +10,13 @@ import ContactsList from '../../components/dashboard/ContactsList';
 import CreateEmailButton from '../../components/dashboard/CreateEmailButton';
 import EmailEditorModal from '../../components/dashboard/EmailEditorModal';
 import DraftsList from '../../components/dashboard/DraftsList';
+import { Settings, BarChart2 } from 'lucide-react';
+import Link from 'next/link';
+import { useTranslations } from '@/lib/i18n/context';
 import Dock from '../../components/ui/Dock';
 
 export default function Dashboard() {
+  const tNav = useTranslations('nav');
   const {
     history,
     allTracks,
@@ -81,10 +85,21 @@ export default function Dashboard() {
           </div>
         )}
 
+
         {/* Header Section */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <Header />
-          <div className="pb-2">
+          <div className="pb-2 flex flex-col items-end gap-3">
+            <Link
+              href="/settings"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/20 border border-[#E8E6DF] hover:border-[#FF5500]/40 hover:bg-white/60 transition-all duration-300 backdrop-blur-sm group active:scale-95 shadow-sm"
+              title={tNav('settings')}
+            >
+              <Settings className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#FF5500] group-hover:rotate-45 transition-all duration-700" />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-[#1c1c1c] transition-colors pr-0.5">
+                {tNav('settings')}
+              </span>
+            </Link>
             <StatCards />
           </div>
         </div>
@@ -114,6 +129,27 @@ export default function Dashboard() {
                  onSend={handleSendTrack}
                  sendingTrackId={sendingTrackId}
               />
+            </div>
+
+            {/* 2.5 Download Gates (Full Width Shortcut) */}
+            <div id="gates">
+              <div className="w-full bg-white/40 backdrop-blur-xl rounded-3xl border border-[#E8E6DF] p-8 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white/60 transition-all group">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-[#FF5500]/10 flex items-center justify-center text-[#FF5500] group-hover:scale-110 transition-transform">
+                     <BarChart2 className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-serif text-[#1c1c1c]">Download Gates</h3>
+                    <p className="text-gray-500">Crea pasarelas de descarga para capturar emails y crecer en SoundCloud.</p>
+                  </div>
+                </div>
+                <Link 
+                  href="/dashboard/download-gates"
+                  className="px-8 py-4 rounded-2xl bg-[#1c1c1c] text-white hover:bg-black transition-all shadow-xl font-bold whitespace-nowrap"
+                >
+                  Gestionar Gates →
+                </Link>
+              </div>
             </div>
 
             {/* 3. Execution History (Full Width) */}

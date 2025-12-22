@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { IEmailLogRepository, EmailLog } from '@/domain/repositories/IEmailLogRepository';
 
 export class PostgresEmailLogRepository implements IEmailLogRepository {

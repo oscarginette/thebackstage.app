@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { ITrackRepository, Track } from '@/domain/repositories/ITrackRepository';
 
 export class PostgresTrackRepository implements ITrackRepository {

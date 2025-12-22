@@ -6,6 +6,8 @@ import { PostgresEmailAnalyticsRepository } from './PostgresEmailAnalyticsReposi
 import { PostgresEmailEventRepository } from './PostgresEmailEventRepository';
 import { PostgresEmailTemplateRepository } from './PostgresEmailTemplateRepository';
 import { PostgresEmailCampaignRepository } from './PostgresEmailCampaignRepository';
+import { PostgresDownloadGateRepository } from './PostgresDownloadGateRepository';
+import { PostgresDownloadSubmissionRepository } from './PostgresDownloadSubmissionRepository';
 
 // Singleton instances
 export const trackRepository = new PostgresTrackRepository();
@@ -16,3 +18,5 @@ export const emailAnalyticsRepository = new PostgresEmailAnalyticsRepository();
 export const emailEventRepository = new PostgresEmailEventRepository();
 export const emailTemplateRepository = new PostgresEmailTemplateRepository();
 export const emailCampaignRepository = new PostgresEmailCampaignRepository();
+export const downloadGateRepository = new PostgresDownloadGateRepository();
+export const downloadSubmissionRepository = new PostgresDownloadSubmissionRepository();

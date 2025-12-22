@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { Resend } from 'resend';
 import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';

@@ -4,7 +4,7 @@
  * PostgreSQL implementation of IConsentHistoryRepository
  */
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import {
   IConsentHistoryRepository,
   CreateConsentHistoryInput
