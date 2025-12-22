@@ -1,0 +1,198 @@
+{
+  "nav": {
+    "brand": "Backstage",
+    "features": "Features",
+    "pricing": "Pricing",
+    "calculator": "Calculator",
+    "dashboard": "Go to Dashboard"
+  },
+  "hero": {
+    "badge": "Backstage for Artists",
+    "title": {
+      "line1": "Make music.",
+      "line2": "Grow",
+      "line3": "automatically."
+    },
+    "subtitle": "Stop worrying about marketing. We help you turn listeners into a dedicated community through automated email lists while you stay in your creative flow.",
+    "cta": "Start Growing Now",
+    "noCreditCard": "No credit card required. Pure automation."
+  },
+  "problem": {
+    "title": {
+      "line1": "You're a DJ, not a",
+      "line2": "Marketing Manager"
+    },
+    "subtitle": "We know the struggle. You spend hours in the studio, perfecting every transition and sound. The last thing you want to do is figure out how to manage a newsletter or track who's actually listening.",
+    "step1": {
+      "title": "Ditch the Manual Work",
+      "description": "No more manual exports or messy spreadsheets of contacts."
+    },
+    "step2": {
+      "title": "Focus on Content",
+      "description": "Your only job is to upload your music. Growth happens in the background."
+    },
+    "illustration": "Focus on the music",
+    "quote": "Too busy making hits"
+  },
+  "valueProp": {
+    "title": {
+      "line1": "1,000 Emails are way better",
+      "line2": "than",
+      "line3": "10k Followers"
+    },
+    "subtitle": "Ownership is your superpower. Algorithms change, but your direct line to your fans never does.",
+    "directReach": {
+      "title": "Direct Reach",
+      "description": "Social platforms limit your organic reach to 3-5%. Email reaches 99% of your audience directly."
+    },
+    "totalOwnership": {
+      "title": "Total Ownership",
+      "description": "Rent your audience on Instagram or SoundCloud. Own it with your email list. If a platform disappears, your fans don't."
+    },
+    "trueCommunity": {
+      "title": "True Community",
+      "description": "A like is cheap. An email is a commitment. Build a base of supporters who actually show up to your shows and buy your merch."
+    },
+    "engagement": {
+      "title": "The Math of Engagement",
+      "description": "Your email list is your most valuable asset as an artist. We help you build it without you even trying.",
+      "socialReach": "Social Reach",
+      "emailOpenRate": "Email Open Rate"
+    }
+  },
+  "features": {
+    "title": {
+      "line1": "Powerful tools,",
+      "line2": "invisible",
+      "line3": "work."
+    },
+    "subtitle": "We've built everything you need to scale your community while you stay creative.",
+    "smartGate": {
+      "title": "Smart Gate System",
+      "description": "Fans exchange their email for your latest track. No more manual link sending."
+    },
+    "autoNewsletter": {
+      "title": "Auto-Newsletter",
+      "description": "Notify your entire community automatically whenever you drop something new."
+    },
+    "analytics": {
+      "title": "Audience Analytics",
+      "description": "See who is vibing with your music the most. Real data for real artists."
+    },
+    "zeroEffort": {
+      "title": "Zero Effort Setup",
+      "description": "Connect your SoundCloud and Brevo in seconds. We handle the technical plumbing."
+    }
+  },
+  "pricing": {
+    "title": {
+      "line1": "Simple pricing for",
+      "line2": "independent",
+      "line3": "artists."
+    },
+    "subtitle": "Start free, upgrade when you're ready to scale. No hidden fees.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "save": "Save 20%",
+    "mostPopular": "Most Popular",
+    "free": {
+      "name": "The Opening Act",
+      "description": "Perfect for artists just starting to build their list.",
+      "price": "Free",
+      "period": "forever",
+      "cta": "Start for Free",
+      "features": {
+        "contacts": "Up to 500 contacts",
+        "smartGates": "Unlimited Smart Gates",
+        "monthlyNewsletter": "Monthly Auto-Newsletter",
+        "basicAnalytics": "Basic Audience Analytics",
+        "removableBranding": "Removable Branding",
+        "weeklyNewsletters": "Weekly Newsletters",
+        "prioritySupport": "Priority Support"
+      }
+    },
+    "pro": {
+      "name": "The Headliner",
+      "description": "For serious artists ready to own their audience.",
+      "price": {
+        "monthly": "$15",
+        "annual": "$12"
+      },
+      "period": "per month",
+      "billing": {
+        "monthly": "billed monthly",
+        "annual": "billed annually ($144)"
+      },
+      "cta": "Go Pro",
+      "features": {
+        "unlimitedContacts": "Unlimited contacts",
+        "smartGates": "Unlimited Smart Gates",
+        "dailyWeeklyNewsletter": "Daily/Weekly Auto-Newsletter",
+        "advancedInsights": "Advanced Audience Insights",
+        "removeBranding": "Remove 'Powered by Backstage'",
+        "prioritySupport": "Priority Support",
+        "earlyAccess": "Early Access to Features"
+      }
+    },
+    "featuresLabel": "Features",
+    "enterprise": {
+      "text": "Different needs?",
+      "link": "Contact our sales team",
+      "for": "for enterprise solutions."
+    }
+  },
+  "savings": {
+    "title": {
+      "line1": "Stop paying for",
+      "line2": "tools you don't use."
+    },
+    "subtitle": "Calculate how much you save today by unifying your marketing stack with Backstage.",
+    "replaces": "Replaces:",
+    "calculator": {
+      "currentAudience": "Your current audience",
+      "subscribers": "subscribers",
+      "externalCosts": "External Stack Cost Breakdown",
+      "hypeddit": "Hypeddit (Pro)",
+      "make": "Make.com (Automations)",
+      "brevo": "Brevo (Email Marketing)",
+      "estimatedTotal": "Estimated total cost",
+      "yourPlan": "Your Backstage Plan",
+      "perMonth": "/mo",
+      "allIncluded": "Everything included. No surprises.",
+      "annualSavings": "Your annual savings",
+      "monthlySavings": "Monthly savings",
+      "startSaving": "Start Saving",
+      "disclaimer": "*Comparison based on standard third-party plans for {subscribers} subscribers."
+    }
+  },
+  "footer": {
+    "title": {
+      "line1": "Ready to build your community on",
+      "line2": "autopilot",
+      "line3": "?"
+    },
+    "cta": "Get Started for Free",
+    "brand": "Backstage",
+    "copyright": "© 2025",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact"
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to your artist command center",
+    "signup_title": "Create Account",
+    "signup_subtitle": "Start growing your artist community",
+    "email": "Email address",
+    "password": "Password",
+    "name": "Full Name",
+    "submit": "Sign In",
+    "signup_submit": "Create Account",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign up",
+    "haveAccount": "Already have an account?",
+    "signin": "Sign in",
+    "back": "Back to home"
+  }
+}
