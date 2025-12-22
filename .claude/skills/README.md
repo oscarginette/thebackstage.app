@@ -1,6 +1,6 @@
-# Claude Code Skills - soundcloud-brevo
+# Claude Code Skills - Backstage
 
-Custom skills for managing the SoundCloud email marketing system.
+Custom skills for managing the email marketing platform.
 
 ## Available Skills
 

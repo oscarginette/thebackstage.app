@@ -40,7 +40,7 @@ export async function POST() {
     }
 
     const testContact = contact.rows[0];
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage.app';
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${testContact.unsubscribe_token}`;
 
     // Renderizar email

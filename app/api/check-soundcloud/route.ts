@@ -53,7 +53,7 @@ export async function GET() {
 
     // 3. Enviar emails via Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage.app';
 
     let emailsSent = 0;
     let emailsFailed = 0;

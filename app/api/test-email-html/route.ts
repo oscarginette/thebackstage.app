@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';
+import CustomEmail from '@/emails/custom-email';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,18 +11,33 @@ export async function POST(request: Request) {
     const { trackName, trackUrl, coverImage, customContent } = body;
 
     // Generar URL de unsubscribe de ejemplo
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage.app';
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=preview_token`;
 
-    const html = await render(
-      NewTrackEmail({
-        trackName: trackName || 'Test Track',
-        trackUrl: trackUrl || 'https://soundcloud.com',
-        coverImage: coverImage || '',
-        unsubscribeUrl,
-        customContent
-      })
-    );
+    // If customContent is provided, use CustomEmail template (from email editor)
+    // Otherwise use NewTrackEmail (for track notifications)
+    let html: string;
+
+    if (customContent) {
+      html = await render(
+        CustomEmail({
+          greeting: customContent.greeting || '',
+          message: customContent.message || '',
+          signature: customContent.signature || '',
+          coverImage: coverImage || '',
+          unsubscribeUrl
+        })
+      );
+    } else {
+      html = await render(
+        NewTrackEmail({
+          trackName: trackName || 'Test Track',
+          trackUrl: trackUrl || 'https://soundcloud.com',
+          coverImage: coverImage || '',
+          unsubscribeUrl
+        })
+      );
+    }
 
     return NextResponse.json({ html });
   } catch (error: any) {
@@ -33,7 +49,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     // Test endpoint con datos de ejemplo
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage.app';
     const html = await render(
       NewTrackEmail({
         trackName: 'Test Track Name',

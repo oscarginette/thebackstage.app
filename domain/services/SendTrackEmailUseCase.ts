@@ -114,7 +114,7 @@ export class SendTrackEmailUseCase {
     const emailsSent: Array<{ email: string; id?: string }> = [];
     const emailsFailed: Array<{ email: string; error: string }> = [];
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage.app';
 
     for (const contact of contacts) {
       try {

@@ -1,6 +1,6 @@
 # Webhook Debugger
 
-Expert webhook testing, debugging, and monitoring specialist for Resend and Hypedit webhooks in the soundcloud-brevo system.
+Expert webhook testing, debugging, and monitoring specialist for Resend and Hypedit webhooks in the Backstage platform.
 
 ## Overview
 

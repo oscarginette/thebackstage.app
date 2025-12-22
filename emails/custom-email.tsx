@@ -26,7 +26,7 @@ export default function CustomEmail({
   unsubscribeUrl,
 }: CustomEmailProps) {
   // Logo hosted on GitHub (black version for white/light backgrounds in email)
-  const logoUrl = 'https://raw.githubusercontent.com/oscarginette/soundcloud-brevo/main/public/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
+  const logoUrl = 'https://raw.githubusercontent.com/oscarginette/backstage/main/public/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
 
   const signatureLines = signature.split('\n');
 
@@ -44,18 +44,24 @@ export default function CustomEmail({
   return (
     <Html>
       <Head />
-      <Preview>{greeting}</Preview>
+      <Preview>{greeting || 'Email from Gee Beat'}</Preview>
       <Body style={main}>
         <Container style={container}>
-          {/* Content */}
-          <Section style={contentSection}>
-            <Text style={paragraph}>
-              {greeting}
-            </Text>
-            <Text style={paragraph}>
-              {parseMessage(message)}
-            </Text>
-          </Section>
+          {/* Content - Only show if greeting or message exist */}
+          {(greeting || message) && (
+            <Section style={contentSection}>
+              {greeting && (
+                <Text style={paragraph}>
+                  {greeting}
+                </Text>
+              )}
+              {message && (
+                <Text style={paragraph}>
+                  {parseMessage(message)}
+                </Text>
+              )}
+            </Section>
+          )}
 
           {/* Cover Image (only render if URL exists and is valid) */}
           {coverImage && coverImage.trim().length > 0 && (
@@ -70,17 +76,19 @@ export default function CustomEmail({
             </Section>
           )}
 
-          {/* Continue Content */}
-          <Section style={contentSection}>
-            <Text style={paragraph}>
-              Have a great day :)
-            </Text>
-            {signatureLines.map((line, i) => (
-              <Text key={i} style={signatureStyle}>
-                {line}
+          {/* Continue Content - Only show if signature exists */}
+          {signature && signature.trim().length > 0 && (
+            <Section style={contentSection}>
+              <Text style={paragraph}>
+                Have a great day :)
               </Text>
-            ))}
-          </Section>
+              {signatureLines.map((line, i) => (
+                <Text key={i} style={signatureStyle}>
+                  {line}
+                </Text>
+              ))}
+            </Section>
+          )}
 
           {/* Logo Footer */}
           <Section style={logoFooterSection}>

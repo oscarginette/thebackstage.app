@@ -16,8 +16,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SoundCloud Automation",
-  description: "Gestión inteligente de notificaciones de SoundCloud",
+  title: "Backstage | The Artist's Command Center",
+  description: "Automated community growth and management for modern artists.",
 };
 
 export default function RootLayout({

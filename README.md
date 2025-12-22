@@ -1,6 +1,6 @@
-# 🎵 SoundCloud → Brevo Automation
+# 🎵 Backstage - Email Automation Platform
 
-Automatización para notificar por email cuando se publican nuevas canciones en SoundCloud usando Brevo.
+Email automation platform for notifying subscribers about new SoundCloud releases.
 
 ## 🚀 Setup
 

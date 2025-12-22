@@ -1,6 +1,6 @@
 # GDPR Compliance Helper
 
-Expert GDPR/CCPA compliance automation for the soundcloud-brevo email marketing system.
+Expert GDPR/CCPA compliance automation for the Backstage email marketing platform.
 
 ## Overview
 

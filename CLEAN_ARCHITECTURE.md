@@ -15,7 +15,7 @@ Este proyecto ha sido refactorizado completamente siguiendo **Clean Architecture
 ## Estructura del Proyecto
 
 ```
-soundcloud-brevo/
+backstage/
 ├── domain/                          # ← Lógica de negocio pura (sin dependencias)
 │   ├── entities/
 │   │   ├── Track.ts                # Entidad Track

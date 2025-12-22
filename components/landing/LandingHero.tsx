@@ -14,7 +14,7 @@ export default function LandingHero() {
       <div className="container px-4 mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 mb-8 text-sm font-medium border rounded-full bg-white/50 border-border backdrop-blur-sm">
           <span className="flex w-2 h-2 rounded-full bg-accent animate-pulse" />
-          <span className="text-foreground/80">Growth Automation for DJs</span>
+          <span className="text-foreground/80">Backstage for Artists</span>
         </div>
         
         <h1 className="max-w-4xl mx-auto mb-6 text-6xl md:text-8xl font-serif tracking-tight leading-[0.9]">

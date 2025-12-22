@@ -1,4 +1,4 @@
-# Project-Specific Guidelines - soundcloud-brevo
+# Project-Specific Guidelines - Backstage
 
 ## Architecture: Clean Architecture + SOLID Principles
 

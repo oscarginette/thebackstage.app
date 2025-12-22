@@ -19,7 +19,7 @@ export default function LandingFooter() {
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-12 border-t border-border/50 text-foreground/40 text-sm font-medium">
           <div className="flex items-center gap-2">
-            <span className="font-serif italic text-lg text-foreground/80">SC Automation</span>
+            <span className="font-serif italic text-lg text-foreground/80">Backstage</span>
             <span>© 2025</span>
           </div>
           

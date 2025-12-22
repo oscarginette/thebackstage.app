@@ -30,7 +30,7 @@ export default function NewTrackEmail({
   customContent,
 }: NewTrackEmailProps) {
   // Logo hosted on GitHub (black version for white/light backgrounds in email)
-  const logoUrl = 'https://raw.githubusercontent.com/oscarginette/soundcloud-brevo/main/public/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
+  const logoUrl = 'https://raw.githubusercontent.com/oscarginette/backstage/main/public/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
 
   // Use direct image URL - SoundCloud images work well in emails
   const coverUrl = coverImage;

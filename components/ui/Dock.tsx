@@ -13,7 +13,7 @@ import {
   Music,
   Users,
 } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 // Configuration for the items in the dock
 const DOCK_ITEMS = [
@@ -23,13 +23,54 @@ const DOCK_ITEMS = [
   { id: 'contacts', icon: Users, label: 'Contactos' },
 ];
 
+const IDLE_TIMEOUT = 3000; // 3 seconds
+const ACTIVE_DISTANCE = 300; // Lux distance to be considered "near"
+
 export default function Dock() {
+  const mouseX = useMotionValue(Infinity);
   const mouseY = useMotionValue(Infinity);
+  const [isIdle, setIsIdle] = useState(false);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.pageX);
+      
+      // Check proximity to the dock area (right side)
+      const distFromRight = window.innerWidth - e.pageX;
+      const isNear = distFromRight < ACTIVE_DISTANCE;
+      const isMagnificationRange = distFromRight < 150;
+
+      // Only animate icons (magnification) if we are horizontally close
+      if (isMagnificationRange) {
+        mouseY.set(e.pageY);
+      } else {
+        mouseY.set(Infinity);
+      }
+
+      if (isNear) {
+        setIsIdle(false);
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      } else {
+        if (!idleTimerRef.current && !isIdle) {
+          idleTimerRef.current = setTimeout(() => {
+            setIsIdle(true);
+          }, IDLE_TIMEOUT);
+        }
+      }
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [isIdle]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 100; // Margen superior para que no quede pegado arriba
+      const offset = 100;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -40,11 +81,23 @@ export default function Dock() {
     }
   };
 
+  // Base opacity based on proximity and idle state
+  const proximityOpacitySync = useTransform(
+    mouseX,
+    (val) => {
+      if (isIdle) return 0.05;
+      const distFromRight = window.innerWidth - val;
+      if (distFromRight > ACTIVE_DISTANCE) return 0.1;
+      return 1 - (distFromRight / ACTIVE_DISTANCE) * 0.9;
+    }
+  );
+  
+  const dockOpacity = useSpring(proximityOpacitySync, { stiffness: 100, damping: 20 });
+
   return (
     <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50">
       <motion.div
-        onMouseMove={(e: React.MouseEvent) => mouseY.set(e.pageY)}
-        onMouseLeave={() => mouseY.set(Infinity)}
+        style={{ opacity: dockOpacity }}
         className="flex flex-col items-center gap-4 px-2 py-4"
       >
         {DOCK_ITEMS.map((item) => (

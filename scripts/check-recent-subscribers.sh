@@ -7,7 +7,7 @@ echo "🔍 Verificando suscriptores recientes..."
 echo ""
 
 # Obtener la URL de producción (cambia esto si es necesario)
-API_URL="${VERCEL_URL:-https://soundcloud-brevo.vercel.app}"
+API_URL="${VERCEL_URL:-https://backstage.app}"
 
 # Consultar la API de contactos
 curl -s "$API_URL/api/contacts" | jq '{

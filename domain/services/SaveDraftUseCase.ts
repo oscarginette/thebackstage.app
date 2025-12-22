@@ -82,7 +82,7 @@ export class SaveDraftUseCase {
 
   private async buildHtmlContent(input: SaveDraftInput): Promise<string> {
     // Build a temporary unsubscribe URL for preview
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://soundcloud-brevo.vercel.app';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage.app';
     const tempUnsubscribeUrl = `${baseUrl}/unsubscribe?token=TEMP_TOKEN`;
 
     return await render(
