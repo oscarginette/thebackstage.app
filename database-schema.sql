@@ -1,4 +1,4 @@
--- SoundCloud to Brevo Automation - Database Schema
+-- Backstage Database Schema
 -- Base de datos: PostgreSQL (Neon)
 
 -- Tabla para guardar tracks de SoundCloud ya procesados
@@ -19,14 +19,13 @@ CREATE INDEX IF NOT EXISTS idx_soundcloud_tracks_track_id ON soundcloud_tracks(t
 -- Tabla para configuración de la app
 CREATE TABLE IF NOT EXISTS app_config (
   id INTEGER PRIMARY KEY DEFAULT 1,
-  brevo_list_ids JSONB,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT single_row CHECK (id = 1)
 );
 
 -- Insertar registro inicial de configuración si no existe
-INSERT INTO app_config (id, brevo_list_ids)
-VALUES (1, '[]'::jsonb)
+INSERT INTO app_config (id)
+VALUES (1)
 ON CONFLICT (id) DO NOTHING;
 
 -- Tabla para logs de ejecución

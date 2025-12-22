@@ -7,13 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write",
-    "migrate-contacts": "tsx scripts/migrate-brevo-contacts.ts"
+    "format": "biome format --write"
   },
   "dependencies": {
-    "@getbrevo/brevo": "^3.0.1",
     "@react-email/components": "^1.0.2",
     "@vercel/postgres": "^0.10.0",
+    "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
     "easy-email-core": "^4.16.4",
     "easy-email-editor": "^4.16.3",
@@ -23,6 +22,8 @@
     "mjml": "^4.18.0",
     "mjml-react": "^2.0.8",
     "next": "16.1.0",
+    "next-auth": "^5.0.0-beta.30",
+    "next-intl": "^4.6.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-email": "^5.1.0",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/mjml": "^4.7.4",
     "@types/node": "^20",
     "@types/react": "^19",

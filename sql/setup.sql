@@ -1,4 +1,4 @@
--- SoundCloud to Brevo Automation - Database Setup
+-- Backstage Database Setup
 -- Execute this in Vercel Postgres Query interface
 
 -- Drop tables if they exist (for clean reinstall)
@@ -33,7 +33,6 @@ CREATE TABLE IF NOT EXISTS execution_logs (
 -- App configuration table
 CREATE TABLE IF NOT EXISTS app_config (
   id INTEGER PRIMARY KEY,
-  brevo_list_ids TEXT NOT NULL,
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
