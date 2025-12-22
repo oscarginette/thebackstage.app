@@ -120,7 +120,6 @@ export default function ContactsList() {
       hypedit: { color: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Hypeddit' },
       manual: { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Manual' },
       import: { color: 'bg-gray-50 text-gray-700 border-gray-200', label: 'Import' },
-      brevo_migration: { color: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Brevo' },
     };
 
     const badge = badges[source] || { color: 'bg-gray-50 text-gray-700 border-gray-200', label: source };
