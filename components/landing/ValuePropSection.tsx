@@ -66,23 +66,23 @@ export default function ValuePropSection() {
               </p>
             </div>
             
-            <div className="flex justify-center items-end gap-8 h-48">
+            <div className="flex justify-center items-end gap-12 h-64">
               {/* Social Reach Bar */}
-              <div className="flex flex-col items-center gap-4 w-28 group">
-                <div className="w-full bg-white/5 border border-white/10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:h-14 group-hover:bg-white/10">
-                  <span className="text-sm font-bold text-white/30">3-5%</span>
+              <div className="flex flex-col items-center gap-6 w-48 group">
+                <div className="w-full bg-white/10 border border-white/20 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:h-16 group-hover:bg-white/15">
+                  <span className="text-lg font-bold text-white/70">3-5%</span>
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 text-center">
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 text-center">
                   {t('engagement.socialReach')}
                 </span>
               </div>
 
               {/* Email Open Rate Bar */}
-              <div className="flex flex-col items-center gap-4 w-28 group">
-                <div className="w-full bg-accent h-40 rounded-2xl flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(255,85,0,0.4)] transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2">
-                  <span className="text-xl font-black text-white">99%</span>
+              <div className="flex flex-col items-center gap-6 w-48 group">
+                <div className="w-full bg-accent h-48 rounded-2xl flex items-center justify-center shadow-[0_24px_48px_-12px_rgba(255,85,0,0.5)] transition-all duration-500 group-hover:scale-[1.03] group-hover:-translate-y-2">
+                  <span className="text-3xl font-black text-white">35%</span>
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent text-center">
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-accent text-center">
                   {t('engagement.emailOpenRate')}
                 </span>
               </div>
