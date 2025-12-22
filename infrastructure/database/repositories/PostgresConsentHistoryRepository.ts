@@ -85,21 +85,42 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
     startDate?: Date,
     endDate?: Date
   ): Promise<number> {
-    let query = sql`
+    if (startDate && endDate) {
+      const result = await sql`
+        SELECT COUNT(*) as count
+        FROM consent_history
+        WHERE action = ${action}
+        AND timestamp >= ${startDate.toISOString()}
+        AND timestamp <= ${endDate.toISOString()}
+      `;
+      return Number.parseInt(result.rows[0].count, 10);
+    }
+
+    if (startDate) {
+      const result = await sql`
+        SELECT COUNT(*) as count
+        FROM consent_history
+        WHERE action = ${action}
+        AND timestamp >= ${startDate.toISOString()}
+      `;
+      return Number.parseInt(result.rows[0].count, 10);
+    }
+
+    if (endDate) {
+      const result = await sql`
+        SELECT COUNT(*) as count
+        FROM consent_history
+        WHERE action = ${action}
+        AND timestamp <= ${endDate.toISOString()}
+      `;
+      return Number.parseInt(result.rows[0].count, 10);
+    }
+
+    const result = await sql`
       SELECT COUNT(*) as count
       FROM consent_history
       WHERE action = ${action}
     `;
-
-    if (startDate) {
-      query = sql`${query} AND timestamp >= ${startDate.toISOString()}`;
-    }
-
-    if (endDate) {
-      query = sql`${query} AND timestamp <= ${endDate.toISOString()}`;
-    }
-
-    const result = await query;
     return Number.parseInt(result.rows[0].count, 10);
   }
 

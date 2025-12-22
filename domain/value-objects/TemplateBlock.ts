@@ -27,7 +27,7 @@ export interface TemplateBlockProps {
   tagName: BlockType;
   attributes?: BlockAttributes;
   content?: string;
-  children?: TemplateBlock[];
+  children?: TemplateBlockProps[];
 }
 
 /**

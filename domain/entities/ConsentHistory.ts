@@ -76,7 +76,7 @@ export class ConsentHistory {
     ipAddress: string | null,
     userAgent: string | null,
     reason?: string
-  ): Omit<ConsentHistory, 'id' | 'createdAt'> {
+  ): Omit<ConsentHistory, 'id' | 'createdAt' | 'isUnsubscribe' | 'isResubscribe' | 'getDescription'> {
     return {
       contactId,
       action: 'unsubscribe',
@@ -95,7 +95,7 @@ export class ConsentHistory {
     contactId: number,
     ipAddress: string | null,
     userAgent: string | null
-  ): Omit<ConsentHistory, 'id' | 'createdAt'> {
+  ): Omit<ConsentHistory, 'id' | 'createdAt' | 'isUnsubscribe' | 'isResubscribe' | 'getDescription'> {
     return {
       contactId,
       action: 'resubscribe',
@@ -114,7 +114,7 @@ export class ConsentHistory {
     contactId: number,
     bounceType: 'hard' | 'soft',
     reason: string
-  ): Omit<ConsentHistory, 'id' | 'createdAt'> {
+  ): Omit<ConsentHistory, 'id' | 'createdAt' | 'isUnsubscribe' | 'isResubscribe' | 'getDescription'> {
     return {
       contactId,
       action: 'bounce',

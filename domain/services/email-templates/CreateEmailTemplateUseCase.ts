@@ -77,7 +77,7 @@ export class CreateEmailTemplateUseCase {
     // 6. Persist to database
     const savedTemplate = await this.templateRepository.create({
       name: template.name,
-      description: template.description,
+      description: template.description ?? undefined,
       mjmlContent: template.mjmlContent,
       htmlSnapshot: template.htmlSnapshot,
       isDefault: template.isDefault
