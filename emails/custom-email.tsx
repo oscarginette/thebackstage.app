@@ -57,8 +57,8 @@ export default function CustomEmail({
             </Text>
           </Section>
 
-          {/* Cover Image (optional) */}
-          {coverImage && (
+          {/* Cover Image (only render if URL exists and is valid) */}
+          {coverImage && coverImage.trim().length > 0 && (
             <Section style={coverSection}>
               <Img
                 src={coverImage}

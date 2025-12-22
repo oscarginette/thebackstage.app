@@ -57,24 +57,26 @@ export class SaveDraftUseCase {
   }
 
   private validateInput(input: SaveDraftInput): void {
+    // Subject is always required (even for drafts)
     if (!input.subject || input.subject.trim().length === 0) {
       throw new ValidationError('Subject is required');
     }
 
-    if (!input.greeting || input.greeting.trim().length === 0) {
-      throw new ValidationError('Greeting is required');
-    }
-
-    if (!input.message || input.message.trim().length === 0) {
-      throw new ValidationError('Message is required');
-    }
-
-    if (!input.signature || input.signature.trim().length === 0) {
-      throw new ValidationError('Signature is required');
-    }
-
+    // Validate length limits (allow empty but set max lengths)
     if (input.subject.length > 500) {
       throw new ValidationError('Subject cannot exceed 500 characters');
+    }
+
+    if (input.greeting && input.greeting.length > 200) {
+      throw new ValidationError('Greeting cannot exceed 200 characters');
+    }
+
+    if (input.message && input.message.length > 5000) {
+      throw new ValidationError('Message cannot exceed 5000 characters');
+    }
+
+    if (input.signature && input.signature.length > 500) {
+      throw new ValidationError('Signature cannot exceed 500 characters');
     }
   }
 
