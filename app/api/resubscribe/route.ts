@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { UnsubscribeUseCase } from '@/domain/services/UnsubscribeUseCase';
+import { ResubscribeUseCase } from '@/domain/services/ResubscribeUseCase';
 import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
 import { PostgresConsentHistoryRepository } from '@/infrastructure/database/repositories/PostgresConsentHistoryRepository';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Unsubscribe Endpoint (Clean Architecture)
+ * Resubscribe Endpoint (Clean Architecture)
  *
- * Acepta tanto GET como POST (CAN-SPAM compliant 1-click unsubscribe)
+ * Allows users to re-subscribe after unsubscribing
+ * Accepts both GET and POST
  * Query params: ?token=xxx
  *
  * Features:
@@ -18,21 +19,21 @@ export const dynamic = 'force-dynamic';
  * - IP and User-Agent tracking
  */
 export async function GET(request: Request) {
-  return handleUnsubscribe(request);
+  return handleResubscribe(request);
 }
 
 export async function POST(request: Request) {
-  return handleUnsubscribe(request);
+  return handleResubscribe(request);
 }
 
-async function handleUnsubscribe(request: Request) {
+async function handleResubscribe(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
 
     if (!token) {
       return NextResponse.json(
-        { error: 'Missing unsubscribe token' },
+        { error: 'Missing token' },
         { status: 400 }
       );
     }
@@ -48,7 +49,7 @@ async function handleUnsubscribe(request: Request) {
     const consentHistoryRepository = new PostgresConsentHistoryRepository();
 
     // Execute use case
-    const useCase = new UnsubscribeUseCase(
+    const useCase = new ResubscribeUseCase(
       contactRepository,
       consentHistoryRepository
     );
@@ -69,14 +70,14 @@ async function handleUnsubscribe(request: Request) {
     // Return success response
     return NextResponse.json({
       success: true,
-      message: result.alreadyUnsubscribed
-        ? 'Already unsubscribed'
-        : 'Successfully unsubscribed',
+      message: result.alreadySubscribed
+        ? 'Already subscribed'
+        : 'Successfully re-subscribed',
       email: result.email
     });
 
   } catch (error: any) {
-    console.error('Error in unsubscribe:', error);
+    console.error('Error in resubscribe:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
