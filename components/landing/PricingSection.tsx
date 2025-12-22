@@ -3,58 +3,60 @@
 import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from 'next-intl';
 
 export default function PricingSection() {
+  const t = useTranslations('pricing');
   const [isAnnual, setIsAnnual] = useState(true);
 
   const plans = [
     {
-      name: "The Opening Act",
-      description: "Perfect for artists just starting to build their list.",
-      price: "Free",
-      period: "forever",
-      cta: "Start for Free",
+      name: t('free.name'),
+      description: t('free.description'),
+      price: t('free.price'),
+      period: t('free.period'),
+      cta: t('free.cta'),
       features: [
-        { name: "Up to 500 contacts", included: true },
-        { name: "Unlimited Smart Gates", included: true },
-        { name: "Monthly Auto-Newsletter", included: true },
-        { name: "Basic Audience Analytics", included: true },
-        { name: "Removable Branding", included: false },
-        { name: "Weekly Newsletters", included: false },
-        { name: "Priority Support", included: false },
+        { name: t('free.features.contacts'), included: true },
+        { name: t('free.features.smartGates'), included: true },
+        { name: t('free.features.monthlyNewsletter'), included: true },
+        { name: t('free.features.basicAnalytics'), included: true },
+        { name: t('free.features.removableBranding'), included: false },
+        { name: t('free.features.weeklyNewsletters'), included: false },
+        { name: t('free.features.prioritySupport'), included: false },
       ],
       highlight: false,
     },
     {
-      name: "The Headliner",
-      description: "For serious artists ready to own their audience.",
-      price: isAnnual ? "$12" : "$15",
-      period: "per month",
-      billing: isAnnual ? "billed annually ($144)" : "billed monthly",
-      cta: "Go Pro",
+      name: t('pro.name'),
+      description: t('pro.description'),
+      price: isAnnual ? t('pro.price.annual') : t('pro.price.monthly'),
+      period: t('pro.period'),
+      billing: isAnnual ? t('pro.billing.annual') : t('pro.billing.monthly'),
+      cta: t('pro.cta'),
       features: [
-        { name: "Unlimited contacts", included: true },
-        { name: "Unlimited Smart Gates", included: true },
-        { name: "Daily/Weekly Auto-Newsletter", included: true },
-        { name: "Advanced Audience Insights", included: true },
-        { name: "Remove 'Powered by Backstage'", included: true },
-        { name: "Priority Support", included: true },
-        { name: "Early Access to Features", included: true },
+        { name: t('pro.features.unlimitedContacts'), included: true },
+        { name: t('pro.features.smartGates'), included: true },
+        { name: t('pro.features.dailyWeeklyNewsletter'), included: true },
+        { name: t('pro.features.advancedInsights'), included: true },
+        { name: t('pro.features.removeBranding'), included: true },
+        { name: t('pro.features.prioritySupport'), included: true },
+        { name: t('pro.features.earlyAccess'), included: true },
       ],
       highlight: true,
     },
   ];
 
   return (
-    <section id="pricing" className="py-24 bg-muted/40 transition-colors duration-500">
+    <section id="pricing" className="py-16 bg-muted/40 transition-colors duration-500">
       <div className="container px-4 mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-4xl md:text-6xl font-serif mb-6">
-            Simple pricing for <br />
-            <span className="italic text-accent">independent</span> artists.
+            {t('title.line1')} <br />
+            <span className="italic text-accent">{t('title.line2')}</span> {t('title.line3')}
           </h2>
           <p className="text-xl text-foreground/60 mb-8">
-            Start free, upgrade when you're ready to scale. No hidden fees.
+            {t('subtitle')}
           </p>
 
           {/* Toggle */}
@@ -65,7 +67,7 @@ export default function PricingSection() {
                 !isAnnual ? "bg-foreground text-background shadow-md" : "text-foreground/60 hover:text-foreground"
               }`}
             >
-              Monthly
+              {t('monthly')}
             </button>
             <button
               onClick={() => setIsAnnual(true)}
@@ -73,7 +75,7 @@ export default function PricingSection() {
                 isAnnual ? "bg-foreground text-background shadow-md" : "text-foreground/60 hover:text-foreground"
               }`}
             >
-              Annual <span className="text-[10px] ml-1 opacity-80">(Save 20%)</span>
+              {t('annual')} <span className="text-[10px] ml-1 opacity-80">({t('save')})</span>
             </button>
           </div>
         </div>
@@ -90,8 +92,8 @@ export default function PricingSection() {
             >
               {plan.highlight && (
                 <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-4">
-                  <span className="bg-accent text-white px-4 py-1 rounded-full text-sm font-medium shadow-md rotate-3 inline-block">
-                    Most Popular
+                  <span className="bg-foreground text-background px-4 py-1 rounded-full text-sm font-bold shadow-xl rotate-3 inline-block border border-border/50">
+                    {t('mostPopular')}
                   </span>
                 </div>
               )}
@@ -112,7 +114,7 @@ export default function PricingSection() {
               </div>
 
               <Link
-                href="/dashboard"
+                href="/login"
                 className={`w-full flex h-12 items-center justify-center rounded-xl text-base font-medium transition-all active:scale-95 ${
                   plan.highlight
                     ? "bg-foreground text-background hover:bg-foreground/90 shadow-lg"
@@ -123,7 +125,7 @@ export default function PricingSection() {
               </Link>
 
               <div className="mt-8 space-y-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-foreground/40">Features</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-foreground/40">{t('featuresLabel')}</p>
                 <ul className="space-y-3">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm">
@@ -146,7 +148,7 @@ export default function PricingSection() {
         {/* FAQs tease or Trust indicators could go here */}
         <div className="mt-20 text-center">
             <p className="text-foreground/40 text-sm">
-              Different needs? <a href="#" className="underline hover:text-foreground">Contact our sales team</a> for enterprise solutions.
+              {t('enterprise.text')} <a href="#" className="underline hover:text-foreground">{t('enterprise.link')}</a> {t('enterprise.for')}
             </p>
         </div>
       </div>
