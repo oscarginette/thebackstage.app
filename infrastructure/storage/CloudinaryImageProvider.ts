@@ -150,7 +150,7 @@ export class CloudinaryImageProvider implements IImageStorageProvider {
   }
 
   private async fileToBuffer(file: File | Buffer): Promise<Buffer> {
-    if (file instanceof Buffer) {
+    if (Buffer.isBuffer(file)) {
       return file;
     }
 
