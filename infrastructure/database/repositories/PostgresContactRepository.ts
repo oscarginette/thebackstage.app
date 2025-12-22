@@ -68,6 +68,26 @@ export class PostgresContactRepository implements IContactRepository {
     `;
   }
 
+  async unsubscribe(id: number): Promise<void> {
+    await sql`
+      UPDATE contacts
+      SET
+        subscribed = false,
+        unsubscribed_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+    `;
+  }
+
+  async resubscribe(id: number): Promise<void> {
+    await sql`
+      UPDATE contacts
+      SET
+        subscribed = true,
+        unsubscribed_at = NULL
+      WHERE id = ${id}
+    `;
+  }
+
   async findAll(): Promise<Contact[]> {
     const result = await sql`
       SELECT id, email, name, unsubscribe_token, subscribed, created_at
