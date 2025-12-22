@@ -32,8 +32,8 @@ export default function EmailEditorModal({
 
   const handleSelectBlank = () => {
     setContent({
-      subject: 'New email from Gee Beat',
-      greeting: 'Hey mate,',
+      subject: '',
+      greeting: '',
       message: '',
       signature: 'Much love,\nGee Beat'
     });

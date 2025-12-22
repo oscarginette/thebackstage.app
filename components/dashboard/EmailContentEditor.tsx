@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EmailContent } from '../../types/dashboard';
 
 interface EmailContentEditorProps {
@@ -9,6 +9,190 @@ interface EmailContentEditorProps {
   onSaveDraft: (content: EmailContent) => Promise<void>;
   onClose: () => void;
   saving?: boolean;
+}
+
+/**
+ * CoverImageUpload Component
+ *
+ * Allows users to either:
+ * 1. Upload a file (desktop browse + mobile camera/gallery)
+ * 2. Enter a URL manually
+ */
+function CoverImageUpload({
+  currentImage,
+  onImageChange
+}: {
+  currentImage: string;
+  onImageChange: (url: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<'file' | 'url'>('file');
+  const [urlInput, setUrlInput] = useState(currentImage);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload to API
+      const response = await fetch('/api/upload/cover-image', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        onImageChange(result.imageUrl);
+        setUrlInput(result.imageUrl);
+      } else {
+        setError(result.error || 'Error al subir');
+      }
+    } catch (err) {
+      setError('Error al subir imagen');
+      console.error('Upload error:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUrlChange = (url: string) => {
+    setUrlInput(url);
+    onImageChange(url);
+  };
+
+  const handleRemoveImage = () => {
+    onImageChange('');
+    setUrlInput('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">
+          Imagen de Portada
+          <span className="text-xs text-gray-500 ml-2">(Opcional)</span>
+        </label>
+
+        {/* Toggle between file upload and URL input */}
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => setInputMode('file')}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+              inputMode === 'file'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Subir fichero
+          </button>
+          <button
+            type="button"
+            onClick={() => setInputMode('url')}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+              inputMode === 'url'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            URL
+          </button>
+        </div>
+      </div>
+
+      {/* Image Preview */}
+      {currentImage && currentImage.trim().length > 0 && (
+        <div className="relative inline-block">
+          <img
+            src={currentImage}
+            alt="Cover preview"
+            className="max-w-full h-auto max-h-48 rounded-lg border border-gray-300"
+            onError={(e) => {
+              // Hide broken images
+              e.currentTarget.style.display = 'none';
+              setError('URL de imagen no válida');
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleRemoveImage}
+            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-lg"
+            title="Eliminar imagen"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* File Upload Mode */}
+      {inputMode === 'file' && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleFileSelect}
+            disabled={uploading}
+            className="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-xl file:border-0
+              file:text-sm file:font-semibold
+              file:bg-blue-50 file:text-blue-700
+              hover:file:bg-blue-100
+              disabled:opacity-50 disabled:cursor-not-allowed
+              cursor-pointer"
+            capture="environment"
+          />
+
+          {uploading && (
+            <div className="flex items-center gap-2 text-sm text-blue-600">
+              <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+              Subiendo imagen...
+            </div>
+          )}
+
+          <p className="text-xs text-gray-500">
+            Formatos: JPEG, PNG, GIF, WebP (máx. 5MB)
+          </p>
+        </>
+      )}
+
+      {/* URL Input Mode */}
+      {inputMode === 'url' && (
+        <>
+          <input
+            type="text"
+            value={urlInput}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-[#E8E6DF] focus:outline-none focus:ring-2 focus:ring-[#FF5500]/20 focus:border-[#FF5500] transition-all"
+            placeholder="https://ejemplo.com/imagen.jpg"
+          />
+          <p className="text-xs text-gray-500">
+            Introduce la URL completa de la imagen
+          </p>
+        </>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-600">{error}</p>
+      )}
+    </div>
+  );
 }
 
 export default function EmailContentEditor({
@@ -106,20 +290,11 @@ export default function EmailContentEditor({
               />
             </div>
 
-            {/* Cover Image */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Imagen de Portada (URL)
-                <span className="text-xs text-gray-500 ml-2">(Opcional)</span>
-              </label>
-              <input
-                type="text"
-                value={coverImage}
-                onChange={(e) => setCoverImage(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#E8E6DF] focus:outline-none focus:ring-2 focus:ring-[#FF5500]/20 focus:border-[#FF5500] transition-all"
-                placeholder="https://..."
-              />
-            </div>
+            {/* Cover Image Upload */}
+            <CoverImageUpload
+              currentImage={coverImage}
+              onImageChange={setCoverImage}
+            />
 
             {/* Greeting */}
             <div>
