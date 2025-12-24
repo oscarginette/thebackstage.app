@@ -88,6 +88,34 @@ export default function Dock() {
   }, [isIdle, dockDistance, mouseY]);
 
   const scrollToSection = (id: string) => {
+    // Map dock IDs to dashboard tabs
+    const tabMapping: Record<string, string> = {
+      'drafts': 'engagement',
+      'tracks': 'engagement',
+      'gates': 'growth',
+      'history': 'engagement',
+      'contacts': 'audience'
+    };
+
+    const targetTab = tabMapping[id];
+
+    if (pathname === '/dashboard' && targetTab) {
+      // If we are on dashboard, update the tab in URL
+      router.push(`/dashboard?tab=${targetTab}`, { scroll: false });
+      
+      // Wait for tab transition, then scroll
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          const offset = 100;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+      }, 100);
+      return;
+    }
+
     const element = document.getElementById(id);
     if (element) {
       const offset = 100;
@@ -99,11 +127,12 @@ export default function Dock() {
         behavior: 'smooth'
       });
     } else {
-      // If we are not on the dashboard, navigate there first
+      // Navigation logic
       if (id === 'gates' && pathname !== '/dashboard/download-gates') {
-        router.push('/dashboard/download-gates');
+        router.push('/dashboard?tab=growth');
       } else if (pathname !== '/dashboard') {
-        router.push(`/dashboard#${id}`);
+        const url = targetTab ? `/dashboard?tab=${targetTab}#${id}` : `/dashboard#${id}`;
+        router.push(url);
       }
     }
   };

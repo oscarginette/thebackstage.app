@@ -1,5 +1,5 @@
 import { sql } from '@/lib/db';
-import { IContactRepository, Contact } from '@/domain/repositories/IContactRepository';
+import { IContactRepository, Contact, ContactStats } from '@/domain/repositories/IContactRepository';
 
 export class PostgresContactRepository implements IContactRepository {
   async getSubscribed(): Promise<Contact[]> {
@@ -90,7 +90,7 @@ export class PostgresContactRepository implements IContactRepository {
 
   async findAll(): Promise<Contact[]> {
     const result = await sql`
-      SELECT id, email, name, unsubscribe_token, subscribed, created_at
+      SELECT id, email, name, unsubscribe_token, subscribed, created_at, source, unsubscribed_at, metadata
       FROM contacts
       ORDER BY created_at DESC
     `;
@@ -101,7 +101,45 @@ export class PostgresContactRepository implements IContactRepository {
       name: row.name,
       unsubscribeToken: row.unsubscribe_token,
       subscribed: row.subscribed,
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      source: row.source,
+      unsubscribedAt: row.unsubscribed_at,
+      metadata: row.metadata
     }));
+  }
+
+  async getStats(): Promise<ContactStats> {
+    const result = await sql`
+      SELECT
+        COUNT(*) FILTER (WHERE subscribed = true) as active_subscribers,
+        COUNT(*) FILTER (WHERE subscribed = false) as unsubscribed,
+        COUNT(*) as total_contacts,
+        COUNT(*) FILTER (WHERE source = 'hypeddit') as from_hypeddit,
+        COUNT(*) FILTER (WHERE source = 'hypedit') as from_hypedit,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_last_30_days,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_last_7_days
+      FROM contacts
+    `;
+
+    const row = result.rows[0];
+    return {
+      totalContacts: Number(row.total_contacts),
+      activeSubscribers: Number(row.active_subscribers),
+      unsubscribed: Number(row.unsubscribed),
+      fromHypeddit: Number(row.from_hypeddit),
+      fromHypedit: Number(row.from_hypedit),
+      newLast30Days: Number(row.new_last_30_days),
+      newLast7Days: Number(row.new_last_7_days)
+    };
+  }
+
+  async delete(ids: number[]): Promise<number> {
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+    const result = await sql.query(
+      `DELETE FROM contacts WHERE id IN (${placeholders})`,
+      ids
+    );
+
+    return result.rowCount || 0;
   }
 }

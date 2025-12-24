@@ -1,49 +1,33 @@
 import { NextResponse } from 'next/server';
-import Parser from 'rss-parser';
+import { GetSoundCloudTracksUseCase } from '@/domain/services/GetSoundCloudTracksUseCase';
+import { PostgresTrackRepository } from '@/infrastructure/database/repositories/PostgresTrackRepository';
+import { SoundCloudClient } from '@/infrastructure/music-platforms/SoundCloudClient';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
+/**
+ * GET /api/soundcloud-tracks
+ * Obtiene tracks de SoundCloud con estado de envío
+ *
+ * Clean Architecture: Only HTTP orchestration, no business logic
+ */
 export async function GET() {
   try {
-    // Parsear RSS de SoundCloud para obtener todos los tracks
-    const parser = new Parser();
-    const rssUrl = `https://feeds.soundcloud.com/users/soundcloud:users:${process.env.SOUNDCLOUD_USER_ID}/sounds.rss`;
-    const feed = await parser.parseURL(rssUrl);
+    const soundCloudUserId = process.env.SOUNDCLOUD_USER_ID;
 
-    if (!feed.items || feed.items.length === 0) {
-      return NextResponse.json({ tracks: [] });
+    if (!soundCloudUserId) {
+      return NextResponse.json(
+        { error: 'SOUNDCLOUD_USER_ID not configured' },
+        { status: 500 }
+      );
     }
 
-    // Intentar obtener tracks enviados desde la DB (opcional)
-    let sentTrackIds = new Set<string>();
+    const trackRepository = new PostgresTrackRepository();
+    const soundCloudClient = new SoundCloudClient();
+    const useCase = new GetSoundCloudTracksUseCase(trackRepository, soundCloudClient);
 
-    // Solo verificar DB si hay conexión configurada
-    if (process.env.POSTGRES_URL) {
-      try {
-        const { sql } = await import('@vercel/postgres');
-        const sentTracksResult = await sql`
-          SELECT track_id FROM soundcloud_tracks
-        `;
-        sentTrackIds = new Set(sentTracksResult.rows.map(row => row.track_id));
-      } catch (dbError) {
-        console.log('Database not available, showing all tracks as unsent');
-      }
-    }
-
-    // Formatear todos los tracks del feed con información de si han sido enviados
-    const tracks = feed.items.map(item => {
-      const trackId = item.guid || item.link;
-      return {
-        trackId,
-        title: item.title || 'Sin título',
-        url: item.link || '',
-        publishedAt: item.pubDate || new Date().toISOString(),
-        coverImage: item.itunes?.image || item.enclosure?.url || null,
-        description: item.contentSnippet || item.content || null,
-        alreadySent: trackId ? sentTrackIds.has(trackId) : false
-      };
-    });
+    const tracks = await useCase.execute(soundCloudUserId);
 
     return NextResponse.json({ tracks });
 

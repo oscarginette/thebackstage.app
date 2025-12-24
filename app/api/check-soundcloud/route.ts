@@ -1,20 +1,32 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
-import { Resend } from 'resend';
+import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';
 import { CheckNewTracksUseCase } from '@/domain/services/CheckNewTracksUseCase';
-import { trackRepository } from '@/infrastructure/database/repositories';
+import { SendNewTrackEmailsUseCase } from '@/domain/services/SendNewTrackEmailsUseCase';
+import {
+  trackRepository,
+  contactRepository,
+  executionLogRepository,
+} from '@/infrastructure/database/repositories';
 import { soundCloudRepository } from '@/infrastructure/music-platforms';
+import { resendEmailProvider } from '@/infrastructure/email';
 
 // Permitir hasta 60s de ejecución
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
+/**
+ * GET /api/check-soundcloud
+ * Checks for new tracks and sends emails to subscribers
+ *
+ * Clean Architecture: Only HTTP concerns (config validation, JSON response)
+ * Business logic delegated to CheckNewTracksUseCase and SendNewTrackEmailsUseCase
+ */
 export async function GET() {
-  const startTime = Date.now();
-
   try {
     const userId = process.env.SOUNDCLOUD_USER_ID;
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
 
     if (!userId) {
       return NextResponse.json(
@@ -24,110 +36,63 @@ export async function GET() {
     }
 
     // 1. Check for new tracks using Clean Architecture
-    const useCase = new CheckNewTracksUseCase(
+    const checkTracksUseCase = new CheckNewTracksUseCase(
       soundCloudRepository,
       trackRepository
     );
 
-    const result = await useCase.execute({
+    const checkResult = await checkTracksUseCase.execute({
       artistIdentifier: userId,
-      platform: 'soundcloud'
+      platform: 'soundcloud',
     });
 
-    if (!result.latestTrack) {
+    if (!checkResult.latestTrack) {
       return NextResponse.json({ message: 'No tracks found in feed' });
     }
 
-    const latestTrack = result.latestTrack;
+    const latestTrack = checkResult.latestTrack;
 
-    // 2. Obtener suscriptores activos (no desuscritos)
-    const subscribersResult = await sql`
-      SELECT email, name FROM subscribers WHERE unsubscribed = false
-    `;
+    // 2. Render email HTML
+    const emailHtml = await render(
+      NewTrackEmail({
+        trackName: latestTrack.title,
+        trackUrl: latestTrack.url,
+        coverImage: latestTrack.coverImage || '',
+        unsubscribeUrl: '', // Will be set per contact by use case
+      })
+    );
 
-    if (subscribersResult.rows.length === 0) {
-      return NextResponse.json({
-        message: 'No active subscribers found'
-      });
-    }
+    // 3. Send emails to all subscribers
+    const sendEmailsUseCase = new SendNewTrackEmailsUseCase(
+      contactRepository,
+      resendEmailProvider,
+      trackRepository,
+      executionLogRepository
+    );
 
-    // 3. Enviar emails via Resend
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
-
-    let emailsSent = 0;
-    let emailsFailed = 0;
-
-    // Enviar a cada suscriptor
-    for (const subscriber of subscribersResult.rows) {
-      const unsubscribeUrl = `${baseUrl}/unsubscribe?email=${encodeURIComponent(subscriber.email)}`;
-
-      try {
-        const { data, error } = await resend.emails.send({
-          from: 'Gee Beat <onboarding@resend.dev>',
-          to: [subscriber.email],
-          subject: 'Hey mate',
-          react: NewTrackEmail({
-            trackName: latestTrack.title,
-            trackUrl: latestTrack.url,
-            coverImage: latestTrack.coverImage || '',
-            unsubscribeUrl
-          })
-        });
-
-        if (error) {
-          console.error(`Failed to send to ${subscriber.email}:`, error);
-          emailsFailed++;
-        } else {
-          console.log(`Email sent to ${subscriber.email}:`, data?.id);
-          emailsSent++;
-        }
-      } catch (err) {
-        console.error(`Error sending to ${subscriber.email}:`, err);
-        emailsFailed++;
-      }
-    }
-
-    // 4. Guardar en DB (o actualizar si ya existe)
-    await sql`
-      INSERT INTO soundcloud_tracks (track_id, title, url, published_at)
-      VALUES (
-        ${latestTrack.id},
-        ${latestTrack.title},
-        ${latestTrack.url},
-        ${latestTrack.publishedAt}
-      )
-      ON CONFLICT (track_id) DO UPDATE
-      SET title = EXCLUDED.title, url = EXCLUDED.url
-    `;
-
-    // 5. Log de ejecución
-    await sql`
-      INSERT INTO execution_logs (new_tracks, emails_sent, duration_ms)
-      VALUES (1, ${emailsSent}, ${Date.now() - startTime})
-    `;
+    const sendResult = await sendEmailsUseCase.execute({
+      track: {
+        trackId: latestTrack.id,
+        title: latestTrack.title,
+        url: latestTrack.url,
+        publishedAt: latestTrack.publishedAt,
+        coverImage: latestTrack.coverImage,
+      },
+      emailHtml,
+      subject: 'Hey mate',
+      baseUrl,
+    });
 
     return NextResponse.json({
       success: true,
       track: latestTrack.title,
-      emailsSent,
-      emailsFailed,
-      totalSubscribers: subscribersResult.rows.length,
-      newTracksFound: result.newTracksFound
+      emailsSent: sendResult.sent,
+      emailsFailed: sendResult.failed,
+      totalSubscribers: sendResult.totalSubscribers,
+      newTracksFound: checkResult.newTracksFound,
     });
-
   } catch (error: any) {
     console.error('Error in check-soundcloud:', error);
-
-    // Log de error
-    try {
-      await sql`
-        INSERT INTO execution_logs (error, duration_ms)
-        VALUES (${error.message}, ${Date.now() - startTime})
-      `;
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
 
     return NextResponse.json(
       { error: error.message },

@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-// import { GetCampaignsUseCase } from '@/domain/services/campaigns/GetCampaignsUseCase';
-// import { CreateCampaignUseCase } from '@/domain/services/campaigns/CreateCampaignUseCase';
-// import { ValidationError } from '@/domain/services/email-templates/CreateEmailTemplateUseCase';
-// TODO: Uncomment when PostgresEmailCampaignRepository is implemented
-// import { emailCampaignRepository } from '@/infrastructure/database/repositories';
+import { GetCampaignsUseCase } from '@/domain/services/campaigns/GetCampaignsUseCase';
+import { CreateCampaignUseCase, ValidationError } from '@/domain/services/campaigns/CreateCampaignUseCase';
+import { emailCampaignRepository } from '@/infrastructure/database/repositories';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,23 +23,17 @@ export async function GET(request: Request) {
     const templateId = searchParams.get('templateId');
     const scheduledOnly = searchParams.get('scheduledOnly') === 'true';
 
-    // TODO: Replace with GetCampaignsUseCase when implemented
-    // const useCase = new GetCampaignsUseCase(emailCampaignRepository);
-    // const result = await useCase.execute({ status, trackId, templateId, scheduledOnly });
-
-    // TODO: Uncomment when PostgresEmailCampaignRepository is implemented
-    // Temporary implementation using repository directly
-    // const campaigns = await emailCampaignRepository.findAll({
-    //   status: status || undefined,
-    //   trackId: trackId || undefined,
-    //   templateId: templateId || undefined,
-    //   scheduledOnly
-    // });
+    const useCase = new GetCampaignsUseCase(emailCampaignRepository);
+    const result = await useCase.execute({
+      status: status || undefined,
+      trackId: trackId || undefined,
+      templateId: templateId || undefined,
+      scheduledOnly
+    });
 
     return NextResponse.json({
-      campaigns: [],
-      count: 0,
-      message: 'Campaign repository not yet implemented'
+      campaigns: result.campaigns,
+      count: result.count
     });
   } catch (error: any) {
     console.error('Error fetching campaigns:', error);
@@ -65,54 +57,26 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Validate required fields
-    if (!body.subject || body.subject.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Subject is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!body.htmlContent || body.htmlContent.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'HTML content is required' },
-        { status: 400 }
-      );
-    }
-
-    // TODO: Replace with CreateCampaignUseCase when implemented
-    // const useCase = new CreateCampaignUseCase(emailCampaignRepository);
-    // const result = await useCase.execute({
-    //   templateId: body.templateId,
-    //   trackId: body.trackId,
-    //   subject: body.subject,
-    //   htmlContent: body.htmlContent,
-    //   status: body.status || 'draft',
-    //   scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null
-    // });
-
-    // TODO: Uncomment when PostgresEmailCampaignRepository is implemented
-    // Temporary implementation using repository directly
-    // const campaign = await emailCampaignRepository.create({
-    //   templateId: body.templateId || null,
-    //   trackId: body.trackId || null,
-    //   subject: body.subject,
-    //   htmlContent: body.htmlContent,
-    //   status: body.status || 'draft',
-    //   scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null
-    // });
+    const useCase = new CreateCampaignUseCase(emailCampaignRepository);
+    const result = await useCase.execute({
+      templateId: body.templateId,
+      trackId: body.trackId,
+      subject: body.subject,
+      htmlContent: body.htmlContent,
+      status: body.status || 'draft',
+      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null
+    });
 
     return NextResponse.json({
-      campaign: null,
-      success: false,
-      message: 'Campaign repository not yet implemented'
-    }, { status: 501 });
+      campaign: result.campaign,
+      success: result.success
+    }, { status: 201 });
   } catch (error: any) {
     console.error('Error creating campaign:', error);
 
-    // if (error instanceof ValidationError) {
-    //   return NextResponse.json({ error: error.message }, { status: 400 });
-    // }
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
 
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

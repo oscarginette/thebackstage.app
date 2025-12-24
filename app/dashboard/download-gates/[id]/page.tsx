@@ -81,8 +81,8 @@ export default function GateDetailsPage({ params }: { params: Promise<{ id: stri
         {/* Header Section */}
         <div className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex items-center gap-6">
-             {gate.coverImageUrl && (
-                <img src={gate.coverImageUrl} alt={gate.title} className="w-20 h-20 rounded-2xl object-cover shadow-2xl ring-4 ring-white" />
+             {gate.artworkUrl && (
+                <img src={gate.artworkUrl} alt={gate.title} className="w-20 h-20 rounded-2xl object-cover shadow-2xl ring-4 ring-white" />
              )}
              <div>
                 <h1 className="text-4xl font-serif text-[#1c1c1c] mb-1">{gate.title}</h1>

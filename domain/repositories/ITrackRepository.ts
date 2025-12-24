@@ -13,4 +13,5 @@ export interface ITrackRepository {
   save(track: Track): Promise<void>;
   findByTrackId(trackId: string): Promise<Track | null>;
   findAll(): Promise<Track[]>;
+  getAllTrackIds(): Promise<Set<string>>;
 }

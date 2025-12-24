@@ -1,47 +1,38 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { DeleteContactsUseCase, ValidationError } from '@/domain/services/DeleteContactsUseCase';
+import { contactRepository } from '@/infrastructure/database/repositories';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/contacts/delete
- * Elimina múltiples contactos por IDs
+ * Deletes multiple contacts by IDs
+ *
+ * Clean Architecture: Only HTTP concerns (parsing, error handling, JSON response)
+ * Business logic delegated to DeleteContactsUseCase
  */
 export async function POST(request: Request) {
   try {
     const { ids } = await request.json();
 
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { error: 'Se requiere un array de IDs' },
-        { status: 400 }
-      );
-    }
-
-    // Validar que todos los IDs sean números
-    if (!ids.every(id => typeof id === 'number' && id > 0)) {
-      return NextResponse.json(
-        { error: 'Todos los IDs deben ser números positivos' },
-        { status: 400 }
-      );
-    }
-
-    // Eliminar contactos usando IN con un array de IDs
-    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
-    const result = await sql.query(
-      `DELETE FROM contacts WHERE id IN (${placeholders})`,
-      ids
-    );
+    // Use DeleteContactsUseCase for business logic
+    const useCase = new DeleteContactsUseCase(contactRepository);
+    const result = await useCase.execute({ ids });
 
     return NextResponse.json({
-      success: true,
-      deleted: result.rowCount
+      success: result.success,
+      deleted: result.deleted,
     });
-
   } catch (error: any) {
+    // Handle validation errors
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // Handle unexpected errors
     console.error('Error deleting contacts:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

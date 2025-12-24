@@ -11,15 +11,27 @@ export function useDashboardData() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showEmailEditor, setShowEmailEditor] = useState(false);
   const [sendingCustomEmail, setSendingCustomEmail] = useState(false);
+  const [contactStats, setContactStats] = useState<any>(null);
+  const [gates, setGates] = useState<any[]>([]);
+  const [loadingGates, setLoadingGates] = useState(false);
 
   useEffect(() => {
     loadData();
-    loadAllTracks(); // Cargar tracks automáticamente al inicio
+    loadAllTracks();
+    fetchContactStats();
+    fetchGates();
   }, []);
+
+  // Clear message after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const loadData = async () => {
     try {
-      // Cargar historial de ejecuciones
       const historyRes = await fetch('/api/execution-history');
       const historyData = await historyRes.json();
 
@@ -30,6 +42,33 @@ export function useDashboardData() {
       setMessage({ type: 'error', text: error.message });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchContactStats = async () => {
+    try {
+      const res = await fetch('/api/contacts');
+      const data = await res.json();
+      if (!data.error) {
+        setContactStats(data.stats || null);
+      }
+    } catch (error) {
+      console.error('Error fetching contact stats:', error);
+    }
+  };
+
+  const fetchGates = async () => {
+    setLoadingGates(true);
+    try {
+      const res = await fetch('/api/download-gates');
+      const data = await res.json();
+      if (!data.error) {
+        setGates(data.gates || []);
+      }
+    } catch (error) {
+      console.error('Error fetching gates:', error);
+    } finally {
+      setLoadingGates(false);
     }
   };
 
@@ -169,11 +208,16 @@ export function useDashboardData() {
     message,
     showEmailEditor,
     sendingCustomEmail,
+    contactStats,
+    gates,
+    loadingGates,
     loadAllTracks,
     handleSendTrack,
     handleSendCustomEmail,
     handleSaveDraft,
     setMessage,
-    setShowEmailEditor
+    setShowEmailEditor,
+    fetchGates,
+    fetchContactStats
   };
 }

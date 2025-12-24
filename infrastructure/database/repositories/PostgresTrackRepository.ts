@@ -56,4 +56,12 @@ export class PostgresTrackRepository implements ITrackRepository {
       createdAt: row.created_at
     }));
   }
+
+  async getAllTrackIds(): Promise<Set<string>> {
+    const result = await sql`
+      SELECT track_id FROM soundcloud_tracks
+    `;
+
+    return new Set(result.rows.map(row => row.track_id));
+  }
 }

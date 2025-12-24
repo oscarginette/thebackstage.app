@@ -3,9 +3,8 @@ import { SendCustomEmailUseCase, ValidationError } from '@/domain/services/SendC
 import {
   contactRepository,
   emailLogRepository,
-  executionLogRepository
-  // TODO: Uncomment when PostgresEmailCampaignRepository is implemented
-  // emailCampaignRepository
+  executionLogRepository,
+  emailCampaignRepository
 } from '@/infrastructure/database/repositories';
 import { resendEmailProvider } from '@/infrastructure/email';
 
@@ -48,30 +47,26 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // TODO: Uncomment when PostgresEmailCampaignRepository is implemented
-    // const useCase = new SendCustomEmailUseCase(
-    //   contactRepository,
-    //   resendEmailProvider,
-    //   emailLogRepository,
-    //   executionLogRepository,
-    //   emailCampaignRepository
-    // );
+    const useCase = new SendCustomEmailUseCase(
+      contactRepository,
+      resendEmailProvider,
+      emailLogRepository,
+      executionLogRepository,
+      emailCampaignRepository
+    );
 
-    // const result = await useCase.execute({
-    //   subject: body.subject,
-    //   greeting: body.greeting,
-    //   message: body.message,
-    //   signature: body.signature,
-    //   coverImage: body.coverImage,
-    //   saveAsDraft: body.saveAsDraft || false,
-    //   templateId: body.templateId,
-    //   scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined
-    // });
+    const result = await useCase.execute({
+      subject: body.subject,
+      greeting: body.greeting,
+      message: body.message,
+      signature: body.signature,
+      coverImage: body.coverImage,
+      saveAsDraft: body.saveAsDraft || false,
+      templateId: body.templateId,
+      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined
+    });
 
-    return NextResponse.json({
-      success: false,
-      message: 'Campaign repository not yet implemented - use case cannot be executed'
-    }, { status: 501 });
+    return NextResponse.json(result);
   } catch (error: any) {
     console.error('Error sending custom email:', error);
 
