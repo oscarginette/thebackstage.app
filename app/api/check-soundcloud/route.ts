@@ -10,6 +10,7 @@ import {
 } from '@/infrastructure/database/repositories';
 import { soundCloudRepository } from '@/infrastructure/music-platforms';
 import { resendEmailProvider } from '@/infrastructure/email';
+import { sql } from '@/lib/db';
 
 // Permitir hasta 60s de ejecución
 export const maxDuration = 60;
@@ -17,79 +18,150 @@ export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/check-soundcloud
- * Checks for new tracks and sends emails to subscribers
+ *
+ * Multi-tenant endpoint that checks for new tracks for ALL users with SoundCloud configured.
+ * Iterates over each user with a soundcloud_id and checks their feed independently.
  *
  * Clean Architecture: Only HTTP concerns (config validation, JSON response)
  * Business logic delegated to CheckNewTracksUseCase and SendNewTrackEmailsUseCase
  */
 export async function GET() {
   try {
-    const userId = process.env.SOUNDCLOUD_USER_ID;
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'SOUNDCLOUD_USER_ID not configured' },
-        { status: 400 }
-      );
+    // 1. Get all active users with SoundCloud configured
+    const usersResult = await sql`
+      SELECT id, soundcloud_id, email
+      FROM users
+      WHERE soundcloud_id IS NOT NULL
+        AND soundcloud_id != ''
+        AND active = true
+    `;
+
+    if (usersResult.rowCount === 0) {
+      return NextResponse.json({
+        message: 'No users with SoundCloud configured',
+        usersProcessed: 0
+      });
     }
 
-    // 1. Check for new tracks using Clean Architecture
-    const checkTracksUseCase = new CheckNewTracksUseCase(
-      soundCloudRepository,
-      trackRepository
-    );
+    const users = usersResult.rows;
+    console.log(`[Check SoundCloud] Found ${users.length} users with SoundCloud configured`);
 
-    const checkResult = await checkTracksUseCase.execute({
-      artistIdentifier: userId,
-      platform: 'soundcloud',
-    });
+    const results = [];
+    let totalEmailsSent = 0;
+    let totalNewTracks = 0;
 
-    if (!checkResult.latestTrack) {
-      return NextResponse.json({ message: 'No tracks found in feed' });
+    // 2. Process each user's SoundCloud feed
+    for (const user of users) {
+      try {
+        console.log(`[User ${user.id}] Checking SoundCloud feed for: ${user.email} (SC ID: ${user.soundcloud_id})`);
+
+        // 2.1 Check for new tracks for this user
+        const checkTracksUseCase = new CheckNewTracksUseCase(
+          soundCloudRepository,
+          trackRepository
+        );
+
+        const checkResult = await checkTracksUseCase.execute({
+          userId: user.id,
+          artistIdentifier: user.soundcloud_id,
+          platform: 'soundcloud',
+        });
+
+        if (!checkResult.latestTrack) {
+          console.log(`[User ${user.id}] No tracks found in feed`);
+          results.push({
+            userId: user.id,
+            email: user.email,
+            success: true,
+            message: 'No tracks found',
+            newTracksFound: 0
+          });
+          continue;
+        }
+
+        if (checkResult.newTracksFound === 0) {
+          console.log(`[User ${user.id}] No new tracks`);
+          results.push({
+            userId: user.id,
+            email: user.email,
+            success: true,
+            message: 'No new tracks',
+            newTracksFound: 0
+          });
+          continue;
+        }
+
+        const latestTrack = checkResult.latestTrack;
+        console.log(`[User ${user.id}] Found new track: ${latestTrack.title}`);
+
+        // 2.2 Render email HTML
+        const emailHtml = await render(
+          NewTrackEmail({
+            trackName: latestTrack.title,
+            trackUrl: latestTrack.url,
+            coverImage: latestTrack.coverImage || '',
+            unsubscribeUrl: '', // Will be set per contact by use case
+          })
+        );
+
+        // 2.3 Send emails to this user's subscribers
+        const sendEmailsUseCase = new SendNewTrackEmailsUseCase(
+          contactRepository,
+          resendEmailProvider,
+          trackRepository,
+          executionLogRepository
+        );
+
+        const sendResult = await sendEmailsUseCase.execute({
+          userId: user.id,
+          track: {
+            trackId: latestTrack.id,
+            title: latestTrack.title,
+            url: latestTrack.url,
+            publishedAt: latestTrack.publishedAt,
+            coverImage: latestTrack.coverImage,
+          },
+          emailHtml,
+          subject: 'Hey mate',
+          baseUrl,
+        });
+
+        totalEmailsSent += sendResult.sent;
+        totalNewTracks += checkResult.newTracksFound;
+
+        console.log(`[User ${user.id}] Sent ${sendResult.sent} emails`);
+
+        results.push({
+          userId: user.id,
+          email: user.email,
+          success: true,
+          track: latestTrack.title,
+          emailsSent: sendResult.sent,
+          emailsFailed: sendResult.failed,
+          totalSubscribers: sendResult.totalSubscribers,
+          newTracksFound: checkResult.newTracksFound,
+        });
+
+      } catch (userError: any) {
+        console.error(`[User ${user.id}] Error processing:`, userError);
+        results.push({
+          userId: user.id,
+          email: user.email,
+          success: false,
+          error: userError.message,
+        });
+      }
     }
-
-    const latestTrack = checkResult.latestTrack;
-
-    // 2. Render email HTML
-    const emailHtml = await render(
-      NewTrackEmail({
-        trackName: latestTrack.title,
-        trackUrl: latestTrack.url,
-        coverImage: latestTrack.coverImage || '',
-        unsubscribeUrl: '', // Will be set per contact by use case
-      })
-    );
-
-    // 3. Send emails to all subscribers
-    const sendEmailsUseCase = new SendNewTrackEmailsUseCase(
-      contactRepository,
-      resendEmailProvider,
-      trackRepository,
-      executionLogRepository
-    );
-
-    const sendResult = await sendEmailsUseCase.execute({
-      track: {
-        trackId: latestTrack.id,
-        title: latestTrack.title,
-        url: latestTrack.url,
-        publishedAt: latestTrack.publishedAt,
-        coverImage: latestTrack.coverImage,
-      },
-      emailHtml,
-      subject: 'Hey mate',
-      baseUrl,
-    });
 
     return NextResponse.json({
       success: true,
-      track: latestTrack.title,
-      emailsSent: sendResult.sent,
-      emailsFailed: sendResult.failed,
-      totalSubscribers: sendResult.totalSubscribers,
-      newTracksFound: checkResult.newTracksFound,
+      usersProcessed: users.length,
+      totalEmailsSent,
+      totalNewTracks,
+      results,
     });
   } catch (error: any) {
     console.error('Error in check-soundcloud:', error);

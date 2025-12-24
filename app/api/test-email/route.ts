@@ -79,6 +79,7 @@ export async function POST() {
     );
 
     const result = await useCase.execute({
+      userId: 1, // Default test user
       testEmail,
       emailHtml,
       subject: '🧪 Test Email - System Check',

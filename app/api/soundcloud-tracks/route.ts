@@ -42,7 +42,8 @@ export async function GET() {
     const soundCloudClient = new SoundCloudClient();
     const useCase = new GetSoundCloudTracksUseCase(trackRepository, soundCloudClient);
 
-    const tracks = await useCase.execute(settings.soundcloudId!);
+    const userId = parseInt(session.user.id);
+    const tracks = await useCase.execute(settings.soundcloudId!, userId);
 
     return NextResponse.json({ tracks });
 
