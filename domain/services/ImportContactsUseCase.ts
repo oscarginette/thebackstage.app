@@ -26,7 +26,7 @@ export interface ImportInput {
   contacts: ImportedContact[];
   fileMetadata: {
     filename: string;
-    fileType: 'csv' | 'json';
+    fileType: 'csv' | 'json' | 'brevo';
     fileSizeBytes?: number;
     totalRows: number;
   };
@@ -88,7 +88,11 @@ export class ImportContactsUseCase {
         contactsSkipped: skipped,
         status: 'completed',
         durationMs: duration,
-        errorsDetail: errors.length > 0 ? errors.slice(0, 50) : undefined
+        errorsDetail: errors.length > 0 ? errors.slice(0, 50).map((err, idx) => ({
+          row: idx + 1,
+          email: err.email,
+          message: err.error
+        })) : undefined
       });
 
       // 5. Return success result
