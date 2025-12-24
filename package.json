@@ -16,6 +16,7 @@
     "db:sync-schema": "tsx scripts/sync-database-schema.ts"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "@react-email/components": "^1.0.2",
     "@types/pg": "^8.16.0",
     "@vercel/postgres": "^0.10.0",
