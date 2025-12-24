@@ -16,13 +16,13 @@ interface Contact {
 }
 
 interface ContactsStats {
-  active_subscribers: number;
+  activeSubscribers: number;
   unsubscribed: number;
-  total_contacts: number;
-  from_hypeddit: number;
-  from_hypedit: number;
-  new_last_30_days: number;
-  new_last_7_days: number;
+  totalContacts: number;
+  fromHypeddit: number;
+  fromHypedit: number;
+  newLast30Days: number;
+  newLast7Days: number;
 }
 
 export default function ContactsList() {
@@ -124,14 +124,14 @@ export default function ContactsList() {
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Subscribed', value: stats.active_subscribers, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
-            { label: 'Total', value: stats.total_contacts, color: 'text-blue-600', bg: 'bg-blue-500/10' },
-            { label: 'Last 30 Days', value: stats.new_last_30_days, color: 'text-purple-600', bg: 'bg-purple-500/10' },
+            { label: 'Subscribed', value: stats.activeSubscribers, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
+            { label: 'Total', value: stats.totalContacts, color: 'text-blue-600', bg: 'bg-blue-500/10' },
+            { label: 'Last 30 Days', value: stats.newLast30Days, color: 'text-purple-600', bg: 'bg-purple-500/10' },
             { label: 'Unsubscribed', value: stats.unsubscribed, color: 'text-red-600', bg: 'bg-red-500/10' },
           ].map((s, i) => (
             <div key={i} className="bg-white/40 backdrop-blur-xl p-4 rounded-2xl border border-[#E8E6DF]/50 flex flex-col gap-1">
               <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{s.label}</span>
-              <span className={`text-xl font-serif ${s.color}`}>{s.value.toLocaleString()}</span>
+              <span className={`text-xl font-serif ${s.color}`}>{s.value?.toLocaleString() ?? 0}</span>
             </div>
           ))}
         </div>

@@ -14,10 +14,11 @@ export function useDashboardData() {
   const [contactStats, setContactStats] = useState<any>(null);
   const [gates, setGates] = useState<any[]>([]);
   const [loadingGates, setLoadingGates] = useState(false);
+  const [hasSoundCloudId, setHasSoundCloudId] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
-    loadAllTracks();
+    fetchUserSettings();
     fetchContactStats();
     fetchGates();
   }, []);
@@ -69,6 +70,18 @@ export function useDashboardData() {
       console.error('Error fetching gates:', error);
     } finally {
       setLoadingGates(false);
+    }
+  };
+
+  const fetchUserSettings = async () => {
+    try {
+      const res = await fetch('/api/user/settings');
+      const data = await res.json();
+      if (!data.error && data.settings) {
+        setHasSoundCloudId(data.settings.hasSoundCloudId || false);
+      }
+    } catch (error) {
+      console.error('Error fetching user settings:', error);
     }
   };
 
@@ -211,6 +224,7 @@ export function useDashboardData() {
     contactStats,
     gates,
     loadingGates,
+    hasSoundCloudId,
     loadAllTracks,
     handleSendTrack,
     handleSendCustomEmail,

@@ -108,9 +108,12 @@ export default function DownloadGatesList() {
     {
       header: 'Status',
       accessor: (gate: DownloadGate) => (
-        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-          gate.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-        }`}>
+        <div 
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+            gate.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+          }`}
+          title={gate.active ? 'Este gate está activo y aceptando visitantes' : 'Este gate está pausado y no acepta visitantes'}
+        >
           <div className={`w-1.5 h-1.5 rounded-full ${gate.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
           {gate.active ? 'Active' : 'Paused'}
         </div>

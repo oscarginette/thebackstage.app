@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { SoundCloudTrack } from '../../types/dashboard';
 import EmailPreviewModal from './EmailPreviewModal';
+import Link from 'next/link';
+import { Settings } from 'lucide-react';
 
 interface TrackListProps {
   tracks: SoundCloudTrack[];
@@ -9,6 +11,7 @@ interface TrackListProps {
   onLoadAll: () => void;
   onSend: (track: SoundCloudTrack, customContent?: { subject?: string; greeting?: string; message?: string; signature?: string }) => void;
   sendingTrackId: string | null;
+  hasSoundCloudId?: boolean;
 }
 
 export default function TrackList({
@@ -17,7 +20,8 @@ export default function TrackList({
   showAll,
   onLoadAll,
   onSend,
-  sendingTrackId
+  sendingTrackId,
+  hasSoundCloudId = true
 }: TrackListProps) {
   const [previewTrack, setPreviewTrack] = useState<SoundCloudTrack | null>(null);
   const [contactsCount, setContactsCount] = useState(0);
@@ -55,16 +59,35 @@ export default function TrackList({
             <h2 className="font-serif text-3xl text-[#1c1c1c] mb-2">Feed de Tracks</h2>
             <p className="text-sm text-gray-400">Tus últimos lanzamientos en SoundCloud</p>
           </div>
-          <button
-            onClick={onLoadAll}
-            disabled={loading}
-            className="px-6 py-3 rounded-full text-sm font-medium border border-[#E8E6DF] text-[#1c1c1c] hover:bg-[#FDFCF8] disabled:opacity-50 transition-colors"
-          >
-            {loading ? 'Sincronizando...' : showAll ? 'Actualizar Feed' : 'Ver Todos'}
-          </button>
+          {hasSoundCloudId && (
+            <button
+              onClick={onLoadAll}
+              disabled={loading}
+              className="px-6 py-3 rounded-full text-sm font-medium border border-[#E8E6DF] text-[#1c1c1c] hover:bg-[#FDFCF8] disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Sincronizando...' : showAll ? 'Actualizar Feed' : 'Ver Todos'}
+            </button>
+          )}
         </div>
 
-        {!showAll ? (
+        {!hasSoundCloudId ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center bg-gradient-to-br from-[#FF5500]/5 to-[#FF5500]/10 rounded-[24px] border-2 border-dashed border-[#FF5500]/20">
+            <div className="w-16 h-16 mb-4 rounded-full bg-white border-2 border-[#FF5500]/30 flex items-center justify-center shadow-lg">
+              <Settings className="w-7 h-7 text-[#FF5500]" />
+            </div>
+            <h3 className="font-serif text-lg text-[#1c1c1c] mb-2">Conecta tu SoundCloud</h3>
+            <p className="text-sm text-gray-500 max-w-md mx-auto leading-relaxed mb-4">
+              Para ver tus tracks y enviar campañas automáticas, necesitas configurar tu SoundCloud ID en Settings.
+            </p>
+            <Link
+              href="/settings"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF5500] text-white rounded-full text-sm font-bold hover:bg-[#e64d00] transition-all shadow-lg shadow-[#FF5500]/20 active:scale-95"
+            >
+              <Settings className="w-4 h-4" />
+              Ir a Settings
+            </Link>
+          </div>
+        ) : !showAll ? (
           <div className="flex flex-col items-center justify-center py-24 text-center bg-[#FDFCF8] rounded-[24px]">
             <div className="w-16 h-16 mb-6 rounded-full bg-white border border-[#E8E6DF] flex items-center justify-center">
               <svg className="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 24 24">

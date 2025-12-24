@@ -45,6 +45,7 @@ function DashboardContent() {
     contactStats: stats,
     gates,
     loadingGates,
+    hasSoundCloudId,
     message,
     setMessage
   } = useDashboardData();
@@ -211,6 +212,7 @@ function DashboardContent() {
                       onLoadAll={loadAllTracks}
                       onSend={handleSendTrack}
                       sendingTrackId={sendingTrackId}
+                      hasSoundCloudId={hasSoundCloudId}
                     />
                   </section>
                   <aside className="lg:col-span-4 flex flex-col gap-6">
