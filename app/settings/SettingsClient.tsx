@@ -161,9 +161,20 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
 
                 {/* Spotify ID */}
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-[0.15em] text-foreground/40 ml-1">
-                    {t("spotify")}
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-black uppercase tracking-[0.15em] text-foreground/40 ml-1">
+                      {t("spotify")}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowSpotifyHelp(!showSpotifyHelp)}
+                      className="inline-flex items-center gap-1 text-[9px] font-bold text-[#1DB954] hover:text-[#1aa34a] transition-colors uppercase tracking-widest"
+                    >
+                      <Info className="w-3 h-3" />
+                      See how
+                      {showSpotifyHelp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={spotifyId}
