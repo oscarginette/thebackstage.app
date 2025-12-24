@@ -25,7 +25,7 @@ export interface DetectedColumn {
 export class ImportPreview {
   constructor(
     public readonly filename: string,
-    public readonly fileType: 'csv' | 'json',
+    public readonly fileType: 'csv' | 'json' | 'brevo',
     public readonly totalRows: number,
     public readonly detectedColumns: DetectedColumn[],
     public readonly sampleRows: any[], // First 5 rows for preview
@@ -105,7 +105,7 @@ export class ImportPreview {
    */
   static create(
     filename: string,
-    fileType: 'csv' | 'json',
+    fileType: 'csv' | 'json' | 'brevo',
     rawData: any[],
     detectedColumns: DetectedColumn[]
   ): ImportPreview {
