@@ -15,6 +15,7 @@ import { ITrackRepository, Track } from '../repositories/ITrackRepository';
 import { IExecutionLogRepository } from '../repositories/IExecutionLogRepository';
 
 export interface SendNewTrackEmailsInput {
+  userId: number;
   track: Track;
   emailHtml: string;
   subject: string;
@@ -40,7 +41,7 @@ export class SendNewTrackEmailsUseCase {
     const startTime = Date.now();
 
     // 1. Fetch all subscribed contacts
-    const contacts = await this.contactRepository.getSubscribed();
+    const contacts = await this.contactRepository.getSubscribed(input.userId);
 
     if (contacts.length === 0) {
       // Log execution even if no subscribers

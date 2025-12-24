@@ -49,7 +49,10 @@ export class ResubscribeUseCase {
 
     // 4. If not already subscribed, update status
     if (!alreadySubscribed) {
-      await this.contactRepository.resubscribe(contact.id);
+      if (!contact.userId) {
+        throw new Error('Contact has no associated user');
+      }
+      await this.contactRepository.resubscribe(contact.id, contact.userId);
     }
 
     // 5. Log consent change in audit trail

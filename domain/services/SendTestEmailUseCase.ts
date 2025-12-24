@@ -22,6 +22,7 @@ export class ValidationError extends Error {
 }
 
 export interface SendTestEmailInput {
+  userId: number;
   testEmail: string;
   emailHtml: string;
   subject: string;
@@ -49,7 +50,7 @@ export class SendTestEmailUseCase {
     this.validateInput(input);
 
     // 2. Find or create test contact
-    let contact = await this.contactRepository.findByEmail(input.testEmail);
+    let contact = await this.contactRepository.findByEmail(input.testEmail, input.userId);
 
     if (!contact) {
       // For this use case, we expect the contact to exist

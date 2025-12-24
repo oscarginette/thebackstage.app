@@ -14,7 +14,7 @@ import { IQuotaTrackingRepository } from '@/domain/repositories/IQuotaTrackingRe
 export interface UserWithQuota {
   id: number;
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'artist';
   active: boolean;
   createdAt: Date;
   quota: {

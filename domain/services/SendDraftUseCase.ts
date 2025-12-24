@@ -15,6 +15,7 @@ import { IExecutionLogRepository } from '@/domain/repositories/IExecutionLogRepo
 import { IEmailCampaignRepository } from '@/domain/repositories/IEmailCampaignRepository';
 
 export interface SendDraftInput {
+  userId: number;
   draftId: string;
 }
 
@@ -60,7 +61,7 @@ export class SendDraftUseCase {
       }
 
       // 3. Get subscribed contacts
-      const contacts = await this.contactRepository.getSubscribed();
+      const contacts = await this.contactRepository.getSubscribed(input.userId);
 
       if (contacts.length === 0) {
         throw new ValidationError('No hay contactos suscritos');

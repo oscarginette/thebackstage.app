@@ -19,6 +19,7 @@ import { render } from '@react-email/components';
 import CustomEmail from '@/emails/custom-email';
 
 export interface SendCustomEmailInput {
+  userId: number;
   subject: string;
   greeting: string;
   message: string;
@@ -84,7 +85,7 @@ export class SendCustomEmailUseCase {
       }
 
       // 4. Get subscribed contacts
-      const contacts = await this.contactRepository.getSubscribed();
+      const contacts = await this.contactRepository.getSubscribed(input.userId);
 
       if (contacts.length === 0) {
         throw new ValidationError('No hay contactos suscritos');

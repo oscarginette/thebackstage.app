@@ -36,12 +36,13 @@ export class GetSoundCloudTracksUseCase {
    * Executes the use case to retrieve SoundCloud tracks with sent status
    *
    * @param soundCloudUserId - The SoundCloud user ID to fetch tracks for
+   * @param userId - The internal user ID for multi-tenant support
    * @returns Promise with array of tracks including sent status
    */
-  async execute(soundCloudUserId: string): Promise<SoundCloudTrackDTO[]> {
+  async execute(soundCloudUserId: string, userId: number): Promise<SoundCloudTrackDTO[]> {
     const [rawTracks, sentTrackIds] = await Promise.all([
       this.fetchTracksFromSoundCloud(soundCloudUserId),
-      this.trackRepository.getAllTrackIds()
+      this.trackRepository.getAllTrackIds(userId)
     ]);
 
     return this.formatTracksWithSentStatus(rawTracks, sentTrackIds);

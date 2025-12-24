@@ -24,6 +24,7 @@ import { DownloadSubmission } from '../entities/DownloadSubmission';
 import { CreateSubmissionInput } from '../types/download-gates';
 
 export interface SubmitEmailInput {
+  userId: number;
   gateSlug: string;
   email: string;
   firstName?: string;
@@ -154,8 +155,8 @@ export class SubmitEmailUseCase {
    */
   private async addToContacts(email: string, firstName?: string): Promise<void> {
     try {
-      // Check if contact already exists
-      const existingContact = await this.contactRepository.findByEmail(email);
+      // Check if contact already exists (using default userId 1 for download gates)
+      const existingContact = await this.contactRepository.findByEmail(email, 1);
       if (existingContact) {
         // Contact already exists, no need to add again
         return;

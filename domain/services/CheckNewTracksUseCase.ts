@@ -3,6 +3,7 @@ import { ITrackRepository } from '../repositories/ITrackRepository';
 import { MusicTrack } from '../entities/MusicTrack';
 
 export interface CheckNewTracksInput {
+  userId: number;
   artistIdentifier: string;
   platform: 'soundcloud';
 }
@@ -32,8 +33,8 @@ export class CheckNewTracksUseCase {
   ) {}
 
   async execute(input: CheckNewTracksInput): Promise<CheckNewTracksResult> {
-    // 1. Obtener última fecha de track guardado
-    const lastTrackDate = await this.getLastTrackDate();
+    // 1. Obtener última fecha de track guardado para este usuario
+    const lastTrackDate = await this.getLastTrackDate(input.userId);
 
     // 2. Fetch tracks de la plataforma
     const newTracks = await this.musicPlatformRepo.getNewTracks(
@@ -41,8 +42,8 @@ export class CheckNewTracksUseCase {
       lastTrackDate
     );
 
-    // 3. Filtrar tracks ya guardados
-    const unsavedTracks = await this.filterUnsavedTracks(newTracks);
+    // 3. Filtrar tracks ya guardados para este usuario
+    const unsavedTracks = await this.filterUnsavedTracks(newTracks, input.userId);
 
     // 4. Obtener el track más reciente de todos los tracks disponibles
     const allTracks = await this.musicPlatformRepo.fetchLatestTracks(input.artistIdentifier);
@@ -68,8 +69,8 @@ export class CheckNewTracksUseCase {
     };
   }
 
-  private async getLastTrackDate(): Promise<Date> {
-    const tracks = await this.trackRepo.findAll();
+  private async getLastTrackDate(userId: number): Promise<Date> {
+    const tracks = await this.trackRepo.findAll(userId);
     if (tracks.length === 0) {
       return new Date(0); // Epoch si no hay tracks
     }
@@ -78,11 +79,11 @@ export class CheckNewTracksUseCase {
     return new Date(Math.max(...dates.map(d => d.getTime())));
   }
 
-  private async filterUnsavedTracks(tracks: MusicTrack[]): Promise<MusicTrack[]> {
+  private async filterUnsavedTracks(tracks: MusicTrack[], userId: number): Promise<MusicTrack[]> {
     const unsaved: MusicTrack[] = [];
 
     for (const track of tracks) {
-      const exists = await this.trackRepo.existsByTrackId(track.id);
+      const exists = await this.trackRepo.existsByTrackId(track.id, userId);
       if (!exists) {
         unsaved.push(track);
       }
