@@ -3,13 +3,15 @@
 import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface ImportResults {
-  importId: number;
+  importId?: number;
   contactsInserted: number;
   contactsUpdated: number;
   contactsSkipped: number;
   duration: number;
-  hasErrors: boolean;
+  hasErrors?: boolean;
   errors?: Array<{ email: string; error: string }>;
+  filename?: string;
+  fileType?: string;
 }
 
 interface Props {

@@ -279,7 +279,7 @@ export default function BrevoImportWizardModal({ isOpen, onClose, onSuccess }: P
                     duration: results.duration,
                     errors: results.errors || []
                   }}
-                  onClose={handleSuccess}
+                  onComplete={handleSuccess}
                 />
               </motion.div>
             )}
