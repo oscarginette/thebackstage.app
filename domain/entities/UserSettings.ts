@@ -1,0 +1,61 @@
+/**
+ * UserSettings Entity
+ *
+ * Represents user configuration and platform connections.
+ * Immutable value object following Clean Architecture principles.
+ */
+export class UserSettings {
+  constructor(
+    public readonly userId: number,
+    public readonly name: string | null,
+    public readonly soundcloudId: string | null,
+    public readonly spotifyId: string | null,
+    public readonly updatedAt: Date
+  ) {}
+
+  /**
+   * Check if user has valid SoundCloud ID configured
+   */
+  hasSoundCloudId(): boolean {
+    return !!this.soundcloudId && this.soundcloudId.trim().length > 0;
+  }
+
+  /**
+   * Check if user has valid Spotify ID configured
+   */
+  hasSpotifyId(): boolean {
+    return !!this.spotifyId && this.spotifyId.trim().length > 0;
+  }
+
+  /**
+   * Create a copy with updated fields
+   */
+  update(updates: Partial<{
+    name: string | null;
+    soundcloudId: string | null;
+    spotifyId: string | null;
+  }>): UserSettings {
+    return new UserSettings(
+      this.userId,
+      updates.name !== undefined ? updates.name : this.name,
+      updates.soundcloudId !== undefined ? updates.soundcloudId : this.soundcloudId,
+      updates.spotifyId !== undefined ? updates.spotifyId : this.spotifyId,
+      new Date()
+    );
+  }
+
+  /**
+   * Serialize to plain object
+   */
+  toJSON() {
+    return {
+      userId: this.userId,
+      name: this.name,
+      soundcloudId: this.soundcloudId,
+      spotifyId: this.spotifyId,
+      hasSoundCloudId: this.hasSoundCloudId(),
+      hasSpotifyId: this.hasSpotifyId(),
+      updatedAt: this.updatedAt.toISOString()
+    };
+  }
+}
