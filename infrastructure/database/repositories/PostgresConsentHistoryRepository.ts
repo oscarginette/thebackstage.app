@@ -9,7 +9,25 @@ import {
   IConsentHistoryRepository,
   CreateConsentHistoryInput
 } from '../../../domain/repositories/IConsentHistoryRepository';
-import { ConsentHistory, ConsentAction } from '../../../domain/entities/ConsentHistory';
+import { ConsentHistory, ConsentAction, ConsentSource } from '../../../domain/entities/ConsentHistory';
+
+/**
+ * Database row type for consent_history table
+ * Maps snake_case DB columns to TypeScript type
+ *
+ * Clean Code: Explicit types prevent runtime errors
+ */
+interface ConsentHistoryRow {
+  id: number;
+  contact_id: number;
+  action: ConsentAction;
+  timestamp: string;
+  source: ConsentSource;
+  ip_address: string | null;
+  user_agent: string | null;
+  metadata: any;
+  created_at: string;
+}
 
 export class PostgresConsentHistoryRepository implements IConsentHistoryRepository {
   async create(input: CreateConsentHistoryInput): Promise<ConsentHistory> {
@@ -45,7 +63,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
       ORDER BY timestamp DESC
     `;
 
-    return result.rows.map(row => this.mapRowToEntity(row));
+    return result.rows.map((row: ConsentHistoryRow) => this.mapRowToEntity(row));
   }
 
   async findByAction(action: ConsentAction, limit = 100): Promise<ConsentHistory[]> {
@@ -56,7 +74,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
       LIMIT ${limit}
     `;
 
-    return result.rows.map(row => this.mapRowToEntity(row));
+    return result.rows.map((row: ConsentHistoryRow) => this.mapRowToEntity(row));
   }
 
   async getRecentUnsubscribes(days: number): Promise<ConsentHistory[]> {
@@ -67,7 +85,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
       ORDER BY timestamp DESC
     `;
 
-    return result.rows.map(row => this.mapRowToEntity(row));
+    return result.rows.map((row: ConsentHistoryRow) => this.mapRowToEntity(row));
   }
 
   async getContactTimeline(contactId: number): Promise<ConsentHistory[]> {
@@ -77,7 +95,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
       ORDER BY timestamp ASC
     `;
 
-    return result.rows.map(row => this.mapRowToEntity(row));
+    return result.rows.map((row: ConsentHistoryRow) => this.mapRowToEntity(row));
   }
 
   async countByAction(
@@ -126,8 +144,10 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
 
   /**
    * Map database row to ConsentHistory entity
+   *
+   * Clean Architecture: Infrastructure layer converts DB format to Domain format
    */
-  private mapRowToEntity(row: any): ConsentHistory {
+  private mapRowToEntity(row: ConsentHistoryRow): ConsentHistory {
     return new ConsentHistory(
       row.id,
       row.contact_id,
