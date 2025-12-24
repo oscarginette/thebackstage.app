@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { GetSoundCloudTracksUseCase } from '@/domain/services/GetSoundCloudTracksUseCase';
 import { PostgresTrackRepository } from '@/infrastructure/database/repositories/PostgresTrackRepository';
+import { PostgresUserSettingsRepository } from '@/infrastructure/database/repositories/PostgresUserSettingsRepository';
+import { GetUserSettingsUseCase } from '@/domain/services/GetUserSettingsUseCase';
 import { SoundCloudClient } from '@/infrastructure/music-platforms/SoundCloudClient';
 
 export const dynamic = 'force-dynamic';
@@ -14,12 +17,24 @@ export const maxDuration = 30;
  */
 export async function GET() {
   try {
-    const soundCloudUserId = process.env.SOUNDCLOUD_USER_ID;
+    const session = await auth();
 
-    if (!soundCloudUserId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'SOUNDCLOUD_USER_ID not configured' },
-        { status: 500 }
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's SoundCloud ID from settings
+    const settingsRepository = new PostgresUserSettingsRepository();
+    const settingsUseCase = new GetUserSettingsUseCase(settingsRepository);
+    const settings = await settingsUseCase.execute(parseInt(session.user.id));
+
+    if (!settings.hasSoundCloudId()) {
+      return NextResponse.json(
+        { error: 'SoundCloud ID not configured. Please add it in Settings.' },
+        { status: 400 }
       );
     }
 
@@ -27,7 +42,7 @@ export async function GET() {
     const soundCloudClient = new SoundCloudClient();
     const useCase = new GetSoundCloudTracksUseCase(trackRepository, soundCloudClient);
 
-    const tracks = await useCase.execute(soundCloudUserId);
+    const tracks = await useCase.execute(settings.soundcloudId!);
 
     return NextResponse.json({ tracks });
 
