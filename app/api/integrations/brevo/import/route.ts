@@ -116,9 +116,10 @@ export async function POST(request: Request) {
               const email = contact.email;
 
               // Extract name from Brevo attributes
-              const firstName = contact.attributes?.FIRSTNAME || '';
-              const lastName = contact.attributes?.LASTNAME || '';
-              const name = contact.attributes?.NAME ||
+              const attrs = contact.attributes as any;
+              const firstName = attrs?.FIRSTNAME || '';
+              const lastName = attrs?.LASTNAME || '';
+              const name = attrs?.NAME ||
                            (firstName && lastName ? `${firstName} ${lastName}`.trim() : null);
 
               // Check subscription status (emailBlacklisted = unsubscribed)
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
               const metadata = {
                 brevo_id: contact.id,
                 brevo_list_ids: contact.listIds || [],
-                attributes: contact.attributes || {},
+                attributes: attrs || {},
                 imported_from_brevo: true,
                 imported_at: new Date().toISOString()
               };
@@ -315,7 +316,7 @@ export async function GET() {
     `;
 
     return NextResponse.json({
-      imports: result.rows.map(row => ({
+      imports: result.rows.map((row: any) => ({
         id: row.id,
         contactsFetched: row.contacts_fetched,
         contactsInserted: row.contacts_inserted,

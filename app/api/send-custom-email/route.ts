@@ -7,6 +7,7 @@ import {
   emailCampaignRepository
 } from '@/infrastructure/database/repositories';
 import { resendEmailProvider } from '@/infrastructure/email';
+import { auth } from '@/lib/auth';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,17 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: Request) {
   try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const userId = parseInt(session.user.id);
+
     const body = await request.json();
 
     const useCase = new SendCustomEmailUseCase(
@@ -56,6 +68,7 @@ export async function POST(request: Request) {
     );
 
     const result = await useCase.execute({
+      userId,
       subject: body.subject,
       greeting: body.greeting,
       message: body.message,

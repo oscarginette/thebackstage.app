@@ -46,7 +46,7 @@ export async function GET() {
     }
 
     // Enriquecer datos con información del RSS si es necesario
-    const enrichedHistory = result.rows.map((row) => {
+    const enrichedHistory = result.rows.map((row: any) => {
       // Si ya tenemos cover_image y description en la DB, usarlos
       let coverImage = row.cover_image;
       let description = row.description;
