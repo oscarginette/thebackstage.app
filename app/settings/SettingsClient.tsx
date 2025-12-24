@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Save, CheckCircle2, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "@/lib/i18n/context";
 
@@ -20,6 +20,8 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
 
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showSoundCloudHelp, setShowSoundCloudHelp] = useState(false);
+  const [showSpotifyHelp, setShowSpotifyHelp] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,9 +136,20 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
               <div className="space-y-4">
                 {/* SoundCloud ID */}
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-[0.15em] text-foreground/40 ml-1">
-                    {t("soundcloud")}
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-black uppercase tracking-[0.15em] text-foreground/40 ml-1">
+                      {t("soundcloud")}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowSoundCloudHelp(!showSoundCloudHelp)}
+                      className="inline-flex items-center gap-1 text-[9px] font-bold text-[#FF5500] hover:text-[#e64d00] transition-colors uppercase tracking-widest"
+                    >
+                      <Info className="w-3 h-3" />
+                      See how
+                      {showSoundCloudHelp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={soundcloudId}
@@ -216,6 +229,88 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
               )}
             </AnimatePresence>
           </motion.div>
+
+          {/* SoundCloud ID Help - Instructions */}
+          <AnimatePresence>
+            {showSoundCloudHelp && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-gradient-to-br from-[#FF5500]/5 to-[#FF5500]/10 border border-[#FF5500]/20 rounded-2xl p-6">
+                  <h3 className="text-sm font-bold text-[#1c1c1c] mb-4 flex items-center gap-2">
+                    <Info className="w-4 h-4 text-[#FF5500]" />
+                    Cómo obtener tu SoundCloud ID
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#FF5500] text-white flex items-center justify-center text-xs font-bold">
+                        1
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Abre tu perfil de SoundCloud</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                          Ve a <a href="https://soundcloud.com" target="_blank" className="text-[#FF5500] hover:underline font-medium">soundcloud.com</a> e inicia sesión en tu cuenta.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#FF5500] text-white flex items-center justify-center text-xs font-bold">
+                        2
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Copia la URL de tu perfil</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                          Haz clic en tu foto de perfil y copia la URL. Se verá así: <span className="font-mono bg-white px-1.5 py-0.5 rounded text-[10px]">soundcloud.com/tu-usuario</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#FF5500] text-white flex items-center justify-center text-xs font-bold">
+                        3
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Extrae tu ID de usuario</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed mb-2">
+                          Tu SoundCloud ID es la última parte de la URL (después del último "/"). Por ejemplo:
+                        </p>
+                        <div className="bg-white rounded-lg p-3 border border-border/60">
+                          <p className="text-[10px] font-mono text-foreground/40 mb-1">URL completa:</p>
+                          <p className="text-[11px] font-mono text-[#1c1c1c] mb-2">https://soundcloud.com/<span className="bg-[#FF5500]/20 px-1">oscarginette</span></p>
+                          <p className="text-[10px] font-mono text-foreground/40 mb-1">Tu SoundCloud ID:</p>
+                          <p className="text-[11px] font-mono font-bold text-[#FF5500]">oscarginette</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#FF5500] text-white flex items-center justify-center text-xs font-bold">
+                        4
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Pégalo arriba y guarda</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                          Copia ese ID y pégalo en el campo "SoundCloud ID" de arriba. Luego haz clic en "Save changes".
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-[#FF5500]/20">
+                    <p className="text-[10px] text-foreground/50 italic">
+                      💡 Tip: Si tu URL tiene números al final (ej: /oscarginette-123), incluye todo después del último "/".
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </form>
       </main>
     </div>
