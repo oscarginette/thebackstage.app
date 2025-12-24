@@ -16,7 +16,7 @@ export class PostgresContactRepository implements IContactRepository {
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       id: row.id,
       email: row.email,
       name: row.name,
@@ -104,7 +104,7 @@ export class PostgresContactRepository implements IContactRepository {
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       id: row.id,
       email: row.email,
       name: row.name,
@@ -186,8 +186,7 @@ export class PostgresContactRepository implements IContactRepository {
             name = EXCLUDED.name,
             subscribed = EXCLUDED.subscribed,
             source = EXCLUDED.source,
-            metadata = contacts.metadata || COALESCE(EXCLUDED.metadata, '{}'::jsonb),
-            updated_at = CURRENT_TIMESTAMP
+            metadata = contacts.metadata || COALESCE(EXCLUDED.metadata, '{}'::jsonb)
           RETURNING (xmax = 0) AS inserted
         `;
 
