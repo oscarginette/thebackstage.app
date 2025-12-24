@@ -6,12 +6,13 @@ export interface Track {
   publishedAt: string;
   coverImage?: string | null;
   createdAt?: string;
+  userId?: number;
 }
 
 export interface ITrackRepository {
-  existsByTrackId(trackId: string): Promise<boolean>;
-  save(track: Track): Promise<void>;
-  findByTrackId(trackId: string): Promise<Track | null>;
-  findAll(): Promise<Track[]>;
-  getAllTrackIds(): Promise<Set<string>>;
+  existsByTrackId(trackId: string, userId: number): Promise<boolean>;
+  save(track: Track, userId: number): Promise<void>;
+  findByTrackId(trackId: string, userId: number): Promise<Track | null>;
+  findAll(userId: number): Promise<Track[]>;
+  getAllTrackIds(userId: number): Promise<Set<string>>;
 }

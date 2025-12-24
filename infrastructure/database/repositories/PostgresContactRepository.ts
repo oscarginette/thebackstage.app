@@ -1,5 +1,11 @@
 import { sql } from '@/lib/db';
-import { IContactRepository, Contact, ContactStats } from '@/domain/repositories/IContactRepository';
+import {
+  IContactRepository,
+  Contact,
+  ContactStats,
+  BulkImportContactInput,
+  BulkImportResult
+} from '@/domain/repositories/IContactRepository';
 
 export class PostgresContactRepository implements IContactRepository {
   async getSubscribed(userId: number): Promise<Contact[]> {
@@ -43,7 +49,7 @@ export class PostgresContactRepository implements IContactRepository {
 
   async findByUnsubscribeToken(token: string): Promise<Contact | null> {
     const result = await sql`
-      SELECT id, email, name, unsubscribe_token, subscribed, created_at
+      SELECT id, email, name, unsubscribe_token, subscribed, created_at, user_id
       FROM contacts
       WHERE unsubscribe_token = ${token}
     `;
@@ -57,7 +63,8 @@ export class PostgresContactRepository implements IContactRepository {
       name: row.name,
       unsubscribeToken: row.unsubscribe_token,
       subscribed: row.subscribed,
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      userId: row.user_id
     };
   }
 
@@ -145,5 +152,67 @@ export class PostgresContactRepository implements IContactRepository {
     `;
 
     return result.rowCount || 0;
+  }
+
+  async bulkImport(contacts: BulkImportContactInput[]): Promise<BulkImportResult> {
+    let inserted = 0;
+    let updated = 0;
+    let skipped = 0;
+    const errors: Array<{ email: string; error: string }> = [];
+
+    // Process each contact individually to handle errors gracefully
+    for (const contact of contacts) {
+      try {
+        // Insert or update contact with ON CONFLICT
+        // Override all fields including subscription status (per user requirement)
+        const result = await sql`
+          INSERT INTO contacts (
+            user_id,
+            email,
+            name,
+            source,
+            subscribed,
+            metadata
+          )
+          VALUES (
+            ${contact.userId},
+            ${contact.email.toLowerCase().trim()},
+            ${contact.name},
+            ${contact.source},
+            ${contact.subscribed},
+            ${JSON.stringify(contact.metadata)}::jsonb
+          )
+          ON CONFLICT (user_id, email) DO UPDATE SET
+            name = EXCLUDED.name,
+            subscribed = EXCLUDED.subscribed,
+            source = EXCLUDED.source,
+            metadata = contacts.metadata || COALESCE(EXCLUDED.metadata, '{}'::jsonb),
+            updated_at = CURRENT_TIMESTAMP
+          RETURNING (xmax = 0) AS inserted
+        `;
+
+        // Check if it was an insert or update
+        // xmax = 0 means INSERT, xmax > 0 means UPDATE
+        if (result.rows[0].inserted) {
+          inserted++;
+        } else {
+          updated++;
+        }
+      } catch (error: any) {
+        console.error(`Error importing contact ${contact.email}:`, error.message);
+        errors.push({
+          email: contact.email,
+          error: error.message || 'Unknown error'
+        });
+        skipped++;
+      }
+    }
+
+    return {
+      inserted,
+      updated,
+      skipped,
+      errors
+    };
   }
 }
