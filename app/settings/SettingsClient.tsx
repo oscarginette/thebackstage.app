@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, CheckCircle2, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Save, CheckCircle2, Info, ChevronDown, ChevronUp, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "@/lib/i18n/context";
+import { signOut } from "next-auth/react";
 
 interface SettingsClientProps {
   userName: string;
@@ -22,6 +23,8 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSoundCloudHelp, setShowSoundCloudHelp] = useState(false);
   const [showSpotifyHelp, setShowSpotifyHelp] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +34,19 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
     setIsSaving(false);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    await signOut({ callbackUrl: '/login' });
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -77,6 +93,19 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
                   {userEmail}
                 </p>
               </div>
+
+              {/* Logout Button - Discreet */}
+              <button
+                type="button"
+                onClick={handleLogoutClick}
+                disabled={isLoggingOut}
+                className="group relative h-8 px-3 rounded-lg border border-border/40 bg-white/40 text-foreground/40 hover:text-foreground/70 hover:border-border/60 hover:bg-white/60 text-xs font-medium transition-all disabled:opacity-70"
+              >
+                <span className="flex items-center gap-1.5">
+                  <LogOut className="w-3 h-3" />
+                  <span className="hidden sm:inline">{t("logout")}</span>
+                </span>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -155,7 +184,7 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
                     value={soundcloudId}
                     onChange={(e) => setSoundcloudId(e.target.value)}
                     className="w-full h-10 px-4 rounded-xl border border-border/60 bg-white/50 focus:outline-none focus:ring-2 focus:ring-[#FF3300]/20 focus:border-[#FF3300]/40 focus:bg-white transition-all text-sm font-medium placeholder:text-foreground/20"
-                    placeholder="oscarginette"
+                    placeholder="gee_beat"
                   />
                 </div>
 
@@ -293,9 +322,9 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
                         </p>
                         <div className="bg-white rounded-lg p-3 border border-border/60">
                           <p className="text-[10px] font-mono text-foreground/40 mb-1">URL completa:</p>
-                          <p className="text-[11px] font-mono text-[#1c1c1c] mb-2">https://soundcloud.com/<span className="bg-[#FF5500]/20 px-1">oscarginette</span></p>
+                          <p className="text-[11px] font-mono text-[#1c1c1c] mb-2">https://soundcloud.com/<span className="bg-[#FF5500]/20 px-1">gee_beat</span></p>
                           <p className="text-[10px] font-mono text-foreground/40 mb-1">Tu SoundCloud ID:</p>
-                          <p className="text-[11px] font-mono font-bold text-[#FF5500]">oscarginette</p>
+                          <p className="text-[11px] font-mono font-bold text-[#FF5500]">gee_beat</p>
                         </div>
                       </div>
                     </div>
@@ -315,7 +344,89 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
 
                   <div className="mt-4 pt-4 border-t border-[#FF5500]/20">
                     <p className="text-[10px] text-foreground/50 italic">
-                      💡 Tip: Si tu URL tiene números al final (ej: /oscarginette-123), incluye todo después del último "/".
+                      💡 Tip: Si tu URL tiene números al final (ej: /gee_beat-123), incluye todo después del último "/".
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Spotify Artist ID Help - Instructions */}
+          <AnimatePresence>
+            {showSpotifyHelp && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-gradient-to-br from-[#1DB954]/5 to-[#1DB954]/10 border border-[#1DB954]/20 rounded-2xl p-6">
+                  <h3 className="text-sm font-bold text-[#1c1c1c] mb-4 flex items-center gap-2">
+                    <Info className="w-4 h-4 text-[#1DB954]" />
+                    Cómo obtener tu Spotify Artist ID
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1DB954] text-white flex items-center justify-center text-xs font-bold">
+                        1
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Abre tu perfil de artista en Spotify</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                          Ve a <a href="https://open.spotify.com" target="_blank" className="text-[#1DB954] hover:underline font-medium">open.spotify.com</a> y busca tu nombre de artista.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1DB954] text-white flex items-center justify-center text-xs font-bold">
+                        2
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Entra a tu perfil de artista</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                          Haz clic en tu perfil de artista (no en una canción). La URL se verá así: <span className="font-mono bg-white px-1.5 py-0.5 rounded text-[10px]">open.spotify.com/artist/...</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1DB954] text-white flex items-center justify-center text-xs font-bold">
+                        3
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Copia el Artist ID de la URL</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed mb-2">
+                          Tu Spotify Artist ID está en la URL después de "/artist/". Es un código de 22 caracteres. Por ejemplo:
+                        </p>
+                        <div className="bg-white rounded-lg p-3 border border-border/60">
+                          <p className="text-[10px] font-mono text-foreground/40 mb-1">URL completa:</p>
+                          <p className="text-[11px] font-mono text-[#1c1c1c] mb-2 break-all">https://open.spotify.com/artist/<span className="bg-[#1DB954]/20 px-1">3TVXtAsR1Inumwj472S9r4</span></p>
+                          <p className="text-[10px] font-mono text-foreground/40 mb-1">Tu Spotify Artist ID:</p>
+                          <p className="text-[11px] font-mono font-bold text-[#1DB954]">3TVXtAsR1Inumwj472S9r4</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1DB954] text-white flex items-center justify-center text-xs font-bold">
+                        4
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1c1c1c] mb-1">Pégalo arriba y guarda</p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                          Copia ese ID de 22 caracteres y pégalo en el campo "Spotify Artist ID" de arriba. Luego haz clic en "Save changes".
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-[#1DB954]/20">
+                    <p className="text-[10px] text-foreground/50 italic">
+                      💡 Tip: También puedes hacer clic en los 3 puntos (...) de tu perfil → Compartir → Copiar enlace del artista.
                     </p>
                   </div>
                 </div>
@@ -323,6 +434,53 @@ export default function SettingsClient({ userName: initialName, userEmail }: Set
             )}
           </AnimatePresence>
         </form>
+
+        {/* Logout Confirmation Modal */}
+        <AnimatePresence>
+          {showLogoutConfirm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+              onClick={handleCancelLogout}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl p-6 shadow-xl max-w-sm mx-4 border border-white/80"
+              >
+                <h3 className="text-lg font-serif text-foreground mb-2">
+                  {t("confirmLogout")}
+                </h3>
+                <p className="text-sm text-foreground/60 mb-6">
+                  {t("confirmLogoutMessage")}
+                </p>
+
+                <div className="flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCancelLogout}
+                    disabled={isLoggingOut}
+                    className="h-10 px-6 rounded-lg border border-border/60 text-foreground text-xs font-bold hover:bg-black/5 transition-all disabled:opacity-70"
+                  >
+                    {t("cancel")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmLogout}
+                    disabled={isLoggingOut}
+                    className="h-10 px-6 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 active:scale-[0.98] transition-all disabled:opacity-70"
+                  >
+                    {isLoggingOut ? "Signing out..." : t("signOut")}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

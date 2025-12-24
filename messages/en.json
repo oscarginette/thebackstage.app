@@ -210,7 +210,13 @@
     "save": "Save Changes",
     "saving": "Saving...",
     "saved": "Saved successfully!",
-    "back": "Back to Dashboard"
+    "back": "Back to Dashboard",
+    "logout": "Sign Out",
+    "logoutDescription": "End your session",
+    "confirmLogout": "Are you sure you want to sign out?",
+    "confirmLogoutMessage": "You'll need to sign in again to access your settings.",
+    "cancel": "Cancel",
+    "signOut": "Sign Out"
   },
   "downloadGates": {
     "title": "Download Gates",

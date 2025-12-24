@@ -210,7 +210,13 @@
     "save": "Guardar Cambios",
     "saving": "Guardando...",
     "saved": "¡Guardado correctamente!",
-    "back": "Volver al Dashboard"
+    "back": "Volver al Dashboard",
+    "logout": "Cerrar Sesión",
+    "logoutDescription": "Finaliza tu sesión",
+    "confirmLogout": "¿Estás seguro de que quieres cerrar sesión?",
+    "confirmLogoutMessage": "Necesitarás iniciar sesión nuevamente para acceder a tus ajustes.",
+    "cancel": "Cancelar",
+    "signOut": "Cerrar Sesión"
   },
   "downloadGates": {
     "title": "Download Gates",
