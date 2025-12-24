@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Users, Trash2, Mail, Filter, Search } from 'lucide-react';
 import DataTable from './DataTable';
+import ImportContactsButton from './ImportContactsButton';
+import BrevoImportWizardModal from './BrevoImportWizardModal';
 
 interface Contact {
   id: number;
@@ -25,15 +27,26 @@ interface ContactsStats {
   newLast7Days: number;
 }
 
-export default function ContactsList() {
+interface Props {
+  onImportClick: () => void;
+}
+
+export interface ContactsListRef {
+  refresh: () => void;
+}
+
+const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [stats, setStats] = useState<ContactsStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [deleting, setDeleting] = useState(false);
+  const [showBrevoImport, setShowBrevoImport] = useState(false);
+  const [brevoConnected, setBrevoConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
     fetchContacts();
+    checkBrevoConnection();
   }, []);
 
   const fetchContacts = async () => {
@@ -48,6 +61,33 @@ export default function ContactsList() {
       setLoading(false);
     }
   };
+
+  const checkBrevoConnection = async () => {
+    try {
+      const res = await fetch('/api/integrations/brevo/status');
+      const data = await res.json();
+      setBrevoConnected(data.connected || false);
+    } catch (error) {
+      console.error('Error checking Brevo connection:', error);
+      setBrevoConnected(false);
+    }
+  };
+
+  const handleBrevoImportClick = () => {
+    if (brevoConnected) {
+      setShowBrevoImport(true);
+    } else {
+      // Show dialog prompting to connect Brevo
+      if (confirm('You need to connect your Brevo account first. Go to Settings?')) {
+        window.location.href = '/settings';
+      }
+    }
+  };
+
+  // Expose refresh method to parent
+  useImperativeHandle(ref, () => ({
+    refresh: fetchContacts
+  }));
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedIds.length} contacts?`)) return;
@@ -146,18 +186,42 @@ export default function ContactsList() {
         emptyMessage="No contacts found."
         emptyIcon={<Users className="w-16 h-16" />}
         actions={
-          selectedIds.length > 0 && (
+          <div className="flex gap-2">
+            <ImportContactsButton onClick={onImportClick} />
             <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-200 text-xs font-bold active:scale-95"
+              onClick={handleBrevoImportClick}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B996E]/10 text-[#0B996E] hover:bg-[#0B996E]/20 transition-all border border-[#0B996E]/30 text-xs font-bold active:scale-95"
             >
-              <Trash2 className="w-4 h-4" />
-              Delete ({selectedIds.length})
+              <Mail className="w-4 h-4" />
+              Import from Brevo
             </button>
-          )
+            {selectedIds.length > 0 && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-200 text-xs font-bold active:scale-95"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete ({selectedIds.length})
+              </button>
+            )}
+          </div>
         }
+      />
+
+      {/* Brevo Import Wizard Modal */}
+      <BrevoImportWizardModal
+        isOpen={showBrevoImport}
+        onClose={() => setShowBrevoImport(false)}
+        onSuccess={() => {
+          setShowBrevoImport(false);
+          fetchContacts(); // Refresh contacts list
+        }}
       />
     </div>
   );
-}
+});
+
+ContactsList.displayName = 'ContactsList';
+
+export default ContactsList;

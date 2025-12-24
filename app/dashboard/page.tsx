@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import Header from '../../components/dashboard/Header';
 import StatCards from '../../components/dashboard/StatCards';
 import TrackList from '../../components/dashboard/TrackList';
 import ExecutionHistory from '../../components/dashboard/ExecutionHistory';
-import ContactsList from '../../components/dashboard/ContactsList';
+import ContactsList, { ContactsListRef } from '../../components/dashboard/ContactsList';
 import EmailEditorModal from '../../components/dashboard/EmailEditorModal';
+import ImportWizardModal from '../../components/dashboard/ImportWizardModal';
 import DraftsList from '../../components/dashboard/DraftsList';
 import DownloadGatesList from '../../components/dashboard/DownloadGatesList';
 import DashboardTabs, { TabType } from '../../components/dashboard/DashboardTabs';
@@ -24,6 +25,7 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const activeTab = (searchParams.get('tab') as TabType) || 'overview';
   const { data: session } = useSession();
+  const contactsListRef = useRef<ContactsListRef>(null);
 
   const setActiveTab = (tab: TabType) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,6 +53,7 @@ function DashboardContent() {
   } = useDashboardData();
 
   const [showEmailEditor, setShowEmailEditor] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const derivedStats = useMemo(() => {
     return {
@@ -234,7 +237,10 @@ function DashboardContent() {
 
           {activeTab === 'audience' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <ContactsList />
+              <ContactsList
+                ref={contactsListRef}
+                onImportClick={() => setShowImportModal(true)}
+              />
             </div>
           )}
 
@@ -242,11 +248,23 @@ function DashboardContent() {
 
         {/* Global UI */}
         {showEmailEditor && (
-          <EmailEditorModal 
-            onClose={() => setShowEmailEditor(false)} 
+          <EmailEditorModal
+            onClose={() => setShowEmailEditor(false)}
             onSave={(content) => handleSendCustomEmail(content)}
             onSaveDraft={(content) => handleSaveDraft(content)}
             saving={sendingCustomEmail}
+          />
+        )}
+
+        {showImportModal && (
+          <ImportWizardModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onSuccess={() => {
+              setShowImportModal(false);
+              contactsListRef.current?.refresh();
+              setMessage({ type: 'success', text: 'Contacts imported successfully' });
+            }}
           />
         )}
         
