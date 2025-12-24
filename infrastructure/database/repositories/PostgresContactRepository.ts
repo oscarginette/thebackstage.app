@@ -2,11 +2,11 @@ import { sql } from '@/lib/db';
 import { IContactRepository, Contact, ContactStats } from '@/domain/repositories/IContactRepository';
 
 export class PostgresContactRepository implements IContactRepository {
-  async getSubscribed(): Promise<Contact[]> {
+  async getSubscribed(userId: number): Promise<Contact[]> {
     const result = await sql`
       SELECT id, email, name, unsubscribe_token, subscribed, created_at
       FROM contacts
-      WHERE subscribed = true
+      WHERE subscribed = true AND user_id = ${userId}
       ORDER BY created_at DESC
     `;
 
@@ -20,11 +20,12 @@ export class PostgresContactRepository implements IContactRepository {
     }));
   }
 
-  async findByEmail(email: string): Promise<Contact | null> {
+  async findByEmail(email: string, userId: number): Promise<Contact | null> {
     const result = await sql`
       SELECT id, email, name, unsubscribe_token, subscribed, created_at
       FROM contacts
-      WHERE email = ${email}
+      WHERE LOWER(email) = LOWER(${email}) AND user_id = ${userId}
+      LIMIT 1
     `;
 
     if (result.rows.length === 0) return null;
@@ -60,11 +61,11 @@ export class PostgresContactRepository implements IContactRepository {
     };
   }
 
-  async updateSubscriptionStatus(id: number, subscribed: boolean): Promise<void> {
+  async updateSubscriptionStatus(id: number, subscribed: boolean, userId: number): Promise<void> {
     await sql`
       UPDATE contacts
       SET subscribed = ${subscribed}
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
   }
 
@@ -78,20 +79,21 @@ export class PostgresContactRepository implements IContactRepository {
     `;
   }
 
-  async resubscribe(id: number): Promise<void> {
+  async resubscribe(id: number, userId: number): Promise<void> {
     await sql`
       UPDATE contacts
       SET
         subscribed = true,
         unsubscribed_at = NULL
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
   }
 
-  async findAll(): Promise<Contact[]> {
+  async findAll(userId: number): Promise<Contact[]> {
     const result = await sql`
       SELECT id, email, name, unsubscribe_token, subscribed, created_at, source, unsubscribed_at, metadata
       FROM contacts
+      WHERE user_id = ${userId}
       ORDER BY created_at DESC
     `;
 
@@ -108,7 +110,7 @@ export class PostgresContactRepository implements IContactRepository {
     }));
   }
 
-  async getStats(): Promise<ContactStats> {
+  async getStats(userId: number): Promise<ContactStats> {
     const result = await sql`
       SELECT
         COUNT(*) FILTER (WHERE subscribed = true) as active_subscribers,
@@ -119,6 +121,7 @@ export class PostgresContactRepository implements IContactRepository {
         COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_last_30_days,
         COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_last_7_days
       FROM contacts
+      WHERE user_id = ${userId}
     `;
 
     const row = result.rows[0];
@@ -133,12 +136,13 @@ export class PostgresContactRepository implements IContactRepository {
     };
   }
 
-  async delete(ids: number[]): Promise<number> {
-    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
-    const result = await sql.query(
-      `DELETE FROM contacts WHERE id IN (${placeholders})`,
-      ids
-    );
+  async delete(ids: number[], userId: number): Promise<number> {
+    if (ids.length === 0) return 0;
+
+    const result = await sql`
+      DELETE FROM contacts
+      WHERE id = ANY(${ids}) AND user_id = ${userId}
+    `;
 
     return result.rowCount || 0;
   }

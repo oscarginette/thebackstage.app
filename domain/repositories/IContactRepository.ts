@@ -21,13 +21,13 @@ export interface ContactStats {
 }
 
 export interface IContactRepository {
-  getSubscribed(): Promise<Contact[]>;
-  findByEmail(email: string): Promise<Contact | null>;
+  getSubscribed(userId: number): Promise<Contact[]>;
+  findByEmail(email: string, userId: number): Promise<Contact | null>;
   findByUnsubscribeToken(token: string): Promise<Contact | null>;
-  updateSubscriptionStatus(id: number, subscribed: boolean): Promise<void>;
+  updateSubscriptionStatus(id: number, subscribed: boolean, userId: number): Promise<void>;
   unsubscribe(id: number): Promise<void>;
-  resubscribe(id: number): Promise<void>;
-  findAll(): Promise<Contact[]>;
-  getStats(): Promise<ContactStats>;
-  delete(ids: number[]): Promise<number>;
+  resubscribe(id: number, userId: number): Promise<void>;
+  findAll(userId: number): Promise<Contact[]>;
+  getStats(userId: number): Promise<ContactStats>;
+  delete(ids: number[], userId: number): Promise<number>;
 }
