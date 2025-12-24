@@ -1,23 +1,36 @@
 import { NextResponse } from 'next/server';
 import { DeleteContactsUseCase, ValidationError } from '@/domain/services/DeleteContactsUseCase';
 import { contactRepository } from '@/infrastructure/database/repositories';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/contacts/delete
- * Deletes multiple contacts by IDs
+ * Deletes multiple contacts by IDs for authenticated user
  *
  * Clean Architecture: Only HTTP concerns (parsing, error handling, JSON response)
  * Business logic delegated to DeleteContactsUseCase
+ * Multi-tenant: Only deletes contacts belonging to authenticated user
  */
 export async function POST(request: Request) {
   try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const userId = parseInt(session.user.id);
+
     const { ids } = await request.json();
 
     // Use DeleteContactsUseCase for business logic
     const useCase = new DeleteContactsUseCase(contactRepository);
-    const result = await useCase.execute({ ids });
+    const result = await useCase.execute({ ids, userId });
 
     return NextResponse.json({
       success: result.success,

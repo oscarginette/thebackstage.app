@@ -18,6 +18,7 @@ export class ValidationError extends Error {
 
 export interface DeleteContactsInput {
   ids: number[];
+  userId: number;
 }
 
 export interface DeleteContactsResult {
@@ -33,8 +34,8 @@ export class DeleteContactsUseCase {
     // 1. Validate input
     this.validateInput(input);
 
-    // 2. Delete contacts via repository
-    const deleted = await this.contactRepository.delete(input.ids);
+    // 2. Delete contacts via repository (with user isolation)
+    const deleted = await this.contactRepository.delete(input.ids, input.userId);
 
     // 3. Return result
     return {
