@@ -23,6 +23,13 @@ export function useDashboardData() {
     fetchGates();
   }, []);
 
+  // Auto-load tracks when hasSoundCloudId is available
+  useEffect(() => {
+    if (hasSoundCloudId) {
+      loadAllTracks();
+    }
+  }, [hasSoundCloudId]);
+
   // Clear message after 3 seconds
   useEffect(() => {
     if (message) {
