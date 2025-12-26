@@ -18,6 +18,7 @@ export const maxDuration = 30;
 export async function GET() {
   try {
     const session = await auth();
+    console.log('[SoundCloud API] Session:', { userId: session?.user?.id, email: session?.user?.email });
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -31,6 +32,11 @@ export async function GET() {
     const settingsUseCase = new GetUserSettingsUseCase(settingsRepository);
     const settings = await settingsUseCase.execute(parseInt(session.user.id));
 
+    console.log('[SoundCloud API] Settings:', {
+      soundcloudId: settings.soundcloudId,
+      hasSoundCloudId: settings.hasSoundCloudId()
+    });
+
     if (!settings.hasSoundCloudId()) {
       return NextResponse.json(
         { error: 'SoundCloud ID not configured. Please add it in Settings.' },
@@ -43,7 +49,9 @@ export async function GET() {
     const useCase = new GetSoundCloudTracksUseCase(trackRepository, soundCloudClient);
 
     const userId = parseInt(session.user.id);
+    console.log('[SoundCloud API] Fetching tracks for:', { soundcloudId: settings.soundcloudId, userId });
     const tracks = await useCase.execute(settings.soundcloudId!, userId);
+    console.log('[SoundCloud API] Tracks fetched:', tracks.length);
 
     return NextResponse.json({ tracks });
 
