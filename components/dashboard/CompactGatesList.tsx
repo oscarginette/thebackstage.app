@@ -84,12 +84,9 @@ export default function CompactGatesList({ gates, loading }: CompactGatesListPro
         </div>
       ))}
       {gates.length > 3 && (
-        <Link 
-          href="/dashboard/download-gates"
-          className="text-center py-2 text-xs font-bold text-gray-500 hover:text-[#1c1c1c] transition-colors"
-        >
-          View all {gates.length} gates
-        </Link>
+        <div className="text-center py-2 text-xs font-bold text-gray-400">
+          {gates.length - 3} more gates
+        </div>
       )}
     </div>
   );
