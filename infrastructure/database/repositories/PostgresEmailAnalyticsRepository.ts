@@ -22,7 +22,7 @@ export class PostgresEmailAnalyticsRepository implements IEmailAnalyticsReposito
       ORDER BY total DESC
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       event_type: row.event_type,
       total: Number(row.total),
       unique_contacts: Number(row.unique_contacts),
@@ -46,7 +46,7 @@ export class PostgresEmailAnalyticsRepository implements IEmailAnalyticsReposito
       LIMIT ${limit}
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       event_type: row.event_type,
       created_at: row.created_at,
       email: row.email,
@@ -73,7 +73,7 @@ export class PostgresEmailAnalyticsRepository implements IEmailAnalyticsReposito
       ORDER BY st.published_at DESC
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       title: row.title,
       track_id: row.track_id,
       sent: Number(row.sent),
@@ -104,7 +104,7 @@ export class PostgresEmailAnalyticsRepository implements IEmailAnalyticsReposito
       LIMIT ${limit}
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       email: row.email,
       name: row.name,
       opens: Number(row.opens),
@@ -187,7 +187,7 @@ export class PostgresEmailAnalyticsRepository implements IEmailAnalyticsReposito
       `;
     }
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       track_id: row.track_id,
       track_title: row.track_title,
       track_url: row.track_url,

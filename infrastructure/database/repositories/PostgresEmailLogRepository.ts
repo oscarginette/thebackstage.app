@@ -20,7 +20,7 @@ export class PostgresEmailLogRepository implements IEmailLogRepository {
       SELECT * FROM email_logs WHERE track_id = ${trackId} ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       id: row.id,
       contactId: row.contact_id,
       trackId: row.track_id,

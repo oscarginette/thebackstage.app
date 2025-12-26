@@ -93,7 +93,7 @@ export class SendNewTrackEmailsUseCase {
     const failed = results.filter((r) => !r.success).length;
 
     // 4. Save track to database
-    await this.trackRepository.save(input.track);
+    await this.trackRepository.save(input.track, input.userId);
 
     // 5. Log execution
     await this.executionLogRepository.create({

@@ -84,7 +84,7 @@ export class PostgresEmailTemplateRepository implements IEmailTemplateRepository
     query += ` ORDER BY created_at DESC`;
 
     const result = await sql.query(query, params);
-    return result.rows.map(row => EmailTemplate.fromDatabase(row));
+    return result.rows.map((row: any) => EmailTemplate.fromDatabase(row));
   }
 
   /**
@@ -267,7 +267,7 @@ export class PostgresEmailTemplateRepository implements IEmailTemplateRepository
       ORDER BY version DESC
     `;
 
-    return result.rows.map(row => EmailTemplate.fromDatabase(row));
+    return result.rows.map((row: any) => EmailTemplate.fromDatabase(row));
   }
 
   /**
@@ -329,7 +329,7 @@ export class PostgresEmailTemplateRepository implements IEmailTemplateRepository
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => EmailTemplate.fromDatabase(row));
+    return result.rows.map((row: any) => EmailTemplate.fromDatabase(row));
   }
 
   /**

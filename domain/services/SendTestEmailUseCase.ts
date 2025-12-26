@@ -84,7 +84,7 @@ export class SendTestEmailUseCase {
     }
 
     // 5. Save test track to database
-    await this.trackRepository.save(input.track);
+    await this.trackRepository.save(input.track, input.userId);
 
     // 6. Log email in database
     await this.emailLogRepository.create({

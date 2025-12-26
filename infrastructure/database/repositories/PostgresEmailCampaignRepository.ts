@@ -89,7 +89,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
     query += ' ORDER BY created_at DESC';
 
     const result = await sql.query(query, params);
-    return result.rows.map(row => EmailCampaign.fromDatabase(row));
+    return result.rows.map((row: any) => EmailCampaign.fromDatabase(row));
   }
 
   /**
@@ -102,7 +102,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => EmailCampaign.fromDatabase(row));
+    return result.rows.map((row: any) => EmailCampaign.fromDatabase(row));
   }
 
   /**
@@ -115,7 +115,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       ORDER BY sent_at DESC
     `;
 
-    return result.rows.map(row => EmailCampaign.fromDatabase(row));
+    return result.rows.map((row: any) => EmailCampaign.fromDatabase(row));
   }
 
   /**
@@ -130,7 +130,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       ORDER BY scheduled_at ASC
     `;
 
-    return result.rows.map(row => EmailCampaign.fromDatabase(row));
+    return result.rows.map((row: any) => EmailCampaign.fromDatabase(row));
   }
 
   /**
@@ -230,7 +230,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => EmailCampaign.fromDatabase(row));
+    return result.rows.map((row: any) => EmailCampaign.fromDatabase(row));
   }
 
   /**
@@ -243,7 +243,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => EmailCampaign.fromDatabase(row));
+    return result.rows.map((row: any) => EmailCampaign.fromDatabase(row));
   }
 
   /**

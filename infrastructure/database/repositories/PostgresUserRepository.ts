@@ -221,7 +221,7 @@ export class PostgresUserRepository implements IUserRepository {
         ORDER BY created_at DESC
       `;
 
-      return result.rows.map((row) =>
+      return result.rows.map((row: any) =>
         User.fromDatabase(
           row.id,
           row.email,

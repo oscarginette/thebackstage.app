@@ -21,7 +21,7 @@ import { auth } from './auth';
 export interface TenantContext {
   userId: number;
   userEmail: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'artist';
 }
 
 /**

@@ -28,7 +28,7 @@ export class PostgresExecutionLogRepository implements IExecutionLogRepository {
       SELECT * FROM execution_logs ORDER BY created_at DESC LIMIT ${limit}
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       id: row.id,
       newTracks: row.new_tracks,
       emailsSent: row.emails_sent,

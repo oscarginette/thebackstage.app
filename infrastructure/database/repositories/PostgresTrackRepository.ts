@@ -58,7 +58,7 @@ export class PostgresTrackRepository implements ITrackRepository {
       ORDER BY created_at DESC
     `;
 
-    return result.rows.map(row => ({
+    return result.rows.map((row: any) => ({
       id: row.id,
       trackId: row.track_id,
       title: row.title,
@@ -76,6 +76,6 @@ export class PostgresTrackRepository implements ITrackRepository {
       WHERE user_id = ${userId}
     `;
 
-    return new Set(result.rows.map(row => row.track_id));
+    return new Set(result.rows.map((row: any) => row.track_id));
   }
 }
