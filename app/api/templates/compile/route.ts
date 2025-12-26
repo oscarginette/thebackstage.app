@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { MJMLCompiler } from '@/infrastructure/email/MJMLCompiler';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
       );
     }
 
+    // Lazy import to avoid issues during build
+    const { MJMLCompiler } = await import('@/infrastructure/email/MJMLCompiler');
     const compiler = new MJMLCompiler();
     const result = compiler.compile({ mjmlContent: body.mjmlContent });
 

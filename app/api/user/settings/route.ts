@@ -71,13 +71,39 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json();
 
+    // Extract SoundCloud ID from URL if provided
+    let soundcloudId = body.soundcloudId;
+    if (body.soundcloudUrl) {
+      try {
+        const extractRes = await fetch(`${request.nextUrl.origin}/api/soundcloud/extract-id`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: body.soundcloudUrl })
+        });
+
+        if (extractRes.ok) {
+          const extractData = await extractRes.json();
+          soundcloudId = extractData.userId;
+        } else {
+          // If extraction fails, treat it as invalid
+          soundcloudId = null;
+        }
+      } catch (error) {
+        console.error('Failed to extract SoundCloud ID:', error);
+        soundcloudId = null;
+      }
+    }
+
+    // Extract Spotify ID from URL if provided (TODO: implement similar logic)
+    let spotifyId = body.spotifyId || body.spotifyUrl;
+
     const repository = new PostgresUserSettingsRepository();
     const useCase = new UpdateUserSettingsUseCase(repository);
 
     const settings = await useCase.execute(parseInt(session.user.id), {
       name: body.name,
-      soundcloudId: body.soundcloudId,
-      spotifyId: body.spotifyId
+      soundcloudId,
+      spotifyId
     });
 
     return NextResponse.json({
