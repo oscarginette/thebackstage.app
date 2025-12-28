@@ -34,7 +34,7 @@ export default function TrackList({
     try {
       const res = await fetch('/api/contacts');
       const data = await res.json();
-      setContactsCount(data.stats?.active_subscribers || 0);
+      setContactsCount(data.stats?.activeSubscribers || 0);
     } catch (error) {
       console.error('Error fetching contacts count:', error);
     }
