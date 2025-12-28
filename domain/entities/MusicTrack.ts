@@ -44,4 +44,23 @@ export class MusicTrack {
       data.creator || data.author
     );
   }
+
+  static fromSpotify(data: {
+    id: string;
+    title: string;
+    url: string;
+    publishedAt: Date;
+    coverImage: string | null;
+    albumType?: string;
+    totalTracks?: number;
+  }): MusicTrack {
+    return new MusicTrack(
+      data.id,
+      data.title,
+      data.url,
+      data.coverImage,
+      data.publishedAt,
+      'spotify'
+    );
+  }
 }
