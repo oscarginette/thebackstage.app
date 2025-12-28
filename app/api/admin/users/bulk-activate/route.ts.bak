@@ -1,0 +1,125 @@
+/**
+ * Bulk Activate Users API Route
+ *
+ * Admin-only endpoint to activate subscriptions for multiple users.
+ * Clean Architecture: API route only orchestrates, business logic in UseCase.
+ *
+ * SECURITY: Admin access required (403 if not admin).
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { BulkActivateUsersUseCase } from '@/domain/services/admin/BulkActivateUsersUseCase';
+import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
+
+const userRepository = new PostgresUserRepository();
+
+/**
+ * POST /api/admin/users/bulk-activate
+ *
+ * Bulk activate user subscriptions
+ *
+ * Request Body:
+ * {
+ *   userIds: number[],
+ *   planName: string,  // 'free' | 'pro' | 'business' | 'unlimited'
+ *   durationMonths: number
+ * }
+ *
+ * Response (Success):
+ * {
+ *   success: true,
+ *   successCount: number,
+ *   failedCount: number,
+ *   errors: Array<{ userId: number, error: string }>
+ * }
+ *
+ * Response (Error):
+ * {
+ *   error: string
+ * }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // Authenticate and verify admin
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check admin role
+    if (session.user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const adminUserId = parseInt(session.user.id);
+
+    // Parse request body
+    const body = await request.json();
+
+    // Validate request body
+    if (!body.userIds || !Array.isArray(body.userIds) || body.userIds.length === 0) {
+      return NextResponse.json(
+        { error: 'userIds must be a non-empty array' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.planName || typeof body.planName !== 'string') {
+      return NextResponse.json(
+        { error: 'planName is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.durationMonths || typeof body.durationMonths !== 'number') {
+      return NextResponse.json(
+        { error: 'durationMonths is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create use case instance
+    const bulkActivateUseCase = new BulkActivateUsersUseCase(userRepository);
+
+    // Execute use case
+    const result = await bulkActivateUseCase.execute({
+      adminUserId,
+      userIds: body.userIds,
+      planName: body.planName,
+      durationMonths: body.durationMonths,
+    });
+
+    // Return result
+    return NextResponse.json(result, { status: 200 });
+  } catch (error: any) {
+    console.error('Bulk activate users API error:', error);
+
+    // Handle specific error types
+    if (error.name === 'UnauthorizedError') {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      );
+    }
+
+    if (error.message?.includes('Invalid')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

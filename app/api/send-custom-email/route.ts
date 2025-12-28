@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SendCustomEmailUseCase, ValidationError } from '@/domain/services/SendCustomEmailUseCase';
+import { CheckEmailQuotaUseCase } from '@/domain/services/CheckEmailQuotaUseCase';
 import {
   contactRepository,
   emailLogRepository,
@@ -7,6 +8,7 @@ import {
   emailCampaignRepository
 } from '@/infrastructure/database/repositories';
 import { resendEmailProvider } from '@/infrastructure/email';
+import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
 import { auth } from '@/lib/auth';
 
 export const maxDuration = 60;
@@ -58,6 +60,39 @@ export async function POST(request: Request) {
     const userId = parseInt(session.user.id);
 
     const body = await request.json();
+
+    // Skip quota check if saving as draft
+    if (!body.saveAsDraft) {
+      // Check email quota BEFORE sending
+      const userRepository = new PostgresUserRepository();
+      const checkEmailQuotaUseCase = new CheckEmailQuotaUseCase(userRepository);
+
+      // Get contact count to estimate emails to be sent
+      const subscribedContacts = await contactRepository.getSubscribed(userId);
+      const emailCount = subscribedContacts.length;
+
+      const quotaCheck = await checkEmailQuotaUseCase.execute({
+        userId,
+        emailCount,
+      });
+
+      if (!quotaCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: quotaCheck.message || 'Email quota exceeded',
+            upgradeRequired: true,
+            quota: {
+              current: quotaCheck.currentCount,
+              limit: quotaCheck.limit,
+              remaining: quotaCheck.remaining,
+              wouldExceedBy: quotaCheck.wouldExceedBy,
+              attempting: emailCount,
+            },
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const useCase = new SendCustomEmailUseCase(
       contactRepository,

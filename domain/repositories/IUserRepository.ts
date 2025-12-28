@@ -8,6 +8,7 @@
  */
 
 import { User } from '../entities/User';
+import { UpdateSubscriptionInput } from '../types/subscriptions';
 
 export interface CreateUserData {
   email: string;
@@ -65,4 +66,36 @@ export interface IUserRepository {
    * @throws Error if user not found or update fails
    */
   updateActiveStatus(userId: number, active: boolean): Promise<void>;
+
+  /**
+   * Update user subscription plan and quota limits
+   * Used when activating or changing subscription plans
+   * @param userId - User identifier
+   * @param input - Subscription data (plan, limits, dates)
+   * @throws Error if user not found or update fails
+   */
+  updateSubscription(userId: number, input: UpdateSubscriptionInput): Promise<void>;
+
+  /**
+   * Increment emails sent counter for current billing period
+   * Used to track quota usage and prevent over-sending
+   * @param userId - User identifier
+   * @param count - Number of emails sent to add to counter
+   * @throws Error if user not found or update fails
+   */
+  incrementEmailsSent(userId: number, count: number): Promise<void>;
+
+  /**
+   * Get user quota information (subscription limits and current usage)
+   * @param userId - User identifier
+   * @returns Quota information including limits and current counts
+   * @throws Error if user not found
+   */
+  getQuotaInfo(userId: number): Promise<{
+    maxContacts: number;
+    maxMonthlyEmails: number;
+    emailsSentThisMonth: number;
+    subscriptionPlan: string;
+    subscriptionExpiresAt: Date | null;
+  }>;
 }

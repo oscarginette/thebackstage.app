@@ -51,4 +51,11 @@ export interface IContactRepository {
   getStats(userId: number): Promise<ContactStats>;
   delete(ids: number[], userId: number): Promise<number>;
   bulkImport(contacts: BulkImportContactInput[]): Promise<BulkImportResult>;
+
+  /**
+   * Count total contacts for a user (used for quota checks)
+   * @param userId - User identifier
+   * @returns Total number of contacts for the user
+   */
+  countByUserId(userId: number): Promise<number>;
 }

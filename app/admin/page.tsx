@@ -11,6 +11,8 @@
 
 import { useEffect, useState } from 'react';
 import UserTable from '@/components/admin/UserTable';
+import UserManagementTable from '@/components/admin/UserManagementTable';
+import Link from 'next/link';
 
 interface UserQuota {
   emailsSentToday: number;
@@ -22,9 +24,12 @@ interface UserQuota {
 interface UserData {
   id: number;
   email: string;
+  name?: string;
   role: 'user' | 'admin';
   active: boolean;
   createdAt: string;
+  subscriptionPlan: string;
+  monthlyQuota: number;
   quota: UserQuota | null;
 }
 
@@ -132,6 +137,25 @@ export default function AdminPage() {
     0
   );
 
+  // Calculate subscription metrics
+  const activeSubscriptions = users.filter(
+    (u) => u.subscriptionPlan !== 'free' && u.active
+  ).length;
+
+  const planPrices = {
+    free: 0,
+    pro: 29,
+    business: 79,
+    unlimited: 199,
+  };
+
+  const estimatedMRR = users
+    .filter((u) => u.active)
+    .reduce((sum, u) => {
+      const planPrice = planPrices[u.subscriptionPlan as keyof typeof planPrices] || 0;
+      return sum + planPrice;
+    }, 0);
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -144,7 +168,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
@@ -198,10 +222,42 @@ export default function AdminPage() {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
-                      Active Users
+                      Active Subscriptions
                     </dt>
                     <dd className="text-2xl font-semibold text-gray-900">
-                      {activeUsers}
+                      {activeSubscriptions}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-6 w-6 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Estimated MRR
+                    </dt>
+                    <dd className="text-2xl font-semibold text-gray-900">
+                      ${estimatedMRR}
                     </dd>
                   </dl>
                 </div>
@@ -262,7 +318,7 @@ export default function AdminPage() {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
-                      Emails Sent Today
+                      Emails This Month
                     </dt>
                     <dd className="text-2xl font-semibold text-gray-900">
                       {totalEmailsSent}
@@ -274,31 +330,38 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Refresh Button */}
-        <div className="mb-4 flex justify-end">
-          <button
-            onClick={fetchUsers}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+        {/* User Management Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+            <button
+              onClick={fetchUsers}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            Refresh
-          </button>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Refresh
+            </button>
+          </div>
+          <UserManagementTable users={users} onRefresh={fetchUsers} />
         </div>
 
-        {/* User Table */}
-        <UserTable users={users} onRefresh={fetchUsers} />
+        {/* Legacy User Table (Quota Management) */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Quota Management</h2>
+          <UserTable users={users} onRefresh={fetchUsers} />
+        </div>
       </div>
     </div>
   );

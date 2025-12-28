@@ -11,6 +11,7 @@
 import { sql } from '@/lib/db';
 import { IUserRepository, CreateUserData } from '@/domain/repositories/IUserRepository';
 import { User } from '@/domain/entities/User';
+import { UpdateSubscriptionInput } from '@/domain/types/subscriptions';
 
 export class PostgresUserRepository implements IUserRepository {
   /**
@@ -262,6 +263,116 @@ export class PostgresUserRepository implements IUserRepository {
       console.error('PostgresUserRepository.updateActiveStatus error:', error);
       throw new Error(
         `Failed to update active status: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Update user subscription plan and quota limits
+   * Used when activating or changing subscription plans
+   * SECURITY: Uses parameterized queries to prevent SQL injection
+   */
+  async updateSubscription(userId: number, input: UpdateSubscriptionInput): Promise<void> {
+    try {
+      const result = await sql`
+        UPDATE users
+        SET
+          subscription_plan = ${input.subscriptionPlan},
+          subscription_started_at = ${input.subscriptionStartedAt},
+          subscription_expires_at = ${input.subscriptionExpiresAt ?? null},
+          max_contacts = ${input.maxContacts},
+          max_monthly_emails = ${input.maxMonthlyEmails},
+          updated_at = NOW()
+        WHERE id = ${userId}
+        RETURNING id
+      `;
+
+      if (result.rowCount === 0) {
+        throw new Error(`User not found: ${userId}`);
+      }
+    } catch (error) {
+      console.error('PostgresUserRepository.updateSubscription error:', error);
+      throw new Error(
+        `Failed to update subscription: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Increment emails sent counter for current billing period
+   * Used to track quota usage and prevent over-sending
+   * SECURITY: Uses parameterized queries and atomic increment operation
+   */
+  async incrementEmailsSent(userId: number, count: number): Promise<void> {
+    try {
+      // Validate count is positive
+      if (count < 0) {
+        throw new Error('Count must be positive');
+      }
+
+      const result = await sql`
+        UPDATE users
+        SET
+          emails_sent_this_month = emails_sent_this_month + ${count},
+          updated_at = NOW()
+        WHERE id = ${userId}
+        RETURNING id
+      `;
+
+      if (result.rowCount === 0) {
+        throw new Error(`User not found: ${userId}`);
+      }
+    } catch (error) {
+      console.error('PostgresUserRepository.incrementEmailsSent error:', error);
+      throw new Error(
+        `Failed to increment emails sent: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Get user quota information (subscription limits and current usage)
+   * Used by quota check use cases to determine if user can perform actions
+   */
+  async getQuotaInfo(userId: number): Promise<{
+    maxContacts: number;
+    maxMonthlyEmails: number;
+    emailsSentThisMonth: number;
+    subscriptionPlan: string;
+    subscriptionExpiresAt: Date | null;
+  }> {
+    try {
+      const result = await sql`
+        SELECT
+          max_contacts,
+          max_monthly_emails,
+          emails_sent_this_month,
+          subscription_plan,
+          subscription_expires_at
+        FROM users
+        WHERE id = ${userId}
+        LIMIT 1
+      `;
+
+      if (result.rows.length === 0) {
+        throw new Error(`User not found: ${userId}`);
+      }
+
+      const row = result.rows[0];
+
+      return {
+        maxContacts: row.max_contacts ?? 100, // Default to free tier
+        maxMonthlyEmails: row.max_monthly_emails ?? 500, // Default to free tier
+        emailsSentThisMonth: row.emails_sent_this_month ?? 0,
+        subscriptionPlan: row.subscription_plan ?? 'free',
+        subscriptionExpiresAt: row.subscription_expires_at
+          ? new Date(row.subscription_expires_at)
+          : null,
+      };
+    } catch (error) {
+      console.error('PostgresUserRepository.getQuotaInfo error:', error);
+      throw new Error(
+        `Failed to get quota info: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }

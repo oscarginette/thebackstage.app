@@ -13,6 +13,7 @@ import DraftsList from '../../components/dashboard/DraftsList';
 import DownloadGatesList from '../../components/dashboard/DownloadGatesList';
 import DashboardTabs, { TabType } from '../../components/dashboard/DashboardTabs';
 import CompactGatesList from '../../components/dashboard/CompactGatesList';
+import QuotaWarning from '../../components/dashboard/QuotaWarning';
 import { Settings, Plus, Mail, Rocket, Users, ArrowRight, FileText, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/context';
@@ -55,6 +56,18 @@ function DashboardContent() {
   const [showEmailEditor, setShowEmailEditor] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
+  // Quota state
+  const [quota, setQuota] = useState<{
+    currentContacts: number;
+    maxContacts: number;
+    currentEmails: number;
+    maxEmails: number;
+    quotaUsagePercent: {
+      contacts: number;
+      emails: number;
+    };
+  } | null>(null);
+
   const derivedStats = useMemo(() => {
     return {
       totalContacts: stats?.totalContacts || 0,
@@ -73,6 +86,23 @@ function DashboardContent() {
       return () => clearTimeout(timer);
     }
   }, [message]);
+
+  // Fetch quota information
+  useEffect(() => {
+    const fetchQuota = async () => {
+      try {
+        const response = await fetch('/api/user/quota');
+        if (response.ok) {
+          const data = await response.json();
+          setQuota(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch quota:', error);
+      }
+    };
+
+    fetchQuota();
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#FDFCF9] font-sans selection:bg-[#FF5500]/10 selection:text-[#FF5500] relative overflow-x-hidden">
@@ -119,10 +149,20 @@ function DashboardContent() {
 
         {/* Tab Content */}
         <div className="pb-32">
-          
+
           {activeTab === 'overview' && (
             <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              
+
+              {/* Quota Warning */}
+              {quota && quota.quotaUsagePercent && (
+                <QuotaWarning
+                  contactsUsed={quota.currentContacts}
+                  contactsLimit={quota.maxContacts}
+                  emailsUsed={quota.currentEmails}
+                  emailsLimit={quota.maxEmails}
+                />
+              )}
+
               <StatCards stats={derivedStats} />
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

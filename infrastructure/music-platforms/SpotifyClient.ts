@@ -93,6 +93,10 @@ export class SpotifyClient {
     this.accessToken = data.access_token;
     this.tokenExpiresAt = Date.now() + (data.expires_in - 300) * 1000;
 
+    if (!this.accessToken) {
+      throw new Error('Spotify API returned empty access token');
+    }
+
     return this.accessToken;
   }
 

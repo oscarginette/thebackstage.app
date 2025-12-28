@@ -1,0 +1,85 @@
+/**
+ * Admin Users API Route
+ *
+ * Admin-only endpoint to fetch all users with their quota and subscription info.
+ * Clean Architecture: Presentation layer that fetches from database.
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { sql } from '@vercel/postgres';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Verify authentication
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized', success: false },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is admin
+    const adminCheck = await sql`
+      SELECT role FROM users WHERE email = ${session.user.email}
+    `;
+
+    if (adminCheck.rows.length === 0 || adminCheck.rows[0].role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required', success: false },
+        { status: 403 }
+      );
+    }
+
+    // Fetch all users with quota information
+    const result = await sql`
+      SELECT
+        id,
+        email,
+        name,
+        role,
+        active,
+        created_at as "createdAt",
+        subscription_plan as "subscriptionPlan",
+        monthly_quota as "monthlyQuota",
+        emails_sent_this_month as "emailsSentThisMonth",
+        quota_reset_at as "quotaResetAt"
+      FROM users
+      ORDER BY created_at DESC
+    `;
+
+    const users = result.rows.map((user) => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      active: user.active,
+      createdAt: user.createdAt,
+      subscriptionPlan: user.subscriptionPlan,
+      monthlyQuota: user.monthlyQuota,
+      quota: {
+        emailsSentToday: user.emailsSentThisMonth || 0,
+        monthlyLimit: user.monthlyQuota,
+        remaining: Math.max(0, user.monthlyQuota - (user.emailsSentThisMonth || 0)),
+        lastResetDate: user.quotaResetAt,
+      },
+    }));
+
+    return NextResponse.json({
+      users,
+      success: true,
+    });
+  } catch (error) {
+    console.error('Fetch users error:', error);
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch users',
+        success: false,
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}

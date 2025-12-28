@@ -214,4 +214,26 @@ export class PostgresContactRepository implements IContactRepository {
       errors
     };
   }
+
+  /**
+   * Count total contacts for a user (used for quota checks)
+   * @param userId - User identifier
+   * @returns Total number of contacts for the user
+   */
+  async countByUserId(userId: number): Promise<number> {
+    try {
+      const result = await sql`
+        SELECT COUNT(*) as count
+        FROM contacts
+        WHERE user_id = ${userId}
+      `;
+
+      return parseInt(result.rows[0].count, 10);
+    } catch (error) {
+      console.error('PostgresContactRepository.countByUserId error:', error);
+      throw new Error(
+        `Failed to count contacts: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
 }
