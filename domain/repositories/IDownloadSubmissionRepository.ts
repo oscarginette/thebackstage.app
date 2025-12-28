@@ -32,19 +32,19 @@ export interface IDownloadSubmissionRepository {
 
   /**
    * Find submission by ID
-   * @param id - Submission ID
+   * @param id - Submission UUID
    * @returns Submission or null if not found
    */
-  findById(id: number): Promise<DownloadSubmission | null>;
+  findById(id: string): Promise<DownloadSubmission | null>;
 
   /**
    * Find submission by email and gate ID
    * Used to prevent duplicate submissions
    * @param email - User email
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @returns Submission or null if not found
    */
-  findByEmailAndGate(email: string, gateId: number): Promise<DownloadSubmission | null>;
+  findByEmailAndGate(email: string, gateId: string): Promise<DownloadSubmission | null>;
 
   /**
    * Find submission by download token
@@ -57,52 +57,52 @@ export interface IDownloadSubmissionRepository {
   /**
    * Find all submissions for a gate
    * Used for analytics and admin dashboard
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @returns Array of submissions
    */
-  findAllByGate(gateId: number): Promise<DownloadSubmission[]>;
+  findAllByGate(gateId: string): Promise<DownloadSubmission[]>;
 
   /**
    * Update verification status
    * Used after OAuth verification completes
-   * @param id - Submission ID
+   * @param id - Submission UUID
    * @param updates - Verification status updates
    * @returns Updated submission
    */
   updateVerificationStatus(
-    id: number,
+    id: string,
     updates: VerificationStatusUpdate
   ): Promise<DownloadSubmission>;
 
   /**
    * Generate and save download token
    * Used when all verifications are complete
-   * @param id - Submission ID
+   * @param id - Submission UUID
    * @param expiresAt - Token expiration date
    * @returns Generated download token
    */
-  generateDownloadToken(id: number, expiresAt: Date): Promise<string>;
+  generateDownloadToken(id: string, expiresAt: Date): Promise<string>;
 
   /**
    * Mark download as complete
    * Used when user actually downloads the file
-   * @param id - Submission ID
+   * @param id - Submission UUID
    */
-  markDownloadComplete(id: number): Promise<void>;
+  markDownloadComplete(id: string): Promise<void>;
 
   /**
    * Update SoundCloud profile data
    * Used after SoundCloud OAuth completes
-   * @param id - Submission ID
+   * @param id - Submission UUID
    * @param profile - SoundCloud profile data
    */
-  updateSoundCloudProfile(id: number, profile: SoundCloudProfile): Promise<void>;
+  updateSoundCloudProfile(id: string, profile: SoundCloudProfile): Promise<void>;
 
   /**
    * Update Spotify profile data
    * Used after Spotify OAuth completes
-   * @param id - Submission ID
+   * @param id - Submission UUID
    * @param profile - Spotify profile data
    */
-  updateSpotifyProfile(id: number, profile: SpotifyProfile): Promise<void>;
+  updateSpotifyProfile(id: string, profile: SpotifyProfile): Promise<void>;
 }

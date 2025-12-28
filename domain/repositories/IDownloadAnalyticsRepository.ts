@@ -31,21 +31,21 @@ export interface IDownloadAnalyticsRepository {
   /**
    * Get aggregated statistics for a gate
    * Includes: views, submissions, downloads, conversion rates
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @returns Gate statistics
    */
-  getGateStats(gateId: number): Promise<GateStats>;
+  getGateStats(gateId: string): Promise<GateStats>;
 
   /**
    * Get detailed analytics events for a gate
    * Used for detailed performance analysis
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @param startDate - Optional start date filter
    * @param endDate - Optional end date filter
    * @returns Array of analytics events
    */
   getGateAnalytics(
-    gateId: number,
+    gateId: string,
     startDate?: Date,
     endDate?: Date
   ): Promise<AnalyticsEvent[]>;
@@ -53,13 +53,13 @@ export interface IDownloadAnalyticsRepository {
   /**
    * Get conversion funnel data
    * Shows drop-off at each step: view -> submit -> download
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @param startDate - Optional start date filter
    * @param endDate - Optional end date filter
    * @returns Funnel statistics
    */
   getConversionFunnel(
-    gateId: number,
+    gateId: string,
     startDate?: Date,
     endDate?: Date
   ): Promise<{
@@ -74,13 +74,13 @@ export interface IDownloadAnalyticsRepository {
   /**
    * Get traffic sources for a gate
    * Groups by referrer, UTM parameters
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @param startDate - Optional start date filter
    * @param endDate - Optional end date filter
    * @returns Traffic source breakdown
    */
   getTrafficSources(
-    gateId: number,
+    gateId: string,
     startDate?: Date,
     endDate?: Date
   ): Promise<
@@ -96,13 +96,13 @@ export interface IDownloadAnalyticsRepository {
   /**
    * Get geographic distribution of views/downloads
    * Groups by country code
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @param startDate - Optional start date filter
    * @param endDate - Optional end date filter
    * @returns Geographic breakdown
    */
   getGeographicDistribution(
-    gateId: number,
+    gateId: string,
     startDate?: Date,
     endDate?: Date
   ): Promise<
