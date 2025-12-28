@@ -25,9 +25,10 @@ export default function CustomEmail({
   coverImage,
   unsubscribeUrl,
 }: CustomEmailProps) {
-  // Logo from Vercel deployment (black version for white/light backgrounds in email)
-  // Files in /public are served from the root URL in Vercel
-  const logoUrl = 'https://backstage-art.vercel.app/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
+  // Logo URL: works in both local and production
+  // Files in /public are served from the root URL
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
+  const logoUrl = `${baseUrl}/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png`;
 
   const signatureLines = signature.split('\n');
 
