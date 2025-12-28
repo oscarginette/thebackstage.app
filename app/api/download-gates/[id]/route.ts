@@ -74,8 +74,22 @@ export async function GET(
       );
     }
 
+    // Map domain stats to frontend format
+    const frontendStats = {
+      views: statsResult.stats.totalViews,
+      submissions: statsResult.stats.totalSubmissions,
+      downloads: statsResult.stats.totalDownloads,
+      conversionRate: statsResult.stats.conversionRate,
+      soundcloudReposts: statsResult.stats.soundcloudReposts,
+      soundcloudFollows: statsResult.stats.soundcloudFollows,
+      spotifyConnections: statsResult.stats.spotifyConnects,
+    };
+
     // Serialize gate with stats
-    const serializedGate = serializeGateWithStats(gate, statsResult.stats);
+    const serializedGate = {
+      ...serializeGate(gate),
+      stats: frontendStats
+    };
 
     return NextResponse.json({ gate: serializedGate });
   } catch (error) {
