@@ -25,8 +25,9 @@ export default function CustomEmail({
   coverImage,
   unsubscribeUrl,
 }: CustomEmailProps) {
-  // Logo hosted on GitHub (black version for white/light backgrounds in email)
-  const logoUrl = 'https://raw.githubusercontent.com/gee_beat/backstage/main/public/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
+  // Logo from Vercel deployment (black version for white/light backgrounds in email)
+  // Files in /public are served from the root URL in Vercel
+  const logoUrl = 'https://backstage-art.vercel.app/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png';
 
   const signatureLines = signature.split('\n');
 
