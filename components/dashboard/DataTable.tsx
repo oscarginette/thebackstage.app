@@ -119,11 +119,35 @@ export default function DataTable<T>({
         </div>
       </div>
 
+      {/* Table Header Row - Fixed */}
+      {filteredData.length > 0 && (
+        <div className="border-b border-[#E8E6DF]/40 flex bg-gray-50/50">
+          {selectable && (
+            <div className="px-6 py-5 flex-shrink-0" style={{ width: '60px' }}>
+              <input
+                type="checkbox"
+                checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+                onChange={handleSelectAll}
+                className="w-4 h-4 rounded border-gray-300 text-[#FF5500] focus:ring-[#FF5500] cursor-pointer"
+              />
+            </div>
+          )}
+          {columns.map((col, i) => (
+            <div
+              key={i}
+              className={`px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ${col.className?.includes('flex-') || col.className?.includes('w-') ? '' : 'flex-1'} ${col.className || ''}`}
+            >
+              {col.header}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Virtual Scrolling Table Container */}
       <div
         ref={tableContainerRef}
-        className="flex-1 overflow-auto"
-        style={{ maxHeight: '600px' }}
+        className="flex-1 overflow-auto bg-white/40"
+        style={{ minHeight: '600px', maxHeight: 'calc(100vh - 300px)' }}
       >
         {filteredData.length === 0 ? (
           <div className="px-8 py-24 text-center">
@@ -135,76 +159,51 @@ export default function DataTable<T>({
             </div>
           </div>
         ) : (
-          <div className="w-full">
-            {/* Header */}
-            <div className="sticky top-0 bg-gray-50/90 backdrop-blur-sm z-10 border-b border-[#E8E6DF]/40 flex">
-              {selectable && (
-                <div className="px-6 py-5 flex-shrink-0" style={{ width: '60px' }}>
-                  <input
-                    type="checkbox"
-                    checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
-                    onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 text-[#FF5500] focus:ring-[#FF5500] cursor-pointer"
-                  />
-                </div>
-              )}
-              {columns.map((col, i) => (
+          <div
+            className="relative w-full"
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const item = filteredData[virtualRow.index];
+              const itemId = selectable && getItemId ? getItemId(item) : -1;
+              const isSelected = selectable && selectedIds.includes(itemId);
+
+              return (
                 <div
-                  key={i}
-                  className={`px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] flex-1 ${col.className}`}
+                  key={virtualRow.index}
+                  onClick={() => onRowClick?.(item)}
+                  className={`
+                    group transition-colors duration-300 absolute w-full flex border-b border-[#E8E6DF]/30
+                    hover:bg-[#F5F3ED]/40
+                    ${rowClickable ? 'cursor-pointer' : ''}
+                    ${isSelected ? 'bg-[#FF5500]/5' : ''}
+                  `}
+                  style={{
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
                 >
-                  {col.header}
+                  {selectable && (
+                    <div className="px-6 py-5 flex-shrink-0 flex items-center" style={{ width: '60px' }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleSelectOne(itemId)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-4 h-4 rounded border-gray-300 text-[#FF5500] focus:ring-[#FF5500] cursor-pointer"
+                      />
+                    </div>
+                  )}
+                  {columns.map((col, j) => (
+                    <div key={j} className={`px-8 py-5 ${col.className?.includes('flex-') || col.className?.includes('w-') ? '' : 'flex-1'} ${col.className || ''}`}>
+                      {col.accessor(item)}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            {/* Virtual Rows */}
-            <div
-              className="relative"
-              style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const item = filteredData[virtualRow.index];
-                const itemId = selectable && getItemId ? getItemId(item) : -1;
-                const isSelected = selectable && selectedIds.includes(itemId);
-
-                return (
-                  <div
-                    key={virtualRow.index}
-                    onClick={() => onRowClick?.(item)}
-                    className={`
-                      group transition-colors duration-300 absolute w-full flex border-b border-[#E8E6DF]/30
-                      hover:bg-[#F5F3ED]/40
-                      ${rowClickable ? 'cursor-pointer' : ''}
-                      ${isSelected ? 'bg-[#FF5500]/5' : ''}
-                    `}
-                    style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    {selectable && (
-                      <div className="px-6 py-5 flex-shrink-0 flex items-center" style={{ width: '60px' }}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelectOne(itemId)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-4 h-4 rounded border-gray-300 text-[#FF5500] focus:ring-[#FF5500] cursor-pointer"
-                        />
-                      </div>
-                    )}
-                    {columns.map((col, j) => (
-                      <div key={j} className={`px-8 py-5 flex-1 ${col.className}`}>
-                        {col.accessor(item)}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+              );
+            })}
           </div>
         )}
       </div>

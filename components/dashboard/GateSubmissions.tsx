@@ -18,7 +18,7 @@ export default function GateSubmissions({ gateId }: { gateId: string }) {
       const res = await fetch(`/api/download-gates/${gateId}/submissions`);
       if (res.ok) {
         const data = await res.json();
-        setSubmissions(data || []);
+        setSubmissions(data.submissions || []);
       }
     } catch (error) {
       console.error('Error fetching submissions:', error);
