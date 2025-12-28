@@ -155,22 +155,37 @@ export class SubmitEmailUseCase {
    */
   private async addToContacts(email: string, firstName?: string): Promise<void> {
     try {
-      // Check if contact already exists (using default userId 1 for download gates)
-      const existingContact = await this.contactRepository.findByEmail(email, 1);
+      // Using default userId 1 for download gates
+      // TODO: Make userId configurable or derive from gate owner
+      const userId = 1;
+
+      // Check if contact already exists
+      const existingContact = await this.contactRepository.findByEmail(email, userId);
       if (existingContact) {
         // Contact already exists, no need to add again
+        console.log(`[GDPR] Contact already exists: ${email}`);
         return;
       }
 
-      // TODO: Implement contact creation
-      // For now, log that we should add this contact
-      console.log(`[GDPR] User consented to marketing: ${email}`, {
+      // Create new contact with GDPR consent
+      const contactInput = {
+        userId,
+        email: email.toLowerCase().trim(),
+        name: firstName || null,
+        subscribed: true,
+        source: 'download_gate',
+        metadata: {
+          consentedVia: 'download_gate',
+          consentedAt: new Date().toISOString(),
+        },
+      };
+
+      await this.contactRepository.bulkImport([contactInput]);
+
+      console.log(`[GDPR] Contact created: ${email}`, {
         firstName,
         source: 'download_gate',
       });
-
-      // Note: Contact creation will be implemented in Phase 2
-      // when we integrate with the contacts system
     } catch (error) {
       // Non-critical error: submission succeeds even if contact creation fails
       console.error('Failed to add contact (non-critical):', error);
@@ -185,7 +200,7 @@ export class SubmitEmailUseCase {
   private async trackSubmitEvent(gateId: string, input: SubmitEmailInput): Promise<void> {
     try {
       await this.analyticsRepository.track({
-        gateId: parseInt(gateId),
+        gateId: gateId,
         eventType: 'submit',
         ipAddress: input.ipAddress,
         userAgent: input.userAgent,

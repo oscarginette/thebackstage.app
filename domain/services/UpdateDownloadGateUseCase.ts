@@ -115,7 +115,7 @@ export class UpdateDownloadGateUseCase {
     // Validate slug if changed
     if (input.slug !== undefined && input.slug !== existingGate.slug) {
       // Check if gate has submissions
-      const submissions = await this.submissionRepository.findAllByGate(parseInt(gateId));
+      const submissions = await this.submissionRepository.findAllByGate(gateId);
       if (submissions.length > 0) {
         return 'Cannot change slug after gate has received submissions (data integrity)';
       }

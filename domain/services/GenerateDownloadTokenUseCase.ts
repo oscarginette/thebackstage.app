@@ -21,6 +21,7 @@
 import { IDownloadSubmissionRepository } from '../repositories/IDownloadSubmissionRepository';
 import { IDownloadGateRepository } from '../repositories/IDownloadGateRepository';
 import { randomBytes } from 'crypto';
+import { sql } from '@vercel/postgres';
 
 export interface GenerateDownloadTokenInput {
   submissionId: number;
@@ -70,16 +71,36 @@ export class GenerateDownloadTokenUseCase {
         }
       }
 
-      // 3. Find gate
-      const gate = await this.gateRepository.findBySlug(''); // TODO: Need to store gateId in submission
-      // For now, we'll use findById with gateId from submission
-      // This is a temporary workaround - will be fixed when repository is implemented
+      // 3. Find gate using gateId from submission
+      // For public submissions, we query without userId validation
+      // The submission already validates the gate relationship
+      const gate = await this.getGateForSubmission(submission.gateId);
+      if (!gate) {
+        return {
+          success: false,
+          error: 'Download gate not found',
+        };
+      }
 
       // 4. Check gate is still active
-      // Note: This validation will be implemented once we have proper gate lookup
+      // Note: gate is raw DB row (snake_case fields)
+      if (!gate.active) {
+        return {
+          success: false,
+          error: 'This download gate is no longer active',
+        };
+      }
+
+      // Check gate not expired
+      if (gate.expires_at && new Date(gate.expires_at) < new Date()) {
+        return {
+          success: false,
+          error: 'This download gate has expired',
+        };
+      }
 
       // 5. Verify all required verifications are complete
-      const verificationsComplete = this.checkVerificationsComplete(submission);
+      const verificationsComplete = this.checkVerificationsComplete(submission, gate);
       if (!verificationsComplete.complete) {
         return {
           success: false,
@@ -88,7 +109,15 @@ export class GenerateDownloadTokenUseCase {
       }
 
       // 6. Check max downloads not reached
-      // Note: This check will be implemented in Phase 2
+      if (gate.max_downloads !== null) {
+        const currentDownloads = await this.gateRepository.getDownloadCount(gate.id);
+        if (currentDownloads >= gate.max_downloads) {
+          return {
+            success: false,
+            error: 'Maximum download limit reached for this gate',
+          };
+        }
+      }
 
       // 7. Generate secure token
       const token = this.generateSecureToken();
@@ -116,31 +145,48 @@ export class GenerateDownloadTokenUseCase {
 
   /**
    * Check if all required verifications are complete
-   * Phase 1: Only email verification required
-   * Phase 2: Will add SoundCloud/Spotify checks
-   * @param submission - Download submission
+   * Validates based on gate requirements
+   * @param submission - Download submission entity
+   * @param gate - Download gate database row (snake_case fields)
    * @returns Verification status
    */
-  private checkVerificationsComplete(submission: any): {
+  private checkVerificationsComplete(submission: any, gate: any): {
     complete: boolean;
     error?: string;
   } {
-    // Phase 1: Email verification
-    // Note: Email is verified when submission is created (no separate verification step)
-    // This is a simplified flow for MVP
+    // Note: gate comes from DB (snake_case), submission is entity (camelCase)
 
-    // Check if submission exists (basic validation)
-    if (!submission.email) {
+    // Check email verification if required
+    if (gate.require_email && !submission.emailVerified) {
       return {
         complete: false,
         error: 'Email verification required',
       };
     }
 
-    // TODO: Phase 2 - Add checks for:
-    // - SoundCloud repost verification
-    // - SoundCloud follow verification
-    // - Spotify connect verification
+    // Check SoundCloud repost verification if required
+    if (gate.require_soundcloud_repost && !submission.soundcloudRepostVerified) {
+      return {
+        complete: false,
+        error: 'SoundCloud repost verification required',
+      };
+    }
+
+    // Check SoundCloud follow verification if required
+    if (gate.require_soundcloud_follow && !submission.soundcloudFollowVerified) {
+      return {
+        complete: false,
+        error: 'SoundCloud follow verification required',
+      };
+    }
+
+    // Check Spotify connection if required
+    if (gate.require_spotify_connect && !submission.spotifyConnected) {
+      return {
+        complete: false,
+        error: 'Spotify connection required',
+      };
+    }
 
     return { complete: true };
   }
@@ -151,5 +197,35 @@ export class GenerateDownloadTokenUseCase {
    */
   private generateSecureToken(): string {
     return randomBytes(this.TOKEN_LENGTH).toString('hex');
+  }
+
+  /**
+   * Get gate for public submission
+   *
+   * ARCHITECTURE NOTE: This temporarily violates Clean Architecture by using SQL directly
+   * in the domain layer. This is a pragmatic workaround because:
+   *
+   * 1. IDownloadGateRepository.findById requires userId for security
+   * 2. Public submissions don't store userId (only gateId)
+   * 3. We need gate properties to validate download requirements
+   * 4. The submission was already validated when created (gate relationship is valid)
+   *
+   * PROPER FIX: Add findByIdPublic(gateId) to IDownloadGateRepository interface
+   *
+   * @param gateId - Gate ID from submission
+   * @returns Gate database row or null
+   */
+  private async getGateForSubmission(gateId: string): Promise<any> {
+    try {
+      const result = await sql`
+        SELECT * FROM download_gates
+        WHERE id = ${gateId}
+        LIMIT 1
+      `;
+      return result.rows.length > 0 ? result.rows[0] : null;
+    } catch (error) {
+      console.error('getGateForSubmission error:', error);
+      return null;
+    }
   }
 }

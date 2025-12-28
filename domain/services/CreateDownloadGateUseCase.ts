@@ -38,9 +38,12 @@ export class CreateDownloadGateUseCase {
    */
   async execute(userId: number, input: CreateGateInput): Promise<CreateDownloadGateResult> {
     try {
+      console.log('[CreateDownloadGateUseCase] Input received:', JSON.stringify(input, null, 2));
+
       // 1. Validate input
       const validationError = this.validateInput(input);
       if (validationError) {
+        console.log('[CreateDownloadGateUseCase] Validation failed:', validationError);
         return { success: false, error: validationError };
       }
 
@@ -119,8 +122,11 @@ export class CreateDownloadGateUseCase {
 
     // Validate SoundCloud URL if provided
     if (input.soundcloudTrackId && input.soundcloudTrackId.trim().length > 0) {
+      console.log('[CreateDownloadGateUseCase] Validating soundcloudTrackId:', input.soundcloudTrackId);
+
       // SoundCloud track ID should be numeric
       if (!/^\d+$/.test(input.soundcloudTrackId)) {
+        console.log('[CreateDownloadGateUseCase] soundcloudTrackId is not numeric, rejecting');
         return 'SoundCloud track ID must be numeric';
       }
     }

@@ -22,6 +22,7 @@
 import { IDownloadSubmissionRepository } from '../repositories/IDownloadSubmissionRepository';
 import { IDownloadGateRepository } from '../repositories/IDownloadGateRepository';
 import { IDownloadAnalyticsRepository } from '../repositories/IDownloadAnalyticsRepository';
+import { sql } from '@vercel/postgres';
 
 export interface ProcessDownloadInput {
   downloadToken: string;
@@ -82,15 +83,29 @@ export class ProcessDownloadUseCase {
         };
       }
 
-      // 5. Find gate to get file URL
-      const gate = await this.gateRepository.findBySlug(''); // TODO: Need proper gate lookup
-      // For now, we'll return error if gate not found
-      // This will be fixed when we properly link submission to gate
+      // 5. Find gate to get file URL using gateId from submission
+      const gate = await this.getGateForSubmission(submission.gateId);
 
       if (!gate) {
         return {
           success: false,
           error: 'Download gate not found',
+        };
+      }
+
+      // Validate gate is still active
+      if (!gate.active) {
+        return {
+          success: false,
+          error: 'This download gate is no longer active',
+        };
+      }
+
+      // Check gate not expired
+      if (gate.expires_at && new Date(gate.expires_at) < new Date()) {
+        return {
+          success: false,
+          error: 'This download gate has expired',
         };
       }
 
@@ -103,10 +118,10 @@ export class ProcessDownloadUseCase {
       // 8. Track analytics event
       await this.trackDownloadEvent(gate.id);
 
-      // 9. Return file URL
+      // 9. Return file URL (gate is raw DB row with snake_case)
       return {
         success: true,
-        fileUrl: gate.fileUrl,
+        fileUrl: gate.file_url,
       };
     } catch (error) {
       console.error('ProcessDownloadUseCase.execute error:', error);
@@ -124,12 +139,42 @@ export class ProcessDownloadUseCase {
   private async trackDownloadEvent(gateId: string): Promise<void> {
     try {
       await this.analyticsRepository.track({
-        gateId: parseInt(gateId),
+        gateId: gateId,
         eventType: 'download',
       });
     } catch (error) {
       // Non-critical error: download succeeds even if analytics tracking fails
       console.error('Failed to track download event (non-critical):', error);
+    }
+  }
+
+  /**
+   * Get gate for public submission
+   *
+   * ARCHITECTURE NOTE: This temporarily violates Clean Architecture by using SQL directly
+   * in the domain layer. This is a pragmatic workaround because:
+   *
+   * 1. IDownloadGateRepository.findById requires userId for security
+   * 2. Public submissions don't store userId (only gateId)
+   * 3. We need gate file_url to serve the download
+   * 4. The submission was already validated when created (gate relationship is valid)
+   *
+   * PROPER FIX: Add findByIdPublic(gateId) to IDownloadGateRepository interface
+   *
+   * @param gateId - Gate ID from submission
+   * @returns Gate database row or null
+   */
+  private async getGateForSubmission(gateId: string): Promise<any> {
+    try {
+      const result = await sql`
+        SELECT * FROM download_gates
+        WHERE id = ${gateId}
+        LIMIT 1
+      `;
+      return result.rows.length > 0 ? result.rows[0] : null;
+    } catch (error) {
+      console.error('getGateForSubmission error:', error);
+      return null;
     }
   }
 }

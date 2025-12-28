@@ -25,6 +25,9 @@ export interface GateWithStats {
     totalSubmissions: number;
     totalDownloads: number;
     conversionRate: number;
+    soundcloudReposts: number;
+    soundcloudFollows: number;
+    spotifyConnects: number;
   };
 }
 
@@ -64,7 +67,7 @@ export class ListDownloadGatesUseCase {
 
   /**
    * Get basic statistics for a gate
-   * @param gateId - Gate ID
+   * @param gateId - Gate UUID
    * @returns Basic stats
    */
   private async getBasicStats(gateId: string): Promise<{
@@ -72,15 +75,21 @@ export class ListDownloadGatesUseCase {
     totalSubmissions: number;
     totalDownloads: number;
     conversionRate: number;
+    soundcloudReposts: number;
+    soundcloudFollows: number;
+    spotifyConnects: number;
   }> {
     try {
-      const stats = await this.analyticsRepository.getGateStats(parseInt(gateId));
+      const stats = await this.analyticsRepository.getGateStats(gateId);
 
       return {
         totalViews: stats.totalViews,
         totalSubmissions: stats.totalSubmissions,
         totalDownloads: stats.totalDownloads,
         conversionRate: stats.conversionRate,
+        soundcloudReposts: stats.soundcloudReposts,
+        soundcloudFollows: stats.soundcloudFollows,
+        spotifyConnects: stats.spotifyConnects,
       };
     } catch (error) {
       console.error(`Failed to get stats for gate ${gateId}:`, error);
@@ -90,6 +99,9 @@ export class ListDownloadGatesUseCase {
         totalSubmissions: 0,
         totalDownloads: 0,
         conversionRate: 0,
+        soundcloudReposts: 0,
+        soundcloudFollows: 0,
+        spotifyConnects: 0,
       };
     }
   }

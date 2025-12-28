@@ -53,7 +53,7 @@ export class GetGateStatsUseCase {
       }
 
       // 2. Get aggregated stats from analytics
-      const stats = await this.analyticsRepository.getGateStats(parseInt(input.gateId));
+      const stats = await this.analyticsRepository.getGateStats(input.gateId);
 
       return {
         success: true,
