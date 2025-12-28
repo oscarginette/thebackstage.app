@@ -38,7 +38,7 @@ export interface CreateGateInput {
 }
 
 export interface CreateSubmissionInput {
-  gateId: number;
+  gateId: string; // UUID
   email: string;
   firstName?: string;
   ipAddress?: string;
@@ -47,7 +47,7 @@ export interface CreateSubmissionInput {
 }
 
 export interface CreateAnalyticsInput {
-  gateId: number;
+  gateId: string; // UUID
   eventType: EventType;
   sessionId?: string;
   referrer?: string;
@@ -94,7 +94,7 @@ export interface SpotifyProfile {
  * Gate statistics and metrics
  */
 export interface GateStats {
-  gateId: number;
+  gateId: string; // UUID
   totalViews: number;
   totalSubmissions: number;
   totalDownloads: number;
@@ -109,8 +109,8 @@ export interface GateStats {
  * Analytics event for tracking user actions
  */
 export interface AnalyticsEvent {
-  id: number;
-  gateId: number;
+  id: string; // UUID
+  gateId: string; // UUID
   eventType: EventType;
   sessionId?: string;
   referrer?: string;
@@ -124,16 +124,18 @@ export interface AnalyticsEvent {
 }
 
 /**
- * OAuth state for CSRF protection
+ * OAuth state for CSRF protection and PKCE
+ * Used to secure OAuth flows for SoundCloud and Spotify
  */
 export interface OAuthState {
-  id: number;
+  id: string; // UUID
   stateToken: string;
   provider: OAuthProvider;
-  submissionId: number;
-  gateId: number;
-  used: boolean;
+  submissionId: string; // UUID
+  gateId: string; // UUID
+  codeVerifier?: string; // PKCE code verifier (Spotify)
   expiresAt: Date;
+  used: boolean;
   createdAt: Date;
 }
 
@@ -141,8 +143,10 @@ export interface OAuthState {
  * Input for creating OAuth state
  */
 export interface CreateOAuthStateInput {
+  stateToken: string;
   provider: OAuthProvider;
-  submissionId: number;
-  gateId: number;
+  submissionId: string; // UUID
+  gateId: string; // UUID
+  codeVerifier?: string; // PKCE code verifier (for Spotify)
   expiresAt: Date;
 }

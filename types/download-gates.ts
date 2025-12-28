@@ -58,6 +58,7 @@ export interface CreateGateFormData {
   genre?: string;
   description?: string;
   soundcloudTrackUrl: string;
+  soundcloudTrackId?: string;
   artworkUrl?: string;
   fileUrl: string;
   fileSizeMb?: number;

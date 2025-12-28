@@ -43,9 +43,9 @@ export interface IOAuthStateRepository {
    * Mark OAuth state as used
    * Used after successful OAuth callback processing
    * Prevents replay attacks (state token can only be used once)
-   * @param id - OAuth state ID
+   * @param id - OAuth state ID (UUID)
    */
-  markAsUsed(id: number): Promise<void>;
+  markAsUsed(id: string): Promise<void>;
 
   /**
    * Delete expired OAuth states
