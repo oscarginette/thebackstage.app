@@ -6,27 +6,9 @@ import DataTable from './DataTable';
 import ImportContactsButton from './ImportContactsButton';
 import BrevoImportWizardModal from './BrevoImportWizardModal';
 import Toast from '@/components/ui/Toast';
-
-interface Contact {
-  id: number;
-  email: string;
-  name: string | null;
-  source: string;
-  subscribed: boolean;
-  created_at: string;
-  unsubscribed_at: string | null;
-  metadata: any;
-}
-
-interface ContactsStats {
-  activeSubscribers: number;
-  unsubscribed: number;
-  totalContacts: number;
-  fromHypeddit: number;
-  fromHypedit: number;
-  newLast30Days: number;
-  newLast7Days: number;
-}
+import { apiGet, isApiError } from '@/lib/api-client';
+import { GetContactsWithStatsResult } from '@/domain/services/GetContactsWithStatsUseCase';
+import { Contact, ContactStats } from '@/domain/repositories/IContactRepository';
 
 interface Props {
   onImportClick: () => void;
@@ -38,7 +20,7 @@ export interface ContactsListRef {
 
 const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref) => {
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [stats, setStats] = useState<ContactsStats | null>(null);
+  const [stats, setStats] = useState<ContactStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [deleting, setDeleting] = useState(false);
@@ -53,12 +35,15 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
 
   const fetchContacts = async () => {
     try {
-      const res = await fetch('/api/contacts');
-      const data = await res.json();
-      setContacts(data.contacts || []);
-      setStats(data.stats || null);
+      const result = await apiGet<GetContactsWithStatsResult>('/api/contacts');
+      setContacts(result.contacts || []);
+      setStats(result.stats || null);
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      if (isApiError(error)) {
+        console.error('API Error:', error.message, error.code);
+      } else {
+        console.error('Error fetching contacts:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -157,7 +142,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
     {
       header: 'Added',
       accessor: (contact: Contact) => (
-        <div className="text-xs text-gray-500 font-medium">{formatDate(contact.created_at)}</div>
+        <div className="text-xs text-gray-500 font-medium">{formatDate(contact.createdAt)}</div>
       ),
     },
   ];
