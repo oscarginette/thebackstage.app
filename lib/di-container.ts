@@ -629,7 +629,12 @@ export class UseCaseFactory {
 
   static createSendNewUserNotificationUseCase(): SendNewUserNotificationUseCase {
     return new SendNewUserNotificationUseCase(
-      ProviderFactory.createEmailProvider()
+      RepositoryFactory.createUserRepository(),
+      ProviderFactory.createEmailProvider(),
+      {
+        adminEmail: process.env.ADMIN_EMAIL || 'admin@example.com',
+        baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      }
     );
   }
 
@@ -639,7 +644,12 @@ export class UseCaseFactory {
 
   static createSendSubscriptionActivatedEmailUseCase(): SendSubscriptionActivatedEmailUseCase {
     return new SendSubscriptionActivatedEmailUseCase(
-      ProviderFactory.createEmailProvider()
+      RepositoryFactory.createUserRepository(),
+      RepositoryFactory.createQuotaTrackingRepository(),
+      ProviderFactory.createEmailProvider(),
+      {
+        baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      }
     );
   }
 
