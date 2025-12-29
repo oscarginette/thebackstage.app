@@ -193,7 +193,7 @@ export default function PricingSection() {
               </div>
 
               <Link
-                href="//login"
+                href="/login"
                 className={`w-full flex h-10 items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-95 ${
                   plan.highlight
                     ? "bg-foreground text-background hover:bg-foreground/90 shadow-xl"

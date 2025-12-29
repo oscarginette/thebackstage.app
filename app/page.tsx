@@ -39,7 +39,7 @@ export default function Home() {
             </Link>
             <LanguageSwitcher />
             <Link
-              href="//login"
+              href="/login"
               className="h-10 px-6 rounded-full bg-foreground text-background text-sm font-medium flex items-center justify-center transition-all hover:opacity-90 active:scale-95"
             >
               {t('getStarted')}
