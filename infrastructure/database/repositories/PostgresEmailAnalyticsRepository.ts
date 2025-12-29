@@ -133,6 +133,10 @@ export class PostgresEmailAnalyticsRepository implements IEmailAnalyticsReposito
       FROM stats
     `;
 
+    if (result.rows.length === 0) {
+      return new EmailMetrics(0, 0, 0, 0, 0);
+    }
+
     const row = result.rows[0];
 
     return new EmailMetrics(

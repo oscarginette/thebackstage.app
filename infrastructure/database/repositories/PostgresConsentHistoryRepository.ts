@@ -10,6 +10,7 @@ import {
   CreateConsentHistoryInput
 } from '../../../domain/repositories/IConsentHistoryRepository';
 import { ConsentHistory, ConsentAction, ConsentSource } from '../../../domain/entities/ConsentHistory';
+import type { ConsentHistoryMetadata } from '@/domain/types/metadata';
 
 /**
  * Database row type for consent_history table
@@ -25,7 +26,7 @@ interface ConsentHistoryRow {
   source: ConsentSource;
   ip_address: string | null;
   user_agent: string | null;
-  metadata: any;
+  metadata: ConsentHistoryMetadata | null;
   created_at: string;
 }
 
@@ -51,6 +52,10 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
       )
       RETURNING *
     `;
+
+    if (result.rows.length === 0) {
+      throw new Error('Failed to create consent history');
+    }
 
     const row = result.rows[0];
     return this.mapRowToEntity(row);
@@ -111,6 +116,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
         AND timestamp >= ${startDate.toISOString()}
         AND timestamp <= ${endDate.toISOString()}
       `;
+      if (result.rows.length === 0) return 0;
       return Number.parseInt(result.rows[0].count, 10);
     }
 
@@ -121,6 +127,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
         WHERE action = ${action}
         AND timestamp >= ${startDate.toISOString()}
       `;
+      if (result.rows.length === 0) return 0;
       return Number.parseInt(result.rows[0].count, 10);
     }
 
@@ -131,6 +138,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
         WHERE action = ${action}
         AND timestamp <= ${endDate.toISOString()}
       `;
+      if (result.rows.length === 0) return 0;
       return Number.parseInt(result.rows[0].count, 10);
     }
 
@@ -139,6 +147,7 @@ export class PostgresConsentHistoryRepository implements IConsentHistoryReposito
       FROM consent_history
       WHERE action = ${action}
     `;
+    if (result.rows.length === 0) return 0;
     return Number.parseInt(result.rows[0].count, 10);
   }
 

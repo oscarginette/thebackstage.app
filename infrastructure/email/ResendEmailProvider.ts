@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { IEmailProvider, EmailParams, EmailResult } from './IEmailProvider';
+import { env } from '@/lib/env';
 
 export class ResendEmailProvider implements IEmailProvider {
   private resend: Resend;
@@ -12,7 +13,7 @@ export class ResendEmailProvider implements IEmailProvider {
     try {
       // Build email payload
       const emailPayload: any = {
-        from: params.from || `Gee Beat <${process.env.SENDER_EMAIL}>`,
+        from: params.from || `Gee Beat <${env.SENDER_EMAIL}>`,
         to: params.to,
         subject: params.subject,
         html: params.html,
@@ -41,10 +42,11 @@ export class ResendEmailProvider implements IEmailProvider {
         success: true,
         id: data?.id
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send email';
       return {
         success: false,
-        error: error.message
+        error: errorMessage
       };
     }
   }

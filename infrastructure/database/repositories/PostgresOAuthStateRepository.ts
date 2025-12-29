@@ -37,6 +37,10 @@ export class PostgresOAuthStateRepository implements IOAuthStateRepository {
         RETURNING *
       `;
 
+      if (result.rows.length === 0) {
+        throw new Error('Failed to create OAuth state');
+      }
+
       return this.mapToEntity(result.rows[0]);
     } catch (error) {
       console.error('PostgresOAuthStateRepository.create error:', error);

@@ -5,6 +5,7 @@ import {
   CreateImportHistoryInput,
   ImportResults
 } from '@/domain/repositories/IContactImportHistoryRepository';
+import type { ColumnMappingMetadata } from '@/domain/types/metadata';
 
 /**
  * Database row type for contact_import_history table
@@ -22,13 +23,13 @@ interface ContactImportHistoryRow {
   contacts_inserted: number | null;
   contacts_updated: number | null;
   contacts_skipped: number | null;
-  column_mapping: any;
+  column_mapping: ColumnMappingMetadata | null;
   status: string;
   started_at: string;
   completed_at: string | null;
   duration_ms: number | null;
   error_message: string | null;
-  errors_detail: any;
+  errors_detail: Array<{ row: number; email: string; message: string }> | null;
 }
 
 /**
@@ -60,6 +61,10 @@ export class PostgresContactImportHistoryRepository implements IContactImportHis
       )
       RETURNING *
     `;
+
+    if (result.rows.length === 0) {
+      throw new Error('Failed to create import history');
+    }
 
     return this.mapRowToEntity(result.rows[0]);
   }

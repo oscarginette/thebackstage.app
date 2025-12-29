@@ -38,7 +38,7 @@ export class BrevoAPIClient implements IBrevoAPIClient {
         name: list.name,
         totalSubscribers: list.totalSubscribers
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleBrevoError(error, 'Failed to fetch lists');
     }
   }
@@ -102,7 +102,7 @@ export class BrevoAPIClient implements IBrevoAPIClient {
       // 4. Return unique contacts as array
       return Array.from(contactsMap.values());
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleBrevoError(error, 'Failed to fetch contacts');
     }
   }
@@ -173,21 +173,29 @@ export class BrevoAPIClient implements IBrevoAPIClient {
   /**
    * Handle Brevo API errors and convert to user-friendly messages
    */
-  private handleBrevoError(error: any, defaultMessage: string): Error {
-    if (error.status === 401 || error.statusCode === 401) {
-      return new Error('Invalid API key. Please check your Brevo API key in Settings.');
-    }
+  private handleBrevoError(error: unknown, defaultMessage: string): Error {
+    // Type guard for objects with status/statusCode properties
+    const hasStatus = (err: unknown): err is { status?: number; statusCode?: number; message?: string } => {
+      return typeof err === 'object' && err !== null;
+    };
 
-    if (error.status === 429 || error.statusCode === 429) {
-      return new Error('Brevo API rate limit exceeded. Please try again in a few minutes.');
-    }
+    if (hasStatus(error)) {
+      if (error.status === 401 || error.statusCode === 401) {
+        return new Error('Invalid API key. Please check your Brevo API key in Settings.');
+      }
 
-    if (error.status === 404 || error.statusCode === 404) {
-      return new Error('Resource not found in Brevo. The list may have been deleted.');
+      if (error.status === 429 || error.statusCode === 429) {
+        return new Error('Brevo API rate limit exceeded. Please try again in a few minutes.');
+      }
+
+      if (error.status === 404 || error.statusCode === 404) {
+        return new Error('Resource not found in Brevo. The list may have been deleted.');
+      }
     }
 
     // Generic error with original message
-    return new Error(`${defaultMessage}: ${error.message || 'Unknown error'}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return new Error(`${defaultMessage}: ${errorMessage}`);
   }
 
   /**

@@ -66,6 +66,10 @@ export class PostgresSubscriptionRepository implements ISubscriptionRepository {
       RETURNING *
     `;
 
+    if (result.rows.length === 0) {
+      throw new Error('Failed to create subscription');
+    }
+
     return this.mapToDomain(result.rows[0]);
   }
 

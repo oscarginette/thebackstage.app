@@ -41,6 +41,10 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       RETURNING *
     `;
 
+    if (result.rows.length === 0) {
+      throw new Error('Failed to create campaign');
+    }
+
     return EmailCampaign.fromDatabase(result.rows[0]);
   }
 
@@ -265,6 +269,8 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
       `;
     }
 
+    if (result.rows.length === 0) return 0;
+
     return parseInt(result.rows[0].count);
   }
 
@@ -277,6 +283,8 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
         SELECT 1 FROM email_campaigns WHERE id = ${id}
       ) as exists
     `;
+
+    if (result.rows.length === 0) return false;
 
     return result.rows[0].exists;
   }

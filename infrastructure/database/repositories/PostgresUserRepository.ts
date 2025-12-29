@@ -47,6 +47,10 @@ export class PostgresUserRepository implements IUserRepository {
           updated_at
       `;
 
+      if (result.rows.length === 0) {
+        throw new Error('Failed to create user');
+      }
+
       const row = result.rows[0];
       return User.fromDatabase(
         row.id,
@@ -193,6 +197,8 @@ export class PostgresUserRepository implements IUserRepository {
           WHERE LOWER(email) = LOWER(${email.trim()})
         ) as exists
       `;
+
+      if (result.rows.length === 0) return false;
 
       return result.rows[0].exists;
     } catch (error) {

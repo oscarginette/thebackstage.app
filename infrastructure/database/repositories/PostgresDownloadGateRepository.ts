@@ -78,6 +78,10 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
         RETURNING *
       `;
 
+      if (result.rows.length === 0) {
+        throw new Error('Failed to create download gate');
+      }
+
       return this.mapToEntity(result.rows[0]);
     } catch (error) {
       console.error('PostgresDownloadGateRepository.create error:', error);
@@ -231,7 +235,7 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
           values
         );
 
-        if (result.rowCount === 0) {
+        if (result.rowCount === 0 || result.rows.length === 0) {
           throw new Error('Download gate not found');
         }
 
@@ -306,6 +310,8 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
         FROM download_submissions
         WHERE gate_id = ${gateId} AND download_completed = true
       `;
+
+      if (result.rows.length === 0) return 0;
 
       return parseInt(result.rows[0].count, 10);
     } catch (error) {

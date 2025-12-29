@@ -1,7 +1,7 @@
 import { ResendEmailProvider } from './ResendEmailProvider';
+import { getRequiredEnv } from '@/lib/env';
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY is not defined');
-}
+// Validate RESEND_API_KEY is set (fail fast)
+const resendApiKey = getRequiredEnv('RESEND_API_KEY');
 
-export const resendEmailProvider = new ResendEmailProvider(process.env.RESEND_API_KEY);
+export const resendEmailProvider = new ResendEmailProvider(resendApiKey);

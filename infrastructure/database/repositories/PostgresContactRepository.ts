@@ -6,6 +6,7 @@ import {
   BulkImportContactInput,
   BulkImportResult
 } from '@/domain/repositories/IContactRepository';
+import type { ContactMetadata } from '@/domain/types/metadata';
 
 export class PostgresContactRepository implements IContactRepository {
   async getSubscribed(userId: number): Promise<Contact[]> {
@@ -113,7 +114,7 @@ export class PostgresContactRepository implements IContactRepository {
       createdAt: row.created_at,
       source: row.source,
       unsubscribedAt: row.unsubscribed_at,
-      metadata: row.metadata
+      metadata: row.metadata as ContactMetadata | undefined
     }));
   }
 
@@ -130,6 +131,18 @@ export class PostgresContactRepository implements IContactRepository {
       FROM contacts
       WHERE user_id = ${userId}
     `;
+
+    if (result.rows.length === 0) {
+      return {
+        totalContacts: 0,
+        activeSubscribers: 0,
+        unsubscribed: 0,
+        fromHypeddit: 0,
+        fromHypedit: 0,
+        newLast30Days: 0,
+        newLast7Days: 0
+      };
+    }
 
     const row = result.rows[0];
     return {
@@ -192,16 +205,17 @@ export class PostgresContactRepository implements IContactRepository {
 
         // Check if it was an insert or update
         // xmax = 0 means INSERT, xmax > 0 means UPDATE
-        if (result.rows[0].inserted) {
+        if (result.rows.length > 0 && result.rows[0].inserted) {
           inserted++;
         } else {
           updated++;
         }
-      } catch (error: any) {
-        console.error(`Error importing contact ${contact.email}:`, error.message);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Error importing contact ${contact.email}:`, errorMessage);
         errors.push({
           email: contact.email,
-          error: error.message || 'Unknown error'
+          error: errorMessage
         });
         skipped++;
       }
@@ -227,6 +241,8 @@ export class PostgresContactRepository implements IContactRepository {
         FROM contacts
         WHERE user_id = ${userId}
       `;
+
+      if (result.rows.length === 0) return 0;
 
       return parseInt(result.rows[0].count, 10);
     } catch (error) {

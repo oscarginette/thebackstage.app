@@ -36,6 +36,10 @@ export class PostgresEmailTemplateRepository implements IEmailTemplateRepository
       RETURNING *
     `;
 
+    if (result.rows.length === 0) {
+      throw new Error('Failed to create template');
+    }
+
     return EmailTemplate.fromDatabase(result.rows[0]);
   }
 
@@ -315,6 +319,10 @@ export class PostgresEmailTemplateRepository implements IEmailTemplateRepository
       RETURNING *
     `;
 
+    if (result.rows.length === 0) {
+      throw new Error('Failed to create template version');
+    }
+
     return EmailTemplate.fromDatabase(result.rows[0]);
   }
 
@@ -343,6 +351,9 @@ export class PostgresEmailTemplateRepository implements IEmailTemplateRepository
     }
 
     const result = await sql.query(query);
+
+    if (result.rows.length === 0) return 0;
+
     return Number(result.rows[0]?.count || 0);
   }
 

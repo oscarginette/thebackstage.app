@@ -16,6 +16,7 @@ import {
   UploadImageOutput,
   DeleteImageInput
 } from './IImageStorageProvider';
+import { getRequiredEnv } from '@/lib/env';
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -26,15 +27,12 @@ export class ValidationError extends Error {
 
 export class CloudinaryImageProvider implements IImageStorageProvider {
   constructor() {
-    // Initialize Cloudinary with environment variables
+    // Initialize Cloudinary with environment variables (validated)
     cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET
+      cloud_name: getRequiredEnv('CLOUDINARY_CLOUD_NAME'),
+      api_key: getRequiredEnv('CLOUDINARY_API_KEY'),
+      api_secret: getRequiredEnv('CLOUDINARY_API_SECRET')
     });
-
-    // Validate configuration
-    this.validateConfiguration();
   }
 
   async upload(input: UploadImageInput): Promise<UploadImageOutput> {
@@ -73,18 +71,6 @@ export class CloudinaryImageProvider implements IImageStorageProvider {
     } catch (error) {
       console.error('Cloudinary delete error:', error);
       throw new Error('Failed to delete image from Cloudinary');
-    }
-  }
-
-  private validateConfiguration(): void {
-    if (!process.env.CLOUDINARY_CLOUD_NAME) {
-      throw new Error('CLOUDINARY_CLOUD_NAME environment variable is not set');
-    }
-    if (!process.env.CLOUDINARY_API_KEY) {
-      throw new Error('CLOUDINARY_API_KEY environment variable is not set');
-    }
-    if (!process.env.CLOUDINARY_API_SECRET) {
-      throw new Error('CLOUDINARY_API_SECRET environment variable is not set');
     }
   }
 

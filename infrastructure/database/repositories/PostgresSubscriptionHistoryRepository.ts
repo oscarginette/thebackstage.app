@@ -67,6 +67,10 @@ export class PostgresSubscriptionHistoryRepository implements ISubscriptionHisto
           created_at
       `;
 
+      if (result.rows.length === 0) {
+        throw new Error('Failed to create subscription history');
+      }
+
       const row = result.rows[0];
       return this.mapRowToSubscriptionHistory(row);
     } catch (error) {

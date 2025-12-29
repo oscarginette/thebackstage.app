@@ -10,6 +10,8 @@
  * API Documentation: https://developer.spotify.com/documentation/web-api
  */
 
+import { env } from '@/lib/env';
+
 export interface SpotifyAlbum {
   id: string;
   name: string;
@@ -43,18 +45,13 @@ export class SpotifyClient {
   private tokenExpiresAt: number = 0;
 
   constructor() {
-    const clientId = process.env.SPOTIFY_CLIENT_ID;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+    // Use validated environment variables
+    // These are optional, so we use empty strings as fallback
+    this.clientId = env.SPOTIFY_CLIENT_ID || '';
+    this.clientSecret = env.SPOTIFY_CLIENT_SECRET || '';
 
-    if (!clientId || !clientSecret) {
-      // During build time, these vars might not be available
-      // We'll set them to empty strings and validate at runtime
+    if (!this.isConfigured()) {
       console.warn('Spotify credentials not configured');
-      this.clientId = clientId || '';
-      this.clientSecret = clientSecret || '';
-    } else {
-      this.clientId = clientId;
-      this.clientSecret = clientSecret;
     }
   }
 

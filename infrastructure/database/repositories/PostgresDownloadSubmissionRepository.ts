@@ -52,6 +52,10 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
         RETURNING *
       `;
 
+      if (result.rows.length === 0) {
+        throw new Error('Failed to create submission');
+      }
+
       return this.mapToEntity(result.rows[0]);
     } catch (error) {
       console.error('PostgresDownloadSubmissionRepository.create error:', error);
@@ -186,7 +190,7 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
           values
         );
 
-        if (result.rowCount === 0) {
+        if (result.rowCount === 0 || result.rows.length === 0) {
           throw new Error('Submission not found');
         }
 
@@ -216,7 +220,7 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
         RETURNING download_token
       `;
 
-      if (result.rowCount === 0) {
+      if (result.rowCount === 0 || result.rows.length === 0) {
         throw new Error('Submission not found');
       }
 

@@ -148,6 +148,10 @@ export class PostgresQuotaTrackingRepository implements IQuotaTrackingRepository
           updated_at
       `;
 
+      if (result.rows.length === 0) {
+        throw new Error('Failed to create quota tracking');
+      }
+
       const row = result.rows[0];
       return QuotaTracking.create(
         row.id,
