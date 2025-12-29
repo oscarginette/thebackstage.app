@@ -238,7 +238,8 @@
     "signup": "Regístrate",
     "haveAccount": "¿Ya tienes una cuenta?",
     "signin": "Inicia sesión",
-    "back": "Volver al inicio"
+    "back": "Volver al inicio",
+    "invalidCredentials": "Correo electrónico o contraseña incorrectos. Por favor, inténtalo de nuevo."
   },
   "settings": {
     "title": "Ajustes",

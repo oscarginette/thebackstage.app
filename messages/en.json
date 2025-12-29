@@ -238,7 +238,8 @@
     "signup": "Sign up",
     "haveAccount": "Already have an account?",
     "signin": "Sign in",
-    "back": "Back to home"
+    "back": "Back to home",
+    "invalidCredentials": "Invalid email or password. Please try again."
   },
   "settings": {
     "title": "Settings",

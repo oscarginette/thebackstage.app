@@ -37,7 +37,7 @@ function getEmailProvider(): ResendEmailProvider | null {
 }
 
 /**
- * POST /api//login
+ * POST /api/auth/signup
  *
  * Create new user account
  *
