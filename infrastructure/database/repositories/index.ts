@@ -8,6 +8,9 @@ import { PostgresEmailTemplateRepository } from './PostgresEmailTemplateReposito
 import { PostgresEmailCampaignRepository } from './PostgresEmailCampaignRepository';
 import { PostgresDownloadGateRepository } from './PostgresDownloadGateRepository';
 import { PostgresDownloadSubmissionRepository } from './PostgresDownloadSubmissionRepository';
+import { PostgresProductRepository } from './PostgresProductRepository';
+import { PostgresPriceRepository } from './PostgresPriceRepository';
+import { PostgresSubscriptionRepository } from './PostgresSubscriptionRepository';
 
 // Singleton instances
 export const trackRepository = new PostgresTrackRepository();
@@ -20,3 +23,8 @@ export const emailTemplateRepository = new PostgresEmailTemplateRepository();
 export const emailCampaignRepository = new PostgresEmailCampaignRepository();
 export const downloadGateRepository = new PostgresDownloadGateRepository();
 export const downloadSubmissionRepository = new PostgresDownloadSubmissionRepository();
+
+// Subscription system repositories
+export const productRepository = new PostgresProductRepository();
+export const priceRepository = new PostgresPriceRepository();
+export const subscriptionRepository = new PostgresSubscriptionRepository();
