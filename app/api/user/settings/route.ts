@@ -4,12 +4,13 @@
  * Handles user settings retrieval and updates.
  * Clean Architecture: Only HTTP orchestration, no business logic.
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
-import { GetUserSettingsUseCase } from '@/domain/services/GetUserSettingsUseCase';
-import { UpdateUserSettingsUseCase, ValidationError } from '@/domain/services/UpdateUserSettingsUseCase';
-import { PostgresUserSettingsRepository } from '@/infrastructure/database/repositories/PostgresUserSettingsRepository';
-import { NotFoundError } from '@/infrastructure/database/repositories/PostgresUserSettingsRepository';
+import { UseCaseFactory } from '@/lib/di-container';
+import { withErrorHandler, generateRequestId } from '@/lib/error-handler';
+import { successResponse } from '@/lib/api-response';
+import { UnauthorizedError } from '@/lib/errors';
+import { UpdateUserSettingsSchema } from '@/lib/validation-schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,119 +18,91 @@ export const dynamic = 'force-dynamic';
  * GET /api/user/settings
  * Retrieve authenticated user's settings
  */
-export async function GET() {
-  try {
-    const session = await auth();
+export const GET = withErrorHandler(async () => {
+  const requestId = generateRequestId();
+  const session = await auth();
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const repository = new PostgresUserSettingsRepository();
-    const useCase = new GetUserSettingsUseCase(repository);
-
-    const settings = await useCase.execute(parseInt(session.user.id));
-
-    return NextResponse.json({
-      settings: settings.toJSON()
-    });
-
-  } catch (error: any) {
-    console.error('Error fetching user settings:', error);
-
-    if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  if (!session?.user?.id) {
+    throw new UnauthorizedError();
   }
-}
+
+  // Get use case from factory (DI)
+  const useCase = UseCaseFactory.createGetUserSettingsUseCase();
+
+  const settings = await useCase.execute(parseInt(session.user.id));
+
+  return successResponse(
+    {
+      settings: settings.toJSON()
+    },
+    200,
+    requestId
+  );
+});
 
 /**
  * PATCH /api/user/settings
  * Update authenticated user's settings
  */
-export async function PATCH(request: NextRequest) {
-  try {
-    const session = await auth();
+export const PATCH = withErrorHandler(async (request: Request) => {
+  const requestId = generateRequestId();
+  const session = await auth();
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-
-    // Extract SoundCloud ID from URL if provided
-    let soundcloudId = body.soundcloudId;
-    if (body.soundcloudUrl) {
-      try {
-        const extractRes = await fetch(`${request.nextUrl.origin}/api/soundcloud/extract-id`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: body.soundcloudUrl })
-        });
-
-        if (extractRes.ok) {
-          const extractData = await extractRes.json();
-          soundcloudId = extractData.userId;
-        } else {
-          // If extraction fails, treat it as invalid
-          soundcloudId = null;
-        }
-      } catch (error) {
-        console.error('Failed to extract SoundCloud ID:', error);
-        soundcloudId = null;
-      }
-    }
-
-    // Extract Spotify ID from URL if provided (TODO: implement similar logic)
-    let spotifyId = body.spotifyId || body.spotifyUrl;
-
-    const repository = new PostgresUserSettingsRepository();
-    const useCase = new UpdateUserSettingsUseCase(repository);
-
-    const settings = await useCase.execute(parseInt(session.user.id), {
-      name: body.name,
-      soundcloudId,
-      spotifyId
-    });
-
-    return NextResponse.json({
-      settings: settings.toJSON()
-    });
-
-  } catch (error: any) {
-    console.error('Error updating user settings:', error);
-
-    if (error instanceof ValidationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
-    if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  if (!session?.user?.id) {
+    throw new UnauthorizedError();
   }
-}
+
+  const body = await request.json();
+
+  // Validate request body
+  const validation = UpdateUserSettingsSchema.safeParse(body);
+  if (!validation.success) {
+    throw new Error(`Validation failed: ${JSON.stringify(validation.error.format())}`);
+  }
+
+  const validatedData = validation.data;
+
+  // Extract SoundCloud ID from URL if provided
+  let soundcloudId = validatedData.soundcloudId;
+  if (validatedData.soundcloudUrl) {
+    try {
+      const origin = new URL(request.url).origin;
+      const extractRes = await fetch(`${origin}/api/soundcloud/extract-id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: validatedData.soundcloudUrl })
+      });
+
+      if (extractRes.ok) {
+        const extractData = await extractRes.json();
+        soundcloudId = extractData.userId;
+      } else {
+        // If extraction fails, treat it as invalid
+        soundcloudId = undefined;
+      }
+    } catch (error) {
+      console.error('Failed to extract SoundCloud ID:', error);
+      soundcloudId = undefined;
+    }
+  }
+
+  // Extract Spotify ID from URL if provided (TODO: implement similar logic)
+  let spotifyId = validatedData.spotifyId || validatedData.spotifyUrl;
+
+  // Get use case from factory (DI)
+  const useCase = UseCaseFactory.createUpdateUserSettingsUseCase();
+
+  const settings = await useCase.execute(parseInt(session.user.id), {
+    name: validatedData.name,
+    soundcloudId,
+    spotifyId
+  });
+
+  return successResponse(
+    {
+      settings: settings.toJSON()
+    },
+    200,
+    requestId
+  );
+});

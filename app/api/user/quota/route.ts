@@ -80,10 +80,10 @@ export async function GET() {
         emails: emailsPercent,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('User quota API error:', error);
 
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : "Unknown error"?.includes('not found')) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }

@@ -75,7 +75,7 @@ export async function GET() {
     console.error('Error fetching products:', error);
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Failed to fetch products',
+        error: error instanceof Error ? error instanceof Error ? error.message : "Unknown error" : 'Failed to fetch products',
       },
       { status: 500 }
     );

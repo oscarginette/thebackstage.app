@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import Parser from 'rss-parser';
+import { env, getAppUrl, getBaseUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     // Verificar si hay POSTGRES_URL configurado
-    if (!process.env.POSTGRES_URL) {
+    if (!env.POSTGRES_URL) {
       console.log('No POSTGRES_URL configured, returning empty history');
       return NextResponse.json({
         history: []
@@ -36,7 +37,7 @@ export async function GET() {
 
     // Obtener información adicional del RSS para imágenes y descripciones
     const parser = new Parser();
-    const rssUrl = `https://feeds.soundcloud.com/users/soundcloud:users:${process.env.SOUNDCLOUD_USER_ID}/sounds.rss`;
+    const rssUrl = `https://feeds.soundcloud.com/users/soundcloud:users:${env.SOUNDCLOUD_USER_ID}/sounds.rss`;
 
     let feed: Parser.Output<{ [key: string]: any }> | undefined;
     try {
@@ -80,7 +81,7 @@ export async function GET() {
       history: enrichedHistory
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching execution history:', error);
     // Retornar historial vacío en caso de error para no romper la UI
     return NextResponse.json({
