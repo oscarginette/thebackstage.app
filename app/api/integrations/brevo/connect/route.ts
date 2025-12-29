@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { sql } from '@/lib/db';
 import * as brevo from '@getbrevo/brevo';
+import { ConnectBrevoSchema } from '@/lib/validation-schemas';
 
 export const maxDuration = 30;
 
@@ -24,19 +25,22 @@ export async function POST(request: Request) {
 
     const userId = parseInt(session.user.id);
 
-    // 2. Parse request body
-    const { apiKey } = await request.json();
+    // 2. Parse and validate request body
+    const body = await request.json();
 
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+    const validation = ConnectBrevoSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'API key is required' },
+        { error: 'Validation failed', details: validation.error.format() },
         { status: 400 }
       );
     }
 
+    const { apiKey } = validation.data;
+
     // 3. Validate API key by fetching account info from Brevo
     const accountApi = new brevo.AccountApi();
-    accountApi.setApiKey(brevo.AccountApiApiKeys.apiKey, apiKey.trim());
+    accountApi.setApiKey(brevo.AccountApiApiKeys.apiKey, apiKey);
 
     let accountInfo;
     try {
@@ -61,7 +65,7 @@ export async function POST(request: Request) {
 
     // 4. Encrypt API key (simple base64 for now - use proper encryption in production)
     // TODO: Use pgcrypto or application-level encryption (AES-256)
-    const apiKeyEncrypted = Buffer.from(apiKey.trim()).toString('base64');
+    const apiKeyEncrypted = Buffer.from(apiKey).toString('base64');
 
     // 5. Store integration in database
     const result = await sql`
@@ -110,11 +114,11 @@ export async function POST(request: Request) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error connecting Brevo:', error);
 
     return NextResponse.json(
-      { error: 'Failed to connect Brevo account', details: error.message },
+      { error: 'Failed to connect Brevo account', details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

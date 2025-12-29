@@ -75,11 +75,11 @@ export async function GET() {
       } : undefined
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching Brevo status:', error);
 
     return NextResponse.json(
-      { error: 'Failed to fetch Brevo status', details: error.message },
+      { error: 'Failed to fetch Brevo status', details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

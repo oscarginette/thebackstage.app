@@ -91,18 +91,18 @@ export async function POST(request: Request) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Brevo preview error:', error);
 
     // Handle specific Brevo API errors
-    if (error.message?.includes('Invalid API key')) {
+    if (error instanceof Error ? error.message : "Unknown error"?.includes('Invalid API key')) {
       return NextResponse.json(
         { error: 'Invalid API key. Please reconnect your Brevo account in Settings.' },
         { status: 400 }
       );
     }
 
-    if (error.message?.includes('rate limit')) {
+    if (error instanceof Error ? error.message : "Unknown error"?.includes('rate limit')) {
       return NextResponse.json(
         { error: 'Brevo API rate limit exceeded. Please try again in a few minutes.' },
         { status: 429 }
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch Brevo preview' },
+      { error: (error instanceof Error ? error.message : "Unknown error") || 'Failed to fetch Brevo preview' },
       { status: 500 }
     );
   }

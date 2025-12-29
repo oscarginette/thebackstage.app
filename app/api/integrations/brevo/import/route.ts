@@ -242,7 +242,7 @@ export async function POST(request: Request) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error importing Brevo contacts:', error);
 
     // Mark import as failed
@@ -253,7 +253,7 @@ export async function POST(request: Request) {
           status = 'failed',
           completed_at = CURRENT_TIMESTAMP,
           duration_ms = ${Date.now() - startTime},
-          error_message = ${error.message}
+          error_message = ${error instanceof Error ? error.message : "Unknown error"}
         WHERE id = ${importHistoryId}
       `;
     }
@@ -264,14 +264,14 @@ export async function POST(request: Request) {
       await sql`
         UPDATE brevo_integrations
         SET
-          last_error = ${error.message},
+          last_error = ${error instanceof Error ? error.message : "Unknown error"},
           updated_at = CURRENT_TIMESTAMP
         WHERE user_id = ${parseInt(session.user.id)}
       `;
     }
 
     return NextResponse.json(
-      { error: 'Failed to import contacts from Brevo', details: error.message },
+      { error: 'Failed to import contacts from Brevo', details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
@@ -331,11 +331,11 @@ export async function GET() {
       }))
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching import history:', error);
 
     return NextResponse.json(
-      { error: 'Failed to fetch import history', details: error.message },
+      { error: 'Failed to fetch import history', details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
