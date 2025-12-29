@@ -1,16 +1,17 @@
 "use client";
 
-import { 
-  BarChart3, 
-  Users, 
-  Mail, 
-  Music, 
-  Settings, 
-  Plus, 
+import {
+  BarChart3,
+  Users,
+  Mail,
+  Music,
+  Settings,
+  Plus,
   ArrowUpRight,
   CheckCircle2
 } from "lucide-react";
 import { useTranslations } from '@/lib/i18n/context';
+import { AnimatedStat } from './AnimatedStat';
 
 export default function ProductShowcase() {
   const t = useTranslations('hero'); // Reuse hero strings if needed or just hardcode for the mockup
@@ -100,13 +101,12 @@ export default function ProductShowcase() {
                       { label: "ENGAGEMENT", value: "1,204", icon: <BarChart3 className="w-4 h-4 text-purple-500" /> },
                       { label: "CONVERSION", value: "18.5%", icon: <ArrowUpRight className="w-4 h-4 text-green-500" /> },
                     ].map((stat, i) => (
-                      <div key={i} className="bg-white px-4 py-3 rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow flex items-center gap-3">
-                         <span className="p-2 bg-muted/30 rounded-lg flex-shrink-0">{stat.icon}</span>
-                         <div className="flex-1 min-w-0">
-                            <div className="text-[10px] font-bold text-foreground/40 tracking-widest mb-0.5">{stat.label}</div>
-                            <div className="text-xl font-serif font-medium text-foreground">{stat.value}</div>
-                         </div>
-                      </div>
+                      <AnimatedStat
+                        key={i}
+                        label={stat.label}
+                        value={stat.value}
+                        icon={stat.icon}
+                      />
                     ))}
                  </div>
 
