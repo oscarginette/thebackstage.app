@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4.5. Check quota BEFORE importing
+    // 4.5. Check quota (informational, doesn't block import)
     const contactRepository = new PostgresContactRepository();
     const userRepository = new PostgresUserRepository();
 
@@ -91,23 +91,7 @@ export async function POST(request: Request) {
       additionalContacts: validationResult.validContacts.length,
     });
 
-    if (!quotaCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: quotaCheck.message || 'Contact quota exceeded',
-          upgradeRequired: true,
-          quota: {
-            current: quotaCheck.currentCount,
-            limit: quotaCheck.limit,
-            remaining: quotaCheck.remaining,
-            attempting: validationResult.validContacts.length,
-          },
-        },
-        { status: 403 }
-      );
-    }
-
-    // 5. Execute import with Dependency Injection
+    // 5. Execute import with Dependency Injection (always allow)
     const importHistoryRepository = new PostgresContactImportHistoryRepository();
 
     const importUseCase = new ImportContactsUseCase(
@@ -127,7 +111,16 @@ export async function POST(request: Request) {
       columnMapping: mapping
     });
 
-    // 6. Return success result
+    // 6. Get updated contact count AFTER import
+    const finalContactCount = await contactRepository.countByUserId(userId);
+
+    // Recalculate quota status with final count
+    const finalQuotaCheck = await checkQuotaUseCase.execute({
+      userId,
+      additionalContacts: 0, // No additional contacts, just checking current status
+    });
+
+    // 7. Return success result with UPDATED quota info
     return NextResponse.json({
       success: true,
       import: {
@@ -144,6 +137,13 @@ export async function POST(request: Request) {
         validRows: validationResult.summary.valid,
         invalidRows: validationResult.summary.invalid,
         validationErrors: validationResult.errors.slice(0, 10) // First 10 validation errors
+      },
+      quota: {
+        exceeded: !finalQuotaCheck.allowed,
+        currentCount: finalContactCount, // Updated count after import
+        limit: finalQuotaCheck.limit,
+        remaining: finalQuotaCheck.remaining,
+        message: finalQuotaCheck.message
       }
     });
   } catch (error: unknown) {
