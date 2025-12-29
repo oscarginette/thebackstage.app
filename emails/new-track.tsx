@@ -1,3 +1,4 @@
+import { env, getAppUrl, getBaseUrl } from '@/lib/env';
 import {
   Body,
   Container,
@@ -31,7 +32,7 @@ export default function NewTrackEmail({
 }: NewTrackEmailProps) {
   // Logo URL: works in both local and production
   // Files in /public are served from the root URL
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
+  const baseUrl = getAppUrl();
   const logoUrl = `${baseUrl}/GEE_BEAT_LOGO_BLACK_HORIZONTAL.png`;
 
   // Use direct image URL - SoundCloud images work well in emails
