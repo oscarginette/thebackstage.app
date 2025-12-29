@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import QuotaGuard from '@/components/QuotaGuard';
 import { PATHS } from '@/lib/paths';
 
 export default function NewTemplatePage() {
@@ -86,54 +87,56 @@ export default function NewTemplatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Crear Nuevo Template</h1>
+    <QuotaGuard>
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Crear Nuevo Template</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nombre del Template *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              placeholder="Ej: Welcome Email"
-            />
-          </div>
+          <div className="bg-white rounded-lg shadow p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre del Template *
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                placeholder="Ej: Welcome Email"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              rows={3}
-              placeholder="Describe para qué se usa este template"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Descripción
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                rows={3}
+                placeholder="Describe para qué se usa este template"
+              />
+            </div>
 
-          <div className="flex gap-4 pt-4">
-            <button
-              onClick={handleCreate}
-              disabled={saving}
-              className="flex-1 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
-            >
-              {saving ? 'Creando...' : 'Crear Template'}
-            </button>
-            <button
-              onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Cancelar
-            </button>
+            <div className="flex gap-4 pt-4">
+              <button
+                onClick={handleCreate}
+                disabled={saving}
+                className="flex-1 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+              >
+                {saving ? 'Creando...' : 'Crear Template'}
+              </button>
+              <button
+                onClick={() => router.back()}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </QuotaGuard>
   );
 }

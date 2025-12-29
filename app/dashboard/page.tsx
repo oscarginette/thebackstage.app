@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useDashboardData } from '../../hooks/useDashboardData';
+import { useQuotaAccess } from '../../hooks/useQuotaAccess';
 import Header from '../../components/dashboard/Header';
 import StatCards from '../../components/dashboard/StatCards';
 import TrackList from '../../components/dashboard/TrackList';
@@ -28,11 +29,21 @@ function DashboardContent() {
   const activeTab = (searchParams.get('tab') as TabType) || 'overview';
   const { data: session } = useSession();
   const contactsListRef = useRef<ContactsListRef>(null);
+  const { hasAccess, isExpired } = useQuotaAccess();
 
   const setActiveTab = (tab: TabType) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tab);
     router.push(`/dashboard?${params.toString()}`, { scroll: false });
+  };
+
+  // Handle clicking on protected actions
+  const handleProtectedAction = (action: () => void) => {
+    if (!hasAccess) {
+      router.push(PATHS.UPGRADE);
+      return;
+    }
+    action();
   };
   
   const {
@@ -237,12 +248,18 @@ function DashboardContent() {
                     <h2 className="text-2xl font-serif text-[#1c1c1c] mb-1">Engagement Center</h2>
                     <p className="text-gray-500 text-sm">Nurture your fan community with personalized email campaigns.</p>
                   </div>
-                  <button 
-                    onClick={() => setShowEmailEditor(true)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/10 font-bold active:scale-95 text-sm"
+                  <button
+                    onClick={() => handleProtectedAction(() => setShowEmailEditor(true))}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all shadow-lg font-bold active:scale-95 text-sm ${
+                      !hasAccess
+                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed shadow-gray-400/10'
+                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/10'
+                    }`}
+                    disabled={!hasAccess}
+                    title={!hasAccess ? 'Upgrade your plan to send emails' : ''}
                   >
                     <Mail className="w-4 h-4 border-2 border-white/30 rounded-md" />
-                    Send Custom Email
+                    {!hasAccess ? 'Upgrade to Send Emails' : 'Send Custom Email'}
                   </button>
                </div>
                
@@ -280,7 +297,7 @@ function DashboardContent() {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <ContactsList
                 ref={contactsListRef}
-                onImportClick={() => setShowImportModal(true)}
+                onImportClick={() => handleProtectedAction(() => setShowImportModal(true))}
               />
             </div>
           )}

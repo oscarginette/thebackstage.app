@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { PATHS } from '@/lib/paths';
 
 interface Price {
@@ -33,6 +34,7 @@ interface Product {
 }
 
 export default function PricingPage() {
+  const { data: session } = useSession();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,6 +143,7 @@ export default function PricingPage() {
                 key={product.id}
                 product={product}
                 billingPeriod={billingPeriod}
+                isAuthenticated={!!session}
               />
             ))}
           </div>
@@ -153,9 +156,11 @@ export default function PricingPage() {
 function PricingCard({
   product,
   billingPeriod,
+  isAuthenticated,
 }: {
   product: Product;
   billingPeriod: 'monthly' | 'yearly';
+  isAuthenticated: boolean;
 }) {
   const pricing = product.pricing[billingPeriod];
   const isFree = product.name.toLowerCase() === 'free';
@@ -164,6 +169,9 @@ function PricingCard({
   if (!pricing) {
     return null;
   }
+
+  // If user is authenticated, go to upgrade page. Otherwise, go to signup
+  const ctaHref = isAuthenticated ? PATHS.UPGRADE : PATHS.SIGNUP;
 
   return (
     <div
@@ -258,14 +266,14 @@ function PricingCard({
 
       {/* CTA Button */}
       <Link
-        href={PATHS.SIGNUP}
+        href={ctaHref}
         className={`block w-full text-center px-4 py-3 rounded-lg font-medium transition-colors ${
           isPopular
             ? 'bg-blue-600 text-white hover:bg-blue-700'
             : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'
         }`}
       >
-        Get Started
+        {isAuthenticated ? 'Actualizar Plan' : 'Get Started'}
       </Link>
     </div>
   );
