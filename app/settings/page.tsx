@@ -23,6 +23,7 @@ export default async function SettingsPage() {
       userEmail={session.user.email || ''}
       userId={session.user.id}
       soundcloudId={settings.soundcloudId || ''}
+      soundcloudPermalink={settings.soundcloudPermalink || ''}
       spotifyId={settings.spotifyId || ''}
     />
   );

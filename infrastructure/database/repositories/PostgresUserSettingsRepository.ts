@@ -23,6 +23,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
         id,
         name,
         soundcloud_id,
+        soundcloud_permalink,
         spotify_id,
         updated_at
       FROM users
@@ -40,6 +41,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       row.id,
       row.name,
       row.soundcloud_id,
+      row.soundcloud_permalink,
       row.spotify_id,
       new Date(row.updated_at)
     );
@@ -61,6 +63,11 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       values.push(input.soundcloudId);
     }
 
+    if (input.soundcloudPermalink !== undefined) {
+      updates.push(`soundcloud_permalink = $${paramIndex++}`);
+      values.push(input.soundcloudPermalink);
+    }
+
     if (input.spotifyId !== undefined) {
       updates.push(`spotify_id = $${paramIndex++}`);
       values.push(input.spotifyId);
@@ -79,7 +86,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       UPDATE users
       SET ${updates.join(', ')}
       WHERE id = $${paramIndex}
-      RETURNING id, name, soundcloud_id, spotify_id, updated_at
+      RETURNING id, name, soundcloud_id, soundcloud_permalink, spotify_id, updated_at
     `;
 
     const result = await sql.query(query, values);
@@ -94,6 +101,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       row.id,
       row.name,
       row.soundcloud_id,
+      row.soundcloud_permalink,
       row.spotify_id,
       new Date(row.updated_at)
     );

@@ -59,8 +59,8 @@ export const ImportContactsSchema = z.object({
   rawData: z.array(z.record(z.string(), z.any())).min(1, 'No data provided'),
   columnMapping: z.object({
     emailColumn: z.string().min(1, 'Email column is required'),
-    nameColumn: z.string().optional(),
-    subscribedColumn: z.string().optional(),
+    nameColumn: z.string().nullish(),
+    subscribedColumn: z.string().nullish(),
     metadataColumns: z.array(z.string()).optional().default([]),
   }),
   fileMetadata: z.object({
@@ -206,11 +206,11 @@ export type CreateCampaignInput = z.infer<typeof CreateCampaignSchema>;
  * Updates user settings
  */
 export const UpdateUserSettingsSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(200, 'Name too long').optional(),
-  soundcloudId: z.string().max(100, 'SoundCloud ID too long').optional(),
-  soundcloudUrl: z.string().url('Invalid SoundCloud URL').optional(),
-  spotifyId: z.string().max(100, 'Spotify ID too long').optional(),
-  spotifyUrl: z.string().url('Invalid Spotify URL').optional(),
+  name: z.string().max(200, 'Name too long').nullable().optional(),
+  soundcloudId: z.string().max(100, 'SoundCloud ID too long').nullable().optional(),
+  soundcloudUrl: z.string().max(500, 'SoundCloud URL too long').nullable().optional(),
+  spotifyId: z.string().max(100, 'Spotify ID too long').nullable().optional(),
+  spotifyUrl: z.string().max(500, 'Spotify URL too long').nullable().optional(),
 });
 
 export type UpdateUserSettingsInput = z.infer<typeof UpdateUserSettingsSchema>;

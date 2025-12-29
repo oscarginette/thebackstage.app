@@ -9,6 +9,7 @@ import { UserSettings } from '../entities/UserSettings';
 export interface UpdateUserSettingsInput {
   name?: string | null;
   soundcloudId?: string | null;
+  soundcloudPermalink?: string | null;
   spotifyId?: string | null;
 }
 

@@ -14,6 +14,7 @@ interface SettingsClientProps {
   userEmail: string;
   userId: string;
   soundcloudId: string;
+  soundcloudPermalink: string;
   spotifyId: string;
 }
 
@@ -22,12 +23,17 @@ export default function SettingsClient({
   userEmail,
   userId,
   soundcloudId: initialSoundcloudId,
+  soundcloudPermalink: initialSoundcloudPermalink,
   spotifyId: initialSpotifyId
 }: SettingsClientProps) {
   const t = useTranslations("settings");
 
   const [name, setName] = useState(initialName);
-  const [soundcloudUrl, setSoundcloudUrl] = useState(initialSoundcloudId ? `https://soundcloud.com/user/${initialSoundcloudId}` : '');
+  // Display permalink if available, otherwise construct URL from numeric ID
+  const initialSoundcloudUrl = initialSoundcloudPermalink
+    ? `https://soundcloud.com/${initialSoundcloudPermalink}`
+    : (initialSoundcloudId ? `https://soundcloud.com/user/${initialSoundcloudId}` : '');
+  const [soundcloudUrl, setSoundcloudUrl] = useState(initialSoundcloudUrl);
   const [spotifyUrl, setSpotifyUrl] = useState(initialSpotifyId || '');
 
   const [isSaving, setIsSaving] = useState(false);

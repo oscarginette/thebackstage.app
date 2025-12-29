@@ -9,6 +9,7 @@ export class UserSettings {
     public readonly userId: number,
     public readonly name: string | null,
     public readonly soundcloudId: string | null,
+    public readonly soundcloudPermalink: string | null,
     public readonly spotifyId: string | null,
     public readonly updatedAt: Date
   ) {}
@@ -33,12 +34,14 @@ export class UserSettings {
   update(updates: Partial<{
     name: string | null;
     soundcloudId: string | null;
+    soundcloudPermalink: string | null;
     spotifyId: string | null;
   }>): UserSettings {
     return new UserSettings(
       this.userId,
       updates.name !== undefined ? updates.name : this.name,
       updates.soundcloudId !== undefined ? updates.soundcloudId : this.soundcloudId,
+      updates.soundcloudPermalink !== undefined ? updates.soundcloudPermalink : this.soundcloudPermalink,
       updates.spotifyId !== undefined ? updates.spotifyId : this.spotifyId,
       new Date()
     );
@@ -52,6 +55,7 @@ export class UserSettings {
       userId: this.userId,
       name: this.name,
       soundcloudId: this.soundcloudId,
+      soundcloudPermalink: this.soundcloudPermalink,
       spotifyId: this.spotifyId,
       hasSoundCloudId: this.hasSoundCloudId(),
       hasSpotifyId: this.hasSpotifyId(),

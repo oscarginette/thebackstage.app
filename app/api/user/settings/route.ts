@@ -62,8 +62,10 @@ export const PATCH = withErrorHandler(async (request: Request) => {
 
   const validatedData = validation.data;
 
-  // Extract SoundCloud ID from URL if provided
+  // Extract SoundCloud ID and permalink from URL if provided
   let soundcloudId = validatedData.soundcloudId;
+  let soundcloudPermalink: string | undefined = undefined;
+
   if (validatedData.soundcloudUrl) {
     try {
       const origin = new URL(request.url).origin;
@@ -75,14 +77,17 @@ export const PATCH = withErrorHandler(async (request: Request) => {
 
       if (extractRes.ok) {
         const extractData = await extractRes.json();
-        soundcloudId = extractData.userId;
+        soundcloudId = extractData.userId;        // Numeric ID (e.g., "1318247880")
+        soundcloudPermalink = extractData.permalink; // Username (e.g., "geebeatmusic")
       } else {
         // If extraction fails, treat it as invalid
         soundcloudId = undefined;
+        soundcloudPermalink = undefined;
       }
     } catch (error) {
       console.error('Failed to extract SoundCloud ID:', error);
       soundcloudId = undefined;
+      soundcloudPermalink = undefined;
     }
   }
 
@@ -95,6 +100,7 @@ export const PATCH = withErrorHandler(async (request: Request) => {
   const settings = await useCase.execute(parseInt(session.user.id), {
     name: validatedData.name,
     soundcloudId,
+    soundcloudPermalink,
     spotifyId
   });
 
