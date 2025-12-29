@@ -12,7 +12,7 @@ export async function POST() {
     const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
     await sql.query(migrationSQL);
     return NextResponse.json({ success: true, message: 'Templates migration executed' });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }

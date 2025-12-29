@@ -32,10 +32,10 @@ export async function POST() {
       message: 'Migration completed successfully'
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Migration error:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
