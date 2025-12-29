@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { UnsubscribeUseCase } from '@/domain/services/UnsubscribeUseCase';
-import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
-import { PostgresConsentHistoryRepository } from '@/infrastructure/database/repositories/PostgresConsentHistoryRepository';
+import { UseCaseFactory } from '@/lib/di-container';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,15 +41,8 @@ async function handleUnsubscribe(request: Request) {
                       null;
     const userAgent = request.headers.get('user-agent') || null;
 
-    // Dependency injection
-    const contactRepository = new PostgresContactRepository();
-    const consentHistoryRepository = new PostgresConsentHistoryRepository();
-
-    // Execute use case
-    const useCase = new UnsubscribeUseCase(
-      contactRepository,
-      consentHistoryRepository
-    );
+    // Get use case from factory (DI)
+    const useCase = UseCaseFactory.createUnsubscribeUseCase();
 
     const result = await useCase.execute({
       token,
@@ -75,10 +66,10 @@ async function handleUnsubscribe(request: Request) {
       email: result.email
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in unsubscribe:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

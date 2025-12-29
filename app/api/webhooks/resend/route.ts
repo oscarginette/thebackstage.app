@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ProcessEmailEventUseCase } from '@/domain/services/ProcessEmailEventUseCase';
 import { emailEventRepository } from '@/infrastructure/database/repositories';
 import { EmailEventFactory } from '@/infrastructure/events/EmailEventFactory';
+import { ResendWebhookSchema } from '@/lib/validation-schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,18 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { type, data } = body;
+
+    // Validate webhook payload
+    const validation = ResendWebhookSchema.safeParse(body);
+    if (!validation.success) {
+      console.error('[Resend Webhook] Validation failed:', validation.error.format());
+      return NextResponse.json(
+        { error: 'Invalid webhook payload', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const { type, data } = validation.data;
 
     console.log('[Resend Webhook]', type, data);
 
@@ -35,9 +47,10 @@ export async function POST(request: Request) {
     await useCase.execute(type, data);
 
     return NextResponse.json({ received: true });
-  } catch (error: any) {
-    console.error('Error processing Resend webhook:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error instanceof Error ? error.message : "Unknown error" : 'Failed to process webhook';
+    console.error('Error processing Resend webhook:', errorMessage);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 

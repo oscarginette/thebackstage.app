@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { env, getAppUrl, getBaseUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
   try {
     // 1. Verificar secreto de webhook (seguridad)
     const webhookSecret = request.headers.get('x-webhook-secret');
-    if (webhookSecret !== process.env.HYPEDIT_WEBHOOK_SECRET) {
+    if (webhookSecret !== env.HYPEDIT_WEBHOOK_SECRET) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -91,10 +92,10 @@ export async function POST(request: Request) {
       subscribed: contact.subscribed
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in Hypedit webhook:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
