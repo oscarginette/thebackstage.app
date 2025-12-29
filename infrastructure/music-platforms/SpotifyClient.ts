@@ -47,13 +47,35 @@ export class SpotifyClient {
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
+      // During build time, these vars might not be available
+      // We'll set them to empty strings and validate at runtime
+      console.warn('Spotify credentials not configured');
+      this.clientId = clientId || '';
+      this.clientSecret = clientSecret || '';
+    } else {
+      this.clientId = clientId;
+      this.clientSecret = clientSecret;
+    }
+  }
+
+  /**
+   * Check if Spotify is properly configured
+   * Call this before using any Spotify methods
+   */
+  public isConfigured(): boolean {
+    return !!(this.clientId && this.clientSecret);
+  }
+
+  /**
+   * Validate configuration and throw if not configured
+   * Call this at the start of any public method that needs config
+   */
+  private validateConfiguration(): void {
+    if (!this.isConfigured()) {
       throw new Error(
-        'Missing Spotify credentials. Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET'
+        'Spotify is not configured. Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables.'
       );
     }
-
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
   }
 
   /**
@@ -111,6 +133,7 @@ export class SpotifyClient {
     artistId: string,
     limit: number = 10
   ): Promise<SpotifyAlbum[]> {
+    this.validateConfiguration();
     const accessToken = await this.getAccessToken();
 
     // Fetch albums and singles (exclude 'appears_on' and 'compilation')
@@ -147,6 +170,7 @@ export class SpotifyClient {
    * @returns Artist data
    */
   async getArtist(artistId: string): Promise<any> {
+    this.validateConfiguration();
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(`${this.apiBaseUrl}/artists/${artistId}`, {
