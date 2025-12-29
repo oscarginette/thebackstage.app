@@ -9,6 +9,7 @@ import {
   emailLogRepository,
 } from '@/infrastructure/database/repositories';
 import { resendEmailProvider } from '@/infrastructure/email';
+import { env, getAppUrl, getBaseUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export async function POST() {
   try {
     const testEmail = 'info@geebeat.com';
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
+      getAppUrl();
 
     // Test track data
     const testTrack = {
@@ -105,15 +106,15 @@ export async function POST() {
         '4. Visit /stats to see the events being tracked',
       ],
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle validation errors
     if (error instanceof ValidationError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
     }
 
     console.error('Error in test email:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

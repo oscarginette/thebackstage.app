@@ -9,8 +9,8 @@ export async function GET() {
     const useCase = new GetEmailStatsUseCase(emailAnalyticsRepository);
     const result = await useCase.execute();
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching email stats:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }

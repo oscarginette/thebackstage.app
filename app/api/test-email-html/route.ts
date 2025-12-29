@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';
 import CustomEmail from '@/emails/custom-email';
+import { env, getAppUrl, getBaseUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     const { trackName, trackUrl, coverImage, customContent } = body;
 
     // Generar URL de unsubscribe de ejemplo
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
+    const baseUrl = getAppUrl();
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=preview_token`;
 
     // If customContent is provided, use CustomEmail template (from email editor)
@@ -40,16 +41,16 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ html });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error rendering email:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
     // Test endpoint con datos de ejemplo
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://backstage-art.vercel.app';
+    const baseUrl = getAppUrl();
     const html = await render(
       NewTrackEmail({
         trackName: 'Test Track Name',
@@ -64,8 +65,8 @@ export async function GET() {
         'Content-Type': 'text/html',
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error rendering email:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }

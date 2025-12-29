@@ -10,6 +10,7 @@ import {
 import { resendEmailProvider } from '@/infrastructure/email';
 import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
 import { auth } from '@/lib/auth';
+import { SendCustomEmailSchema } from '@/lib/validation-schemas';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -61,8 +62,19 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    // Validate request body
+    const validation = SendCustomEmailSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validation.data;
+
     // Skip quota check if saving as draft
-    if (!body.saveAsDraft) {
+    if (!validatedData.saveAsDraft) {
       // Check email quota BEFORE sending
       const userRepository = new PostgresUserRepository();
       const checkEmailQuotaUseCase = new CheckEmailQuotaUseCase(userRepository);
@@ -104,24 +116,25 @@ export async function POST(request: Request) {
 
     const result = await useCase.execute({
       userId,
-      subject: body.subject,
-      greeting: body.greeting,
-      message: body.message,
-      signature: body.signature,
-      coverImage: body.coverImage,
-      saveAsDraft: body.saveAsDraft || false,
-      templateId: body.templateId,
-      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined
+      subject: validatedData.subject,
+      greeting: validatedData.greeting,
+      message: validatedData.message,
+      signature: validatedData.signature,
+      coverImage: validatedData.coverImage,
+      saveAsDraft: validatedData.saveAsDraft,
+      templateId: validatedData.templateId,
+      scheduledAt: validatedData.scheduledAt ? new Date(validatedData.scheduledAt) : undefined
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('Error sending custom email:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error instanceof Error ? error.message : "Unknown error" : 'Failed to send custom email';
+    console.error('Error sending custom email:', errorMessage);
 
     if (error instanceof ValidationError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
     }
 
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

@@ -8,11 +8,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import { SendTrackEmailUseCase } from '@/domain/services/SendTrackEmailUseCase';
-import { PostgresQuotaTrackingRepository } from '@/infrastructure/database/repositories/PostgresQuotaTrackingRepository';
-import { resendEmailProvider } from '@/infrastructure/email';
-import { QuotaExceededError } from '@/domain/services/CheckQuotaUseCase';
+import { UseCaseFactory } from '@/lib/di-container';
+import { isAppError } from '@/lib/errors';
 import { auth } from '@/lib/auth';
+import { SendTrackSchema } from '@/lib/validation-schemas';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -40,6 +39,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Validate request body
+    const validation = SendTrackSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validation.data;
+
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
@@ -51,41 +61,33 @@ export async function POST(request: Request) {
 
     const userId = parseInt(session.user.id);
 
-    // Initialize repository and use case
-    const quotaRepository = new PostgresQuotaTrackingRepository();
-    const useCase = new SendTrackEmailUseCase(
-      resendEmailProvider,
-      quotaRepository
-    );
+    // Get use case from factory (DI)
+    const useCase = UseCaseFactory.createSendTrackEmailUseCase();
 
-    // Execute use case
+    // Execute use case with validated data
     const result = await useCase.execute({
       userId,
-      to: body.to,
-      subject: body.subject,
-      html: body.html,
-      from: body.from,
-      replyTo: body.replyTo,
-      headers: body.headers
+      to: validatedData.to,
+      subject: validatedData.subject,
+      html: validatedData.html,
+      from: validatedData.from,
+      replyTo: validatedData.replyTo,
+      headers: validatedData.headers as Record<string, string> | undefined
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error sending track email:', error);
 
-    if (error instanceof QuotaExceededError) {
+    // Handle known AppError types with proper status codes
+    if (isAppError(error)) {
       return NextResponse.json(
-        { error: error.message },
-        { status: 429 } // Too Many Requests
+        { error: error instanceof Error ? error.message : "Unknown error" },
+        { status: error.status }
       );
     }
 
-    if (error instanceof Error) {
-      if (error.message.includes('Invalid')) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
-      }
-    }
-
+    // Handle unexpected errors
     return NextResponse.json(
       { error: 'Failed to send email' },
       { status: 500 }
