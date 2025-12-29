@@ -16,7 +16,7 @@ export default function LandingFooter() {
           href="/login"
           className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-foreground px-10 text-lg font-medium text-background transition-all hover:scale-105 active:scale-95 mb-12 shadow-xl hover:shadow-2xl"
         >
-          {t('cta')}
+          Start for Free
         </Link>
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-12 border-t border-border/50 text-foreground/40 text-sm font-medium">

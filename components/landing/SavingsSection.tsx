@@ -26,10 +26,11 @@ export default function SavingsSection() {
         <div className="mt-16 text-center">
              <div className="inline-flex items-center gap-8 py-4 px-8 rounded-full border border-border/50 bg-white/50 backdrop-blur-sm shadow-sm">
                 <span className="text-xs font-bold uppercase tracking-widest text-foreground/30">{t('replaces')}</span>
-                <div className="flex gap-8 opacity-40 grayscale hover:grayscale-0 transition-all">
+                <div className="flex gap-6 opacity-40 grayscale hover:grayscale-0 transition-all">
                     <span className="font-bold tracking-tighter">Hypeddit</span>
                     <span className="font-bold tracking-tighter">Make</span>
                     <span className="font-bold tracking-tighter">Brevo</span>
+                    <span className="font-bold tracking-tighter">Mailchimp</span>
                 </div>
              </div>
         </div>

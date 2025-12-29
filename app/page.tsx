@@ -5,6 +5,7 @@ import { useTranslations } from '@/lib/i18n/context';
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import LandingHero from "@/components/landing/LandingHero";
 import ProblemSection from "@/components/landing/ProblemSection";
+import ProductShowcase from "@/components/landing/ProductShowcase";
 import ValuePropSection from "@/components/landing/ValuePropSection";
 import FeatureSection from "@/components/landing/FeatureSection";
 import PricingSection from "@/components/landing/PricingSection";
@@ -24,21 +25,24 @@ export default function Home() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
+            <Link href="#product" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
+              {t('product')}
+            </Link>
+            <Link href="#why" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
+              {t('whyBackstage')}
+            </Link>
             <Link href="#features" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
               {t('features')}
             </Link>
             <Link href="#pricing" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
               {t('pricing')}
             </Link>
-            <Link href="#savings" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
-              {t('calculator')}
-            </Link>
             <LanguageSwitcher />
             <Link
-              href="/login"
+              href="/auth/signup"
               className="h-10 px-6 rounded-full bg-foreground text-background text-sm font-medium flex items-center justify-center transition-all hover:opacity-90 active:scale-95"
             >
-              {t('dashboard')}
+              {t('getStarted')}
             </Link>
           </div>
         </div>
@@ -47,10 +51,13 @@ export default function Home() {
       <main>
         <LandingHero />
         <ProblemSection />
-        <div id="value" />
+        <div id="product" />
+        <ProductShowcase />
+        <div id="why" />
         <ValuePropSection />
         <div id="features" />
         <FeatureSection />
+        <div id="pricing" />
         <PricingSection />
         <SavingsSection />
       </main>

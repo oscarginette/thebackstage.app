@@ -6,7 +6,7 @@ import es from '@/messages/es.json';
 
 type Locale = 'en' | 'es';
 
-type Messages = typeof en;
+type Messages = any;
 
 interface I18nContextType {
   locale: Locale;

@@ -16,7 +16,7 @@ export default function SavingsCalculator() {
 
   const costs = useMemo(() => {
     const hypedditCost = 20;
-    
+
     let makeCost = 0;
     if (subscribers <= 1000) makeCost = 0;
     else if (subscribers <= 10000) makeCost = 9;
@@ -34,7 +34,13 @@ export default function SavingsCalculator() {
     else brevoCost = 99;
 
     const totalCompetitor = hypedditCost + makeCost + brevoCost;
-    const backstageCost = subscribers < 500 ? 0 : 15;
+
+    // New pricing tiers based on subscriber count (optimized breakpoints)
+    let backstageCost = 0;
+    if (subscribers <= 500) backstageCost = 0;          // Free plan (0-500)
+    else if (subscribers <= 2500) backstageCost = 9.99;   // Pro plan (501-2500)
+    else if (subscribers <= 15000) backstageCost = 19.99;  // Business plan (2501-15000)
+    else backstageCost = 39.99;                            // Unlimited plan (15001+)
 
     return {
       hypeddit: hypedditCost,

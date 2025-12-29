@@ -1,22 +1,31 @@
 {
   "nav": {
     "brand": "Backstage",
+    "product": "Producto",
+    "whyBackstage": "Por qué Backstage",
     "features": "Características",
     "pricing": "Precios",
     "calculator": "Calculadora",
+    "getStarted": "Comenzar",
     "dashboard": "Ir al Dashboard",
     "settings": "Ajustes"
   },
   "hero": {
     "badge": "Backstage para Artistas",
+    "launchBadge": "Promoción de Lanzamiento: Gates Ilimitados Gratis",
     "title": {
       "line1": "Haz música.",
       "line2": "Crece",
-      "line3": "automáticamente."
+      "line3": "automáticamente.",
+      "main": "Convierte tu música en",
+      "accent": "una base de fans leal."
     },
     "subtitle": "Deja de preocuparte por el marketing. Te ayudamos a convertir oyentes en una comunidad dedicada a través de listas de correo automatizadas mientras te mantienes en tu flujo creativo.",
+    "newSubtitle": "La primera plataforma de email marketing diseñada para DJs. Intercambia descargas por emails, sé dueño de tu audiencia, y llena tu próximo show.",
     "cta": "Empieza a Crecer",
-    "noCreditCard": "Sin tarjeta de crédito. Pura automatización."
+    "startFree": "Comenzar Gratis",
+    "noCreditCard": "Sin tarjeta de crédito. Pura automatización.",
+    "noCardRequired": "No se requiere tarjeta de crédito"
   },
   "problem": {
     "title": {
@@ -36,6 +45,16 @@
     "quote": "Muy ocupado haciendo hits"
   },
   "valueProp": {
+    "flywheel": {
+      "title": "Más Gates =",
+      "titleAccent": "Más Crecimiento",
+      "subtitle": "El Volante de Backstage: Usa gates ilimitados para construir tu audiencia. A diferencia de otros, no te cobramos por las herramientas que necesitas para crecer.",
+      "words": {
+        "moreGigs": "Más Bolos",
+        "moreFans": "Más Fans",
+        "moreReach": "Más Alcance"
+      }
+    },
     "title": {
       "line1": "1,000 Emails son mucho mejor",
       "line2": "que",
@@ -88,58 +107,83 @@
   "pricing": {
     "title": {
       "line1": "Precios simples para",
-      "line2": "artistas independientes",
-      "line3": "."
+      "line2": "cada etapa",
+      "line3": "de tu carrera.",
+      "accent": "cada etapa"
     },
-    "subtitle": "Empieza gratis, actualiza cuando estés listo para escalar. Sin tarifas ocultas.",
+    "subtitle": "Todos los planes incluyen Download Gates Ilimitados. Solo pagas a medida que creces tu base de fans.",
+    "allInclude": "Todos los planes incluyen",
+    "unlimitedGates": "Download Gates Ilimitados",
+    "payAsGrow": "Solo pagas a medida que creces tu base de fans.",
     "monthly": "Mensual",
     "annual": "Anual",
     "save": "Ahorra 20%",
     "mostPopular": "Más Popular",
+    "recommended": "Recomendado",
+    "bigLeagues": "Grandes Ligas",
+    "includes": "Incluye",
+    "perYear": "/año",
     "free": {
-      "name": "The Opening Act",
-      "description": "Perfecto para artistas que están empezando a construir su lista.",
-      "price": "Gratis",
-      "period": "para siempre",
-      "cta": "Empezar Gratis",
+      "name": "Free",
+      "description": "Perfecto para validar tu proyecto",
+      "price": "€0",
+      "period": "/mes",
+      "cta": "Comenzar Gratis",
       "features": {
-        "contacts": "Hasta 500 contactos",
-        "smartGates": "Smart Gates Ilimitados",
-        "monthlyNewsletter": "Auto-Newsletter Mensual",
-        "basicAnalytics": "Analytics Básicos de Audiencia",
-        "removableBranding": "Branding Removible",
-        "weeklyNewsletters": "Newsletters Semanales",
+        "contacts": "500 Contactos",
+        "emails": "2,000 Emails / mes",
+        "smartGates": "Download Gates Ilimitados",
+        "basicAnalytics": "Analytics Básicos",
         "prioritySupport": "Soporte Prioritario"
       }
     },
     "pro": {
-      "name": "The Headliner",
-      "description": "Para artistas serios listos para poseer su audiencia.",
-      "price": {
-        "monthly": "$15",
-        "annual": "$12"
-      },
-      "period": "por mes",
-      "billing": {
-        "monthly": "facturado mensualmente",
-        "annual": "facturado anualmente ($144)"
-      },
-      "cta": "Hazte Pro",
+      "name": "Pro",
+      "description": "Para artistas en crecimiento",
+      "price": "€9.99",
+      "period": "/mes",
+      "cta": "Comenzar Prueba Gratis",
       "features": {
-        "unlimitedContacts": "Contactos ilimitados",
-        "smartGates": "Smart Gates Ilimitados",
-        "dailyWeeklyNewsletter": "Auto-Newsletter Diario/Semanal",
-        "advancedInsights": "Insights Avanzados de Audiencia",
-        "removeBranding": "Eliminar 'Powered by Backstage'",
-        "prioritySupport": "Soporte Prioritario",
-        "earlyAccess": "Acceso Anticipado a Características"
+        "contacts": "2,500 Contactos",
+        "emails": "10,000 Emails / mes",
+        "smartGates": "Download Gates Ilimitados",
+        "advancedInsights": "Insights Avanzados",
+        "prioritySupport": "Soporte Prioritario"
+      }
+    },
+    "business": {
+      "name": "Business",
+      "description": "Escala tu base de fans",
+      "price": "€19.99",
+      "period": "/mes",
+      "cta": "Comenzar Prueba Gratis",
+      "features": {
+        "contacts": "15,000 Contactos",
+        "emails": "60,000 Emails / mes",
+        "smartGates": "Download Gates Ilimitados",
+        "advancedInsights": "Insights Avanzados",
+        "prioritySupport": "Soporte Prioritario"
+      }
+    },
+    "unlimited": {
+      "name": "Unlimited",
+      "description": "Máximo poder",
+      "price": "€39.99",
+      "period": "/mes",
+      "cta": "Contactar Ventas",
+      "features": {
+        "contacts": "15,000+ Contactos",
+        "emails": "Emails Ilimitados",
+        "smartGates": "Download Gates Ilimitados",
+        "advancedInsights": "Insights Avanzados",
+        "dedicatedManager": "Manager Dedicado"
       }
     },
     "featuresLabel": "Características",
     "enterprise": {
       "text": "¿Necesidades diferentes?",
-      "link": "Contacta a nuestro equipo de ventas",
-      "for": "para soluciones empresariales."
+      "link": "Contáctanos",
+      "for": "para planes empresariales personalizados."
     }
   },
   "savings": {

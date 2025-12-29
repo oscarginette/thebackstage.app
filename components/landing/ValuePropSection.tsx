@@ -2,19 +2,55 @@
 
 import { Mail, Users, TrendingUp } from "lucide-react";
 import { useTranslations } from '@/lib/i18n/context';
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function ValuePropSection() {
   const t = useTranslations('valueProp');
+  const [index, setIndex] = useState(0);
+  const words = [
+    t('flywheel.words.moreGigs'),
+    t('flywheel.words.moreFans'),
+    t('flywheel.words.moreReach')
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % words.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [words.length]);
+
   return (
-    <section className="py-24 border-y border-border">
+    <section className="py-24 border-y border-border overflow-hidden">
       <div className="container px-4 mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-4xl md:text-6xl font-serif mb-6 leading-tight">
-            {t('title.line1')} <br />
-            {t('title.line2')} <span className="text-accent italic">{t('title.line3')}</span>.
+        
+        {/* Flywheel Animation Section */}
+        <div className="text-center mb-24 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-3xl -z-10 animate-pulse" />
+
+          <h2 className="text-3xl md:text-5xl font-serif font-bold text-foreground leading-tight whitespace-nowrap">
+            {t('flywheel.title')} <span className="text-accent italic">{t('flywheel.titleAccent')}</span>
           </h2>
-          <p className="text-xl text-foreground/60">
-            {t('subtitle')}
+
+          <div className="h-20 md:h-32 flex items-center justify-center overflow-hidden mt-2">
+            <span className="text-3xl md:text-6xl text-foreground/40 font-serif mr-4">=</span>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={index}
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -40, opacity: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="text-4xl md:text-7xl font-bold text-foreground"
+              >
+                {words[index]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <p className="mt-8 text-lg text-foreground/60 max-w-2xl mx-auto">
+            {t('flywheel.subtitle')}
           </p>
         </div>
 

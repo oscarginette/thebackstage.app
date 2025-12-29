@@ -1,22 +1,31 @@
 {
   "nav": {
     "brand": "Backstage",
+    "product": "Product",
+    "whyBackstage": "Why Backstage",
     "features": "Features",
     "pricing": "Pricing",
     "calculator": "Calculator",
+    "getStarted": "Get Started",
     "dashboard": "Go to Dashboard",
     "settings": "Settings"
   },
   "hero": {
     "badge": "Backstage for Artists",
+    "launchBadge": "Launch Special: Free Unlimited Gates",
     "title": {
       "line1": "Make music.",
       "line2": "Grow",
-      "line3": "automatically."
+      "line3": "automatically.",
+      "main": "Turn your music into",
+      "accent": "a loyal fanbase."
     },
     "subtitle": "Stop worrying about marketing. We help you turn listeners into a dedicated community through automated email lists while you stay in your creative flow.",
+    "newSubtitle": "The first email marketing platform designed for DJs. Exchange downloads for emails, own your audience, and sell out your next gig.",
     "cta": "Start Growing Now",
-    "noCreditCard": "No credit card required. Pure automation."
+    "startFree": "Start for Free",
+    "noCreditCard": "No credit card required. Pure automation.",
+    "noCardRequired": "No credit card required"
   },
   "problem": {
     "title": {
@@ -36,6 +45,16 @@
     "quote": "Too busy making hits"
   },
   "valueProp": {
+    "flywheel": {
+      "title": "More Gates =",
+      "titleAccent": "More Growth",
+      "subtitle": "The Backstage Flywheel: Use unlimited gates to build your audience. Unlike others, we don't charge you for the tools you need to grow.",
+      "words": {
+        "moreGigs": "More Gigs",
+        "moreFans": "More Fans",
+        "moreReach": "More Reach"
+      }
+    },
     "title": {
       "line1": "1,000 Emails are way better",
       "line2": "than",
@@ -88,58 +107,83 @@
   "pricing": {
     "title": {
       "line1": "Simple pricing for",
-      "line2": "independent",
-      "line3": "artists."
+      "line2": "every stage",
+      "line3": "of your career.",
+      "accent": "every stage"
     },
-    "subtitle": "Start free, upgrade when you're ready to scale. No hidden fees.",
+    "subtitle": "All plans include Unlimited Download Gates. You only pay as you grow your fanbase.",
+    "allInclude": "All plans include",
+    "unlimitedGates": "Unlimited Download Gates",
+    "payAsGrow": "You only pay as you grow your fanbase.",
     "monthly": "Monthly",
     "annual": "Annual",
     "save": "Save 20%",
     "mostPopular": "Most Popular",
+    "recommended": "Recommended",
+    "bigLeagues": "Big Leagues",
+    "includes": "Includes",
+    "perYear": "/year",
     "free": {
-      "name": "The Opening Act",
-      "description": "Perfect for artists just starting to build their list.",
-      "price": "Free",
-      "period": "forever",
-      "cta": "Start for Free",
+      "name": "Free",
+      "description": "Perfect to validate your project",
+      "price": "€0",
+      "period": "/mo",
+      "cta": "Start Free",
       "features": {
-        "contacts": "Up to 500 contacts",
-        "smartGates": "Unlimited Smart Gates",
-        "monthlyNewsletter": "Monthly Auto-Newsletter",
-        "basicAnalytics": "Basic Audience Analytics",
-        "removableBranding": "Removable Branding",
-        "weeklyNewsletters": "Weekly Newsletters",
+        "contacts": "500 Contacts",
+        "emails": "2,000 Emails / month",
+        "smartGates": "Unlimited Download Gates",
+        "basicAnalytics": "Basic Analytics",
         "prioritySupport": "Priority Support"
       }
     },
     "pro": {
-      "name": "The Headliner",
-      "description": "For serious artists ready to own their audience.",
-      "price": {
-        "monthly": "$15",
-        "annual": "$12"
-      },
-      "period": "per month",
-      "billing": {
-        "monthly": "billed monthly",
-        "annual": "billed annually ($144)"
-      },
-      "cta": "Go Pro",
+      "name": "Pro",
+      "description": "For growing artists",
+      "price": "€9.99",
+      "period": "/mo",
+      "cta": "Start Free Trial",
       "features": {
-        "unlimitedContacts": "Unlimited contacts",
-        "smartGates": "Unlimited Smart Gates",
-        "dailyWeeklyNewsletter": "Daily/Weekly Auto-Newsletter",
-        "advancedInsights": "Advanced Audience Insights",
-        "removeBranding": "Remove 'Powered by Backstage'",
-        "prioritySupport": "Priority Support",
-        "earlyAccess": "Early Access to Features"
+        "contacts": "2,500 Contacts",
+        "emails": "10,000 Emails / month",
+        "smartGates": "Unlimited Download Gates",
+        "advancedInsights": "Advanced Insights",
+        "prioritySupport": "Priority Support"
+      }
+    },
+    "business": {
+      "name": "Business",
+      "description": "Scale your fanbase",
+      "price": "€19.99",
+      "period": "/mo",
+      "cta": "Start Free Trial",
+      "features": {
+        "contacts": "15,000 Contacts",
+        "emails": "60,000 Emails / month",
+        "smartGates": "Unlimited Download Gates",
+        "advancedInsights": "Advanced Insights",
+        "prioritySupport": "Priority Support"
+      }
+    },
+    "unlimited": {
+      "name": "Unlimited",
+      "description": "Maximum power",
+      "price": "€39.99",
+      "period": "/mo",
+      "cta": "Contact Sales",
+      "features": {
+        "contacts": "15,000+ Contacts",
+        "emails": "Unlimited Emails",
+        "smartGates": "Unlimited Download Gates",
+        "advancedInsights": "Advanced Insights",
+        "dedicatedManager": "Dedicated Manager"
       }
     },
     "featuresLabel": "Features",
     "enterprise": {
       "text": "Different needs?",
-      "link": "Contact our sales team",
-      "for": "for enterprise solutions."
+      "link": "Contact us",
+      "for": "for custom enterprise plans."
     }
   },
   "savings": {

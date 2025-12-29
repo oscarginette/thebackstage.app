@@ -17,16 +17,16 @@ export default function LandingHero() {
       <div className="container px-4 mx-auto text-center">
         <div className="inline-flex items-center gap-2 pl-2.5 pr-4 py-1.5 mb-8 text-sm font-medium border rounded-full bg-white/50 border-border backdrop-blur-sm">
           <span className="flex w-2 h-2 rounded-full bg-accent animate-pulse" />
-          <span className="text-foreground/80">{t('badge')}</span>
+          <span className="text-foreground/80">{t('launchBadge')}</span>
         </div>
 
-        <h1 className="max-w-4xl mx-auto mb-6 text-6xl md:text-8xl font-serif tracking-tight leading-[0.9]">
-          {t('title.line1')} <br />
-          <span className="text-accent italic">{t('title.line2')}</span> {t('title.line3')}
+        <h1 className="max-w-5xl mx-auto mb-6 text-6xl md:text-8xl font-serif tracking-tight leading-[0.9]">
+          {t('title.main')} <br />
+          <span className="text-accent italic">{t('title.accent')}</span>
         </h1>
 
         <p className="max-w-2xl mx-auto mb-10 text-xl md:text-2xl text-foreground/60 leading-relaxed font-sans">
-          {t('subtitle')}
+          {t('newSubtitle')}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -34,11 +34,11 @@ export default function LandingHero() {
             href="/login"
             className="group relative inline-flex h-14 items-center justify-center gap-2 rounded-full bg-foreground px-8 text-lg font-medium text-background transition-all hover:bg-foreground/90 active:scale-95"
           >
-            {t('cta')}
+            {t('startFree')}
             <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Link>
           <p className="text-sm text-foreground/40 font-medium italic">
-            {t('noCreditCard')}
+            {t('noCardRequired')}
           </p>
         </div>
       </div>
