@@ -27,7 +27,7 @@ import { verifyResendWebhook } from '@/lib/webhooks';
 
 ```bash
 # .env.local
-RESEND_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_WEBHOOK_SECRET=your_resend_webhook_secret_here
 ```
 
 Get from: Resend Dashboard → Webhooks → [Your Endpoint] → Signing Secret
