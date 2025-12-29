@@ -23,10 +23,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extract username from URL or use as-is
-    let username = url.trim();
+    // Normalize URL: add https:// if missing
+    let normalizedUrl = url.trim();
+    if (normalizedUrl.startsWith('soundcloud.com')) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    } else if (!normalizedUrl.startsWith('http')) {
+      // If it's just a username, construct the URL
+      normalizedUrl = `https://soundcloud.com/${normalizedUrl}`;
+    }
 
-    // If it's a full URL, extract the username
+    // Extract username from URL
+    let username = normalizedUrl;
     if (username.includes('soundcloud.com/')) {
       const match = username.match(/soundcloud\.com\/([^/?]+)/);
       if (!match) {
@@ -76,9 +83,10 @@ export async function POST(request: Request) {
     console.log('[SoundCloud Extract] Extracted user ID:', userId);
 
     return NextResponse.json({
-      userId,
-      username,
-      profileUrl,
+      userId,           // Numeric ID (e.g., "1318247880")
+      username,         // Username/permalink (e.g., "geebeatmusic")
+      permalink: username, // Alias for clarity
+      profileUrl,       // Full URL (e.g., "https://soundcloud.com/geebeatmusic")
     });
 
   } catch (error: unknown) {
