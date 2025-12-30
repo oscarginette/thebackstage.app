@@ -84,8 +84,12 @@ export function useDashboardData() {
   const fetchUserSettings = async () => {
     try {
       const res = await fetch('/api/user/settings');
-      const data = await res.json();
-      if (!data.error && data.settings) {
+      const response = await res.json();
+
+      // successResponse wraps data in { success: true, data: {...} }
+      const data = response.success ? response.data : response;
+
+      if (!response.error && data.settings) {
         setHasSoundCloudId(data.settings.hasSoundCloudId || false);
       }
     } catch (error) {
