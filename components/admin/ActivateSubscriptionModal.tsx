@@ -62,8 +62,14 @@ export default function ActivateSubscriptionModal({
   const price = billingCycle === 'monthly' ? planInfo.monthlyPrice : planInfo.annualPrice;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="px-8 py-5 border-b border-[#E8E6DF] bg-gradient-to-br from-[#FF5500]/5 to-orange-50">
           <div className="flex items-center justify-between">
@@ -177,14 +183,17 @@ export default function ActivateSubscriptionModal({
                     <input
                       type="number"
                       min="1"
-                      max="24"
-                      value={durationMonths}
-                      onChange={(e) => setDurationMonths(Math.max(1, parseInt(e.target.value) || 1))}
+                      max={billingCycle === 'annual' ? 5 : 24}
+                      value={billingCycle === 'annual' ? durationMonths / 12 : durationMonths}
+                      onChange={(e) => {
+                        const value = Math.max(1, parseInt(e.target.value) || 1);
+                        setDurationMonths(billingCycle === 'annual' ? value * 12 : value);
+                      }}
                       disabled={loading}
                       className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-[#FF5500] focus:outline-none transition-colors font-semibold text-[#1c1c1c]"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium pointer-events-none">
-                      months
+                      {billingCycle === 'annual' ? 'years' : 'months'}
                     </span>
                   </div>
                 </div>
@@ -192,35 +201,37 @@ export default function ActivateSubscriptionModal({
             </div>
 
             {/* Right Column - Price Summary */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200 h-fit sticky top-0">
-              <h3 className="text-sm font-bold text-[#1c1c1c] mb-4 uppercase tracking-wider">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 h-fit sticky top-0">
+              <h3 className="text-xs font-bold text-[#1c1c1c] mb-3 uppercase tracking-wider">
                 Summary
               </h3>
 
-              <div className="space-y-3 mb-4">
+              <div className="space-y-2 mb-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Plan Price</span>
-                  <span className="font-bold text-[#1c1c1c]">
-                    €{price.toFixed(2)}<span className="text-xs text-gray-500 font-normal">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                  <span className="text-xs text-gray-600">Plan Price</span>
+                  <span className="font-bold text-sm text-[#1c1c1c]">
+                    €{price.toFixed(2)}<span className="text-[10px] text-gray-500 font-normal">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Duration</span>
-                  <span className="font-bold text-[#1c1c1c]">
-                    {durationMonths} month{durationMonths > 1 ? 's' : ''}
+                  <span className="text-xs text-gray-600">Duration</span>
+                  <span className="font-bold text-sm text-[#1c1c1c]">
+                    {billingCycle === 'annual'
+                      ? `${durationMonths / 12} year${durationMonths / 12 > 1 ? 's' : ''}`
+                      : `${durationMonths} month${durationMonths > 1 ? 's' : ''}`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Users</span>
-                  <span className="font-bold text-[#1c1c1c]">{userCount}</span>
+                  <span className="text-xs text-gray-600">Users</span>
+                  <span className="font-bold text-sm text-[#1c1c1c]">{userCount}</span>
                 </div>
               </div>
 
-              <div className="h-px bg-gray-300 my-4"></div>
+              <div className="h-px bg-gray-300 my-3"></div>
 
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-bold text-[#1c1c1c] text-lg">Total</span>
-                <span className="text-3xl font-bold text-[#FF5500]">
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-bold text-[#1c1c1c]">Total</span>
+                <span className="text-xl font-bold text-[#FF5500]">
                   €{(price * (billingCycle === 'annual' ? durationMonths / 12 : durationMonths) * userCount).toFixed(2)}
                 </span>
               </div>
@@ -230,7 +241,7 @@ export default function ActivateSubscriptionModal({
                 <button
                   onClick={handleConfirm}
                   disabled={loading}
-                  className="w-full px-5 py-3 rounded-xl text-sm font-bold bg-[#FF5500] text-white hover:bg-[#e64d00] transition-colors shadow-lg shadow-[#FF5500]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2.5 rounded-xl text-xs font-bold bg-[#FF5500] text-white hover:bg-[#e64d00] transition-colors shadow-lg shadow-[#FF5500]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
@@ -247,7 +258,7 @@ export default function ActivateSubscriptionModal({
                 <button
                   onClick={onClose}
                   disabled={loading}
-                  className="w-full px-5 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+                  className="w-full px-4 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
