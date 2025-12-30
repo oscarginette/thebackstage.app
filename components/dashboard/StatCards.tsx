@@ -8,9 +8,18 @@ interface StatCardsProps {
     activeCampaigns: number;
     avgConversionRate: number;
   };
+  labels?: {
+    totalContacts?: string;
+    totalDownloads?: string;
+    activeCampaigns?: string;
+    avgConversionRate?: string;
+  };
+  formatters?: {
+    avgConversionRate?: (value: number) => string;
+  };
 }
 
-export default function StatCards({ stats }: StatCardsProps) {
+export default function StatCards({ stats, labels, formatters }: StatCardsProps) {
   const safeStats = {
     totalContacts: stats?.totalContacts ?? 0,
     totalDownloads: stats?.totalDownloads ?? 0,
@@ -18,9 +27,18 @@ export default function StatCards({ stats }: StatCardsProps) {
     avgConversionRate: stats?.avgConversionRate ?? 0,
   };
 
+  const defaultLabels = {
+    totalContacts: 'Audience',
+    totalDownloads: 'Downloads',
+    activeCampaigns: 'Engagement',
+    avgConversionRate: 'Conversion',
+  };
+
+  const finalLabels = { ...defaultLabels, ...labels };
+
   const cards = [
     {
-      label: 'Audience',
+      label: finalLabels.totalContacts,
       value: safeStats.totalContacts.toLocaleString(),
       icon: Users,
       color: 'text-blue-600',
@@ -28,7 +46,7 @@ export default function StatCards({ stats }: StatCardsProps) {
       borderColor: 'border-blue-100/50',
     },
     {
-      label: 'Downloads',
+      label: finalLabels.totalDownloads,
       value: stats.totalDownloads.toLocaleString(),
       icon: Rocket,
       color: 'text-[#FF5500]',
@@ -36,7 +54,7 @@ export default function StatCards({ stats }: StatCardsProps) {
       borderColor: 'border-[#FF5500]/10',
     },
     {
-      label: 'Engagement',
+      label: finalLabels.activeCampaigns,
       value: stats.activeCampaigns.toLocaleString(),
       icon: BarChart3,
       color: 'text-purple-600',
@@ -44,8 +62,10 @@ export default function StatCards({ stats }: StatCardsProps) {
       borderColor: 'border-purple-100/50',
     },
     {
-      label: 'Conversion',
-      value: `${stats.avgConversionRate.toFixed(1)}%`,
+      label: finalLabels.avgConversionRate,
+      value: formatters?.avgConversionRate
+        ? formatters.avgConversionRate(stats.avgConversionRate)
+        : `${stats.avgConversionRate.toFixed(1)}%`,
       icon: TrendingUp,
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-500/10',
