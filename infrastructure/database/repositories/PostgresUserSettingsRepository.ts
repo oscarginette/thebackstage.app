@@ -48,48 +48,27 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
   }
 
   async update(userId: number, input: UpdateUserSettingsInput): Promise<UserSettings> {
-    // Build dynamic update query (only update provided fields)
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramIndex = 1;
+    // Fetch current settings first
+    const current = await this.getByUserId(userId);
 
-    if (input.name !== undefined) {
-      updates.push(`name = $${paramIndex++}`);
-      values.push(input.name);
-    }
+    // Merge with updates (undefined means "don't change")
+    const name = input.name !== undefined ? input.name : current.name;
+    const soundcloudId = input.soundcloudId !== undefined ? input.soundcloudId : current.soundcloudId;
+    const soundcloudPermalink = input.soundcloudPermalink !== undefined ? input.soundcloudPermalink : current.soundcloudPermalink;
+    const spotifyId = input.spotifyId !== undefined ? input.spotifyId : current.spotifyId;
 
-    if (input.soundcloudId !== undefined) {
-      updates.push(`soundcloud_id = $${paramIndex++}`);
-      values.push(input.soundcloudId);
-    }
-
-    if (input.soundcloudPermalink !== undefined) {
-      updates.push(`soundcloud_permalink = $${paramIndex++}`);
-      values.push(input.soundcloudPermalink);
-    }
-
-    if (input.spotifyId !== undefined) {
-      updates.push(`spotify_id = $${paramIndex++}`);
-      values.push(input.spotifyId);
-    }
-
-    if (updates.length === 0) {
-      // No updates requested, just return current settings
-      return this.getByUserId(userId);
-    }
-
-    // Add updated_at timestamp
-    updates.push(`updated_at = NOW()`);
-    values.push(userId); // Last parameter is the WHERE condition
-
-    const query = `
+    // Update all fields explicitly using Vercel Postgres template literal syntax
+    const result = await sql`
       UPDATE users
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
+      SET
+        name = ${name},
+        soundcloud_id = ${soundcloudId},
+        soundcloud_permalink = ${soundcloudPermalink},
+        spotify_id = ${spotifyId},
+        updated_at = NOW()
+      WHERE id = ${userId}
       RETURNING id, name, soundcloud_id, soundcloud_permalink, spotify_id, updated_at
     `;
-
-    const result = await sql.query(query, values);
 
     if (result.rows.length === 0) {
       throw new NotFoundError(`User with ID ${userId} not found`);
