@@ -5,6 +5,7 @@ import { UserCheck, Mail, Calendar, Users, Shield } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
 import DataTable from '@/components/dashboard/DataTable';
 import ActivateSubscriptionModal from './ActivateSubscriptionModal';
+import { useActivateSubscription } from '@/hooks/useActivateSubscription';
 
 interface UserData {
   id: number;
@@ -36,49 +37,38 @@ const PLAN_LIMITS = {
 
 export default function UserManagementTable({ users, onRefresh, loading }: UserManagementTableProps) {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showActivationModal, setShowActivationModal] = useState(false);
+
+  // Use custom hook for activation logic
+  const { activate, loading: activating } = useActivateSubscription();
 
   // Handle bulk activation
   const handleActivateSubscription = async (plan: string, billingCycle: 'monthly' | 'annual', durationMonths: number) => {
     try {
-      setActionLoading(true);
-
-      const response = await fetch('/api/admin/users/bulk-activate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userIds: selectedUsers,
-          plan,
-          billingCycle,
-          durationMonths,
-        }),
+      const result = await activate({
+        userIds: selectedUsers,
+        plan,
+        billingCycle,
+        durationMonths,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to activate users');
+      if (result.success) {
+        setToast({
+          message: `Successfully activated ${result.activatedCount} user(s) with ${plan} plan`,
+          type: 'success',
+        });
+
+        setSelectedUsers([]);
+        setShowActivationModal(false);
+        onRefresh();
       }
-
-      const data = await response.json();
-
-      setToast({
-        message: `Successfully activated ${data.activatedCount} user(s) with ${plan} plan`,
-        type: 'success',
-      });
-
-      setSelectedUsers([]);
-      setShowActivationModal(false);
-      onRefresh();
     } catch (err) {
       console.error('Bulk activation error:', err);
       setToast({
         message: err instanceof Error ? err.message : 'Failed to activate users',
         type: 'error',
       });
-    } finally {
-      setActionLoading(false);
     }
   };
 
@@ -231,7 +221,7 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
           userCount={selectedUsers.length}
           onClose={() => setShowActivationModal(false)}
           onConfirm={handleActivateSubscription}
-          loading={actionLoading}
+          loading={activating}
         />
       )}
     </div>
