@@ -160,15 +160,15 @@ function DashboardContent() {
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12 pt-12 pb-24 relative z-10">
         
         {/* Header Section */}
-        <div className="mb-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="mb-10 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
           <div className="flex-1 space-y-6">
             <Header />
             <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
           </div>
-          <div className="flex flex-col items-end gap-3 min-w-[280px]">
+          <div className="flex flex-col items-end gap-2 min-w-[280px]">
             {session?.user && (
               <div className="text-right">
-                <div className="text-sm font-medium text-[#1c1c1c]">{session.user.email}</div>
+                <div className="text-xs font-medium text-[#1c1c1c]">{session.user.email}</div>
                 <div className="text-[10px] text-gray-400 uppercase tracking-wide">{session.user.role}</div>
               </div>
             )}

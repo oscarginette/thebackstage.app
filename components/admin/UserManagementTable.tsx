@@ -159,7 +159,7 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
     },
     {
       header: 'Plan',
-      className: 'flex-1 min-w-[120px]',
+      className: 'w-28 flex-none',
       accessor: (user: UserData) => (
         <span
           className={`px-3 py-1 inline-flex text-[10px] uppercase tracking-wider font-bold rounded-full ${
@@ -254,7 +254,7 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
       header: 'Activated',
       className: 'flex-1 min-w-[120px]',
       accessor: (user: UserData) => (
-        <div className="text-sm text-gray-500">
+        <div className="text-xs text-gray-500">
           {user.subscriptionStartedAt ? formatDate(user.subscriptionStartedAt) : (
             <span className="text-xs text-gray-400">Never</span>
           )}
@@ -265,7 +265,7 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
       header: 'Expires',
       className: 'flex-1 min-w-[120px]',
       accessor: (user: UserData) => (
-        <div className="text-sm text-gray-500">
+        <div className="text-xs text-gray-500">
           {user.subscriptionExpiresAt ? (
             <span className={new Date(user.subscriptionExpiresAt) < new Date() ? 'text-red-600 font-semibold' : ''}>
               {formatDate(user.subscriptionExpiresAt)}
@@ -278,7 +278,7 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
     },
     {
       header: 'Status',
-      className: 'w-32 flex-none',
+      className: 'w-32 flex-none pr-4',
       accessor: (user: UserData) => (
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
           user.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
