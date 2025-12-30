@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 import FileUploadStep from './import/FileUploadStep';
 import ColumnMappingStep from './import/ColumnMappingStep';
 import PreviewStep from './import/PreviewStep';
@@ -144,65 +145,70 @@ export default function ImportWizardModal({ isOpen, onClose, onSuccess }: Props)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#E8E6DF]">
-          <div>
-            <h2 className="text-2xl font-bold text-[#1c1c1c]">Import Contacts</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {currentStep === 'upload' && 'Upload CSV or JSON file'}
-              {currentStep === 'mapping' && 'Verify column mappings'}
-              {currentStep === 'preview' && 'Preview and confirm'}
-              {currentStep === 'importing' && 'Importing contacts...'}
-              {currentStep === 'results' && 'Import complete'}
-            </p>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="4xl"
+      customHeader={
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-[#E8E6DF]">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1c1c1c]">Import Contacts</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {currentStep === 'upload' && 'Upload CSV or JSON file'}
+                {currentStep === 'mapping' && 'Verify column mappings'}
+                {currentStep === 'preview' && 'Preview and confirm'}
+                {currentStep === 'importing' && 'Importing contacts...'}
+                {currentStep === 'results' && 'Import complete'}
+              </p>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors active:scale-95"
+              disabled={currentStep === 'importing'}
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors active:scale-95"
-            disabled={currentStep === 'importing'}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Progress Indicator */}
-        <div className="px-6 py-4 border-b border-[#E8E6DF]">
-          <div className="flex items-center justify-between">
-            {(['upload', 'mapping', 'preview', 'results'] as const).map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    currentStep === step
-                      ? 'bg-[#FF5500] text-white'
-                      : ['upload', 'mapping', 'preview'].indexOf(currentStep) > index ||
+          {/* Progress Indicator */}
+          <div className="px-6 py-4 border-b border-[#E8E6DF]">
+            <div className="flex items-center justify-between">
+              {(['upload', 'mapping', 'preview', 'results'] as const).map((step, index) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                      currentStep === step
+                        ? 'bg-[#FF5500] text-white'
+                        : ['upload', 'mapping', 'preview'].indexOf(currentStep) > index ||
+                          currentStep === 'importing' ||
+                          currentStep === 'results'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  {index < 3 && (
+                    <div
+                      className={`w-12 h-1 mx-2 ${
+                        ['upload', 'mapping', 'preview'].indexOf(currentStep) > index ||
                         currentStep === 'importing' ||
                         currentStep === 'results'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                  }`}
-                >
-                  {index + 1}
+                          ? 'bg-emerald-500'
+                          : 'bg-gray-200'
+                      }`}
+                    />
+                  )}
                 </div>
-                {index < 3 && (
-                  <div
-                    className={`w-12 h-1 mx-2 ${
-                      ['upload', 'mapping', 'preview'].indexOf(currentStep) > index ||
-                      currentStep === 'importing' ||
-                      currentStep === 'results'
-                        ? 'bg-emerald-500'
-                        : 'bg-gray-200'
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        </>
+      }
+    >
+      <div className="p-6">
           {error && (
             <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200">
               <p className="text-sm text-red-700 font-medium">{error}</p>
@@ -241,9 +247,8 @@ export default function ImportWizardModal({ isOpen, onClose, onSuccess }: Props)
           {currentStep === 'results' && results && (
             <ResultsStep results={results} quotaInfo={quotaInfo} onComplete={handleResultsComplete} />
           )}
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

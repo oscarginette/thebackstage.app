@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Download } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 import PreviewStep from './import/PreviewStep';
 import ResultsStep from './import/ResultsStep';
 
@@ -118,17 +119,12 @@ export default function BrevoImportWizardModal({ isOpen, onClose, onSuccess }: P
     handleClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
-      >
-        {/* Header */}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="4xl"
+      customHeader={
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-start justify-between">
             <div>
@@ -151,10 +147,10 @@ export default function BrevoImportWizardModal({ isOpen, onClose, onSuccess }: P
             </button>
           </div>
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <AnimatePresence mode="wait">
+      }
+    >
+      <div className="p-6">
+        <AnimatePresence mode="wait">
             {/* Step 1: Fetching Preview */}
             {currentStep === 'fetching' && (
               <motion.div
@@ -283,9 +279,8 @@ export default function BrevoImportWizardModal({ isOpen, onClose, onSuccess }: P
                 />
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-    </div>
+        </AnimatePresence>
+      </div>
+    </Modal>
   );
 }
