@@ -132,12 +132,12 @@ export default function PreviewStep({ preview, columnMapping, onConfirm, onBack 
       </div>
 
       {/* Warning Banner */}
-      <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-yellow-900">
-            <p className="font-medium mb-1">Important:</p>
-            <ul className="list-disc list-inside space-y-1">
+      <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-yellow-900">
+            <p className="font-medium mb-0.5">Important:</p>
+            <ul className="list-disc list-inside space-y-0.5 text-[11px]">
               <li>Existing contacts will be updated with new data (including subscription status)</li>
               <li>New contacts will be added to your database</li>
               <li>Duplicates within the file will be skipped</li>
