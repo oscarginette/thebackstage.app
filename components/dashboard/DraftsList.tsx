@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Modal from '@/components/ui/Modal';
 import { EmailCampaign, EmailContent } from '../../types/dashboard';
 import { useEmailCampaigns } from '../../hooks/useEmailCampaigns';
 import DraftCard from './DraftCard';
@@ -146,9 +147,11 @@ export default function DraftsList({ onDraftSent }: DraftsListProps) {
 
       {/* Edit Draft Modal */}
       {editingDraft && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Header */}
+        <Modal
+          isOpen={true}
+          onClose={() => setEditingDraft(null)}
+          size="6xl"
+          customHeader={
             <div className="p-6 border-b border-[#E8E6DF]">
               <div className="flex items-start justify-between">
                 <div>
@@ -170,22 +173,21 @@ export default function DraftsList({ onDraftSent }: DraftsListProps) {
                 </button>
               </div>
             </div>
-
-            {/* Editor */}
-            <EmailContentEditor
-              initialContent={{
-                subject: editingDraft.subject,
-                greeting: 'Hey mate,',
-                message: '',
-                signature: 'Much love,\nGee Beat'
-              }}
-              onSave={handleSendEditedDraft}
-              onSaveDraft={handleUpdateDraft}
-              onClose={() => setEditingDraft(null)}
-              saving={sending}
-            />
-          </div>
-        </div>
+          }
+        >
+          <EmailContentEditor
+            initialContent={{
+              subject: editingDraft.subject,
+              greeting: 'Hey mate,',
+              message: '',
+              signature: 'Much love,\nGee Beat'
+            }}
+            onSave={handleSendEditedDraft}
+            onSaveDraft={handleUpdateDraft}
+            onClose={() => setEditingDraft(null)}
+            saving={sending}
+          />
+        </Modal>
       )}
     </>
   );
