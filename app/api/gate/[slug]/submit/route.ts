@@ -59,8 +59,8 @@ export async function POST(
     );
 
     // Execute
+    // Note: userId is derived from the gate owner, not passed here
     const result = await submitEmailUseCase.execute({
-      userId: 1, // Default user for download gates
       gateSlug: slug,
       email,
       firstName,

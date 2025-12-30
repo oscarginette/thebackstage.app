@@ -9,6 +9,7 @@
 
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { SUBSCRIPTION_PLANS } from '@/domain/types/subscriptions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Cache for 1 hour
@@ -73,8 +74,8 @@ export async function GET() {
           emailsPerMonth:
             row.max_monthly_emails === null ? 'unlimited' : row.max_monthly_emails,
         },
-        highlighted: planName === 'pro', // Pro plan is most popular
-        badge: planName === 'pro' ? 'Most Popular' : undefined,
+        highlighted: planName === SUBSCRIPTION_PLANS.PRO, // Pro plan is most popular
+        badge: planName === SUBSCRIPTION_PLANS.PRO ? 'Most Popular' : undefined,
       };
     });
 

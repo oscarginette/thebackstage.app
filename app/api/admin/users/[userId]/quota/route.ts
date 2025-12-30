@@ -1,7 +1,7 @@
 /**
  * Update User Quota API Route
  *
- * PUT /api/admin/users/[userId]/quota - Update a user's monthly email quota limit
+ * PATCH /api/admin/users/[userId]/quota - Update a user's monthly email quota limit
  *
  * Clean Architecture: API route -> Use Case -> Repository
  */
@@ -10,14 +10,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UpdateUserQuotaUseCase } from '@/domain/services/admin/UpdateUserQuotaUseCase';
 import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
-import { PostgresQuotaTrackingRepository } from '@/infrastructure/database/repositories/PostgresQuotaTrackingRepository';
 import { UnauthorizedError } from '@/domain/services/admin/GetAllUsersUseCase';
 
 interface UpdateQuotaRequest {
-  newMonthlyLimit: number;
+  monthlyQuota: number;
 }
 
-export async function PUT(
+async function handleQuotaUpdate(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
@@ -56,14 +55,14 @@ export async function PUT(
     // Parse request body
     const body: UpdateQuotaRequest = await request.json();
 
-    // Validate newMonthlyLimit
+    // Validate monthlyQuota
     if (
-      !body.newMonthlyLimit ||
-      typeof body.newMonthlyLimit !== 'number' ||
-      body.newMonthlyLimit <= 0
+      body.monthlyQuota === undefined ||
+      typeof body.monthlyQuota !== 'number' ||
+      body.monthlyQuota < 0
     ) {
       return NextResponse.json(
-        { error: 'newMonthlyLimit must be a positive number' },
+        { error: 'monthlyQuota must be a non-negative number' },
         { status: 400 }
       );
     }
@@ -79,23 +78,20 @@ export async function PUT(
       );
     }
 
-    // Initialize repositories
-    const quotaRepository = new PostgresQuotaTrackingRepository();
-
     // Execute use case
-    const useCase = new UpdateUserQuotaUseCase(userRepository, quotaRepository);
+    const useCase = new UpdateUserQuotaUseCase(userRepository);
 
     const result = await useCase.execute({
       adminUserId: adminUser.id,
       targetUserId,
-      newMonthlyLimit: body.newMonthlyLimit,
+      monthlyQuota: body.monthlyQuota,
     });
 
     return NextResponse.json(
       {
         success: true,
         userId: result.userId,
-        newMonthlyLimit: result.newMonthlyLimit,
+        monthlyQuota: result.monthlyQuota,
       },
       { status: 200 }
     );
@@ -140,3 +136,7 @@ export async function PUT(
     );
   }
 }
+
+// Support both PATCH and PUT methods
+export const PATCH = handleQuotaUpdate;
+export const PUT = handleQuotaUpdate;
