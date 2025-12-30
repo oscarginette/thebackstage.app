@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       payment_notes: body.payment_notes,
       description: body.description,
       paid_at: body.paid_at ? new Date(body.paid_at) : undefined,
-      created_by_user_id: session.user.id,
+      created_by_user_id: parseInt(session.user.id),
     });
 
     if (!result.success) {
