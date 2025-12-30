@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     `;
 
     if (adminCheck.rows.length > 0) {
-      const adminEmails = adminCheck.rows.map(row => row.email).join(', ');
+      const adminEmails = adminCheck.rows.map((row: any) => row.email).join(', ');
       return NextResponse.json(
         { error: `Cannot delete admin users: ${adminEmails}` },
         { status: 400 }
