@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserCheck, Mail, Calendar, Users, Shield } from 'lucide-react';
 import Toast from '@/components/ui/Toast';
 import DataTable from '@/components/dashboard/DataTable';
+import ActivateSubscriptionModal from './ActivateSubscriptionModal';
 
 interface UserData {
   id: number;
@@ -14,6 +15,8 @@ interface UserData {
   createdAt: string;
   subscriptionPlan: string;
   monthlyQuota: number;
+  subscriptionStartedAt?: string;
+  subscriptionExpiresAt?: string;
 }
 
 interface UserManagementTableProps {
@@ -35,20 +38,10 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showActivationModal, setShowActivationModal] = useState(false);
 
   // Handle bulk activation
-  const handleBulkActivate = async () => {
-    if (selectedUsers.length === 0) {
-      setToast({ message: 'Please select at least one user', type: 'error' });
-      return;
-    }
-
-    const confirmed = confirm(
-      `Activate plan for ${selectedUsers.length} user(s)?`
-    );
-
-    if (!confirmed) return;
-
+  const handleActivateSubscription = async (plan: string, billingCycle: 'monthly' | 'annual', durationMonths: number) => {
     try {
       setActionLoading(true);
 
@@ -57,6 +50,9 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userIds: selectedUsers,
+          plan,
+          billingCycle,
+          durationMonths,
         }),
       });
 
@@ -68,11 +64,12 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
       const data = await response.json();
 
       setToast({
-        message: `Successfully activated ${data.activatedCount} user(s)`,
+        message: `Successfully activated ${data.activatedCount} user(s) with ${plan} plan`,
         type: 'success',
       });
 
       setSelectedUsers([]);
+      setShowActivationModal(false);
       onRefresh();
     } catch (err) {
       console.error('Bulk activation error:', err);
@@ -147,12 +144,28 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
       ),
     },
     {
-      header: 'Registered',
-      className: 'flex-1 min-w-[140px]',
+      header: 'Activated',
+      className: 'flex-1 min-w-[120px]',
       accessor: (user: UserData) => (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          {formatDate(user.createdAt)}
+        <div className="text-sm text-gray-500">
+          {user.subscriptionStartedAt ? formatDate(user.subscriptionStartedAt) : (
+            <span className="text-xs text-gray-400">Never</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: 'Expires',
+      className: 'flex-1 min-w-[120px]',
+      accessor: (user: UserData) => (
+        <div className="text-sm text-gray-500">
+          {user.subscriptionExpiresAt ? (
+            <span className={new Date(user.subscriptionExpiresAt) < new Date() ? 'text-red-600 font-semibold' : ''}>
+              {formatDate(user.subscriptionExpiresAt)}
+            </span>
+          ) : (
+            <span className="text-xs text-emerald-600 font-semibold">Active</span>
+          )}
         </div>
       ),
     },
@@ -196,8 +209,8 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
         onSelectionChange={setSelectedUsers}
         actions={
           <button
-            onClick={handleBulkActivate}
-            disabled={actionLoading || selectedUsers.length === 0}
+            onClick={() => setShowActivationModal(true)}
+            disabled={selectedUsers.length === 0}
             className={`
               flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg
               ${selectedUsers.length > 0
@@ -207,10 +220,20 @@ export default function UserManagementTable({ users, onRefresh, loading }: UserM
             `}
           >
             <UserCheck className="w-4 h-4" />
-            {actionLoading ? 'Processing...' : `Activate (${selectedUsers.length})`}
+            Activate ({selectedUsers.length})
           </button>
         }
       />
+
+      {/* Activation Modal */}
+      {showActivationModal && (
+        <ActivateSubscriptionModal
+          userCount={selectedUsers.length}
+          onClose={() => setShowActivationModal(false)}
+          onConfirm={handleActivateSubscription}
+          loading={actionLoading}
+        />
+      )}
     </div>
   );
 }

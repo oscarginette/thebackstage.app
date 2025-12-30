@@ -15,6 +15,7 @@ import { User } from '@/domain/entities/User';
 interface BulkActivateRequest {
   userIds: number[];
   plan: 'free' | 'pro' | 'business' | 'unlimited';
+  billingCycle?: 'monthly' | 'annual';
   durationMonths: number;
 }
 
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
+        activatedCount: result.successCount,
         successCount: result.successCount,
         failedCount: result.failedCount,
         errors: result.errors,
