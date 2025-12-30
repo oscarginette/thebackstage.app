@@ -1,8 +1,10 @@
 /**
- * Next.js Middleware - Rate Limiting
+ * Next.js Middleware - Rate Limiting & Auth Redirects
  *
- * Runs on Vercel Edge Network before API routes.
- * Provides DDoS, brute force, and abuse protection across all API endpoints.
+ * Runs on Vercel Edge Network before API routes and pages.
+ * Provides:
+ * 1. DDoS, brute force, and abuse protection across all API endpoints
+ * 2. Authentication-based redirects for public/protected routes
  *
  * How Next.js Middleware Works:
  * 1. Runs on EVERY request matching the matcher config
@@ -17,7 +19,8 @@
  * - API routes remain clean and focused on business logic
  *
  * Matcher Configuration:
- * - Applies ONLY to /api/* routes (not pages, static files, images)
+ * - Applies to /api/* routes (rate limiting)
+ * - Applies to / and /login (auth redirects)
  * - Excludes _next/static, _next/image, favicon.ico (performance)
  *
  * Learn more:
@@ -27,6 +30,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import {
   checkRateLimit,
   createRateLimitHeaders,
@@ -34,43 +38,72 @@ import {
 } from '@/lib/rate-limit';
 
 /**
- * Middleware function - Runs on every API request
+ * Middleware function - Runs on every matched request
  *
  * Flow:
- * 1. Extract user ID from request (if authenticated)
- * 2. Check rate limit based on endpoint type and identifier
- * 3. If limit exceeded: Return 429 with Retry-After header
- * 4. If limit OK: Add rate limit headers and continue
+ * 1. Check if user is authenticated (via NextAuth token)
+ * 2. For public routes (/, /login): Redirect authenticated users to /dashboard
+ * 3. For API routes: Apply rate limiting
+ * 4. Add appropriate headers and continue
  *
  * Performance:
  * - Runs on Vercel Edge (< 50ms latency globally)
- * - Redis query via Upstash REST API (< 10ms)
- * - Total overhead: < 60ms per request
+ * - Token check: < 5ms
+ * - Redis query via Upstash REST API: < 10ms
+ * - Total overhead: < 70ms per request
  */
 export async function middleware(request: NextRequest) {
-  // Extract user ID from session/token if needed
-  // TODO: Integrate with NextAuth to get authenticated user ID
-  // For now, we use IP-based rate limiting for all requests
-  const userId = undefined; // await getAuthenticatedUserId(request);
+  const { pathname } = request.nextUrl;
 
-  // Check rate limit
-  const result = await checkRateLimit(request, userId);
+  // Check authentication status (only if AUTH_SECRET is available)
+  let token = null;
+  const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 
-  // If rate limit exceeded, return 429 response
-  if (!result.success) {
-    return createRateLimitResponse(result);
+  if (authSecret) {
+    try {
+      token = await getToken({
+        req: request,
+        secret: authSecret,
+      });
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+    }
   }
 
-  // Rate limit OK, add headers to response and continue
-  const response = NextResponse.next();
+  const isAuthenticated = !!token;
 
-  // Add rate limit headers to response
-  const headers = createRateLimitHeaders(result);
-  for (const [key, value] of Object.entries(headers)) {
-    response.headers.set(key, value);
+  // Redirect authenticated users away from auth pages (login only, not home)
+  // Home page (/) should be accessible to everyone (it's the landing page)
+  if (isAuthenticated && pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  return response;
+  // Apply rate limiting only to API routes
+  if (pathname.startsWith('/api')) {
+    const userId = token?.sub; // User ID from JWT (if authenticated)
+
+    // Check rate limit
+    const result = await checkRateLimit(request, userId);
+
+    // If rate limit exceeded, return 429 response
+    if (!result.success) {
+      return createRateLimitResponse(result);
+    }
+
+    // Rate limit OK, add headers to response and continue
+    const response = NextResponse.next();
+
+    // Add rate limit headers to response
+    const headers = createRateLimitHeaders(result);
+    for (const [key, value] of Object.entries(headers)) {
+      response.headers.set(key, value);
+    }
+
+    return response;
+  }
+
+  // For non-API routes, just continue
+  return NextResponse.next();
 }
 
 /**
@@ -79,40 +112,31 @@ export async function middleware(request: NextRequest) {
  * Specifies which routes this middleware applies to.
  *
  * Pattern breakdown:
- * - /api/:path* -> All API routes and subroutes
+ * - /login -> Login page (auth redirect for logged-in users)
+ * - /api/:path* -> All API routes and subroutes (rate limiting)
  *
- * Excluded (via negative lookahead in matcher):
+ * PUBLIC ROUTES (not matched, accessible to everyone):
+ * - / -> Landing page (public)
+ * - /pricing -> Pricing page (public)
  * - /_next/static/* -> Next.js static files (handled by CDN)
  * - /_next/image/* -> Next.js image optimization (handled by CDN)
  * - /favicon.ico -> Browser favicon requests
  *
  * Why exclude these?
  * - Performance: Static assets should be served from CDN
- * - No need: Static files don't need rate limiting
+ * - UX: Landing page must be accessible to everyone (marketing)
+ * - No need: Public pages don't need auth checks
  * - Avoid overhead: Middleware adds latency (even if small)
- *
- * Alternative matchers (examples):
- * ```typescript
- * // All routes except static files
- * export const config = {
- *   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
- * };
- *
- * // Specific API routes only
- * export const config = {
- *   matcher: ['/api/auth/:path*', '/api/emails/:path*'],
- * };
- *
- * // Multiple patterns
- * export const config = {
- *   matcher: ['/api/:path*', '/admin/:path*'],
- * };
- * ```
  */
 export const config = {
   matcher: [
     /*
-     * Match all API routes:
+     * Match login page for auth redirect
+     * If user is already logged in, redirect to /dashboard
+     */
+    '/login',
+    /*
+     * Match all API routes for rate limiting:
      * - /api/auth/signup
      * - /api/emails/send
      * - /api/webhooks/resend
@@ -123,35 +147,28 @@ export const config = {
 };
 
 /**
- * OPTIONAL: Helper to extract authenticated user ID
+ * Implementation notes:
  *
- * If you want user-specific rate limiting (recommended for email sending):
+ * Auth Redirects:
+ * - Home page (/) is PUBLIC - accessible to everyone (landing/marketing)
+ * - Authenticated users visiting /login are redirected to /dashboard
+ * - This prevents the confusing UX where a logged-in user sees the login form
+ * - Logout functionality should redirect to / (which is now always accessible)
  *
- * ```typescript
- * import { getToken } from 'next-auth/jwt';
+ * Rate Limiting:
+ * - Now includes user ID from JWT for user-specific rate limiting
+ * - Falls back to IP-based rate limiting for unauthenticated requests
+ * - Benefits:
+ *   - Prevents multi-IP abuse (user can't bypass limit by changing IP)
+ *   - More accurate limits for authenticated actions (email sending)
+ *   - Better UX (users see their own limits, not shared IP limits)
  *
- * async function getAuthenticatedUserId(request: NextRequest): Promise<string | undefined> {
- *   try {
- *     const token = await getToken({
- *       req: request,
- *       secret: process.env.NEXTAUTH_SECRET,
- *     });
+ * Environment Variables:
+ * - Supports both AUTH_SECRET and NEXTAUTH_SECRET
+ * - Gracefully handles missing auth secret (logs error, continues)
  *
- *     return token?.sub; // User ID from JWT
- *   } catch {
- *     return undefined;
- *   }
- * }
- * ```
- *
- * Then update middleware:
- * ```typescript
- * const userId = await getAuthenticatedUserId(request);
- * const result = await checkRateLimit(request, userId);
- * ```
- *
- * Benefits:
- * - Prevents multi-IP abuse (user can't bypass limit by changing IP)
- * - More accurate limits for authenticated actions (email sending)
- * - Better UX (users see their own limits, not shared IP limits)
+ * Performance:
+ * - getToken is fast (< 5ms) - just JWT decode
+ * - Redis query is fast (< 10ms via Upstash REST)
+ * - Total overhead: ~70ms per request (acceptable for security)
  */
