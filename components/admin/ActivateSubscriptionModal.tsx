@@ -54,6 +54,12 @@ export default function ActivateSubscriptionModal({
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [durationMonths, setDurationMonths] = useState(1);
 
+  // Reset duration to 1 when billing cycle changes
+  const handleBillingCycleChange = (cycle: BillingCycle) => {
+    setBillingCycle(cycle);
+    setDurationMonths(cycle === 'annual' ? 12 : 1); // 1 year or 1 month
+  };
+
   const handleConfirm = () => {
     onConfirm(selectedPlan, billingCycle, durationMonths);
   };
@@ -145,7 +151,7 @@ export default function ActivateSubscriptionModal({
                   </label>
                   <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl">
                     <button
-                      onClick={() => setBillingCycle('monthly')}
+                      onClick={() => handleBillingCycleChange('monthly')}
                       disabled={loading}
                       className={`
                         flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all
@@ -158,7 +164,7 @@ export default function ActivateSubscriptionModal({
                       Monthly
                     </button>
                     <button
-                      onClick={() => setBillingCycle('annual')}
+                      onClick={() => handleBillingCycleChange('annual')}
                       disabled={loading}
                       className={`
                         flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all
