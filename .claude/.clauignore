@@ -1,0 +1,2 @@
+# This ensures Claude always sees our standards
+# DO NOT add .claude/*.md to this file

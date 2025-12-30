@@ -1,5 +1,15 @@
 # Project-Specific Guidelines - Backstage
 
+## 🚨 MANDATORY: Read This First
+
+**BEFORE writing ANY code**, read:
+1. **.claude/CODE_STANDARDS.md** - Code standards (MANDATORY)
+2. This file - Architecture and guidelines
+
+**ALL code MUST follow these standards without exceptions.**
+
+---
+
 ## Architecture: Clean Architecture + SOLID Principles
 
 This project follows Clean Architecture principles with strict separation of concerns.
@@ -582,12 +592,95 @@ for (const contact of contacts) {
 
 ---
 
-**Remember**: This is not optional. Clean Architecture + SOLID is our standard.
+## 🔑 Constants Usage (MANDATORY)
+
+### Rule: NEVER use string literals for domain values
+
+**ALWAYS use typed constants instead of string literals.**
+
+#### Available Constants
+
+1. **Subscription Plans** (`domain/types/subscriptions.ts`):
+```typescript
+import { SUBSCRIPTION_PLANS } from '@/domain/types/subscriptions';
+
+SUBSCRIPTION_PLANS.FREE       // 'free'
+SUBSCRIPTION_PLANS.PRO        // 'pro'
+SUBSCRIPTION_PLANS.BUSINESS   // 'business'
+SUBSCRIPTION_PLANS.UNLIMITED  // 'unlimited'
+```
+
+2. **User Roles** (`domain/types/user-roles.ts`):
+```typescript
+import { USER_ROLES } from '@/domain/types/user-roles';
+
+USER_ROLES.ADMIN   // 'admin'
+USER_ROLES.ARTIST  // 'artist'
+```
+
+3. **Consent Actions** (`domain/entities/ConsentHistory.ts`):
+```typescript
+import { CONSENT_ACTIONS, CONSENT_SOURCES } from '@/domain/entities/ConsentHistory';
+
+CONSENT_ACTIONS.SUBSCRIBE
+CONSENT_ACTIONS.UNSUBSCRIBE
+CONSENT_ACTIONS.RESUBSCRIBE
+// etc.
+```
+
+#### Examples
+
+❌ **WRONG**:
+```typescript
+if (user.role === 'admin') { ... }
+if (plan === 'free') { ... }
+const prices = { free: 0, pro: 29, business: 79 };
+```
+
+✅ **CORRECT**:
+```typescript
+import { USER_ROLES } from '@/domain/types/user-roles';
+import { SUBSCRIPTION_PLANS } from '@/domain/types/subscriptions';
+
+if (user.role === USER_ROLES.ADMIN) { ... }
+if (plan === SUBSCRIPTION_PLANS.FREE) { ... }
+const prices = {
+  [SUBSCRIPTION_PLANS.FREE]: 0,
+  [SUBSCRIPTION_PLANS.PRO]: 29,
+  [SUBSCRIPTION_PLANS.BUSINESS]: 79
+};
+```
+
+#### Creating New Constants
+
+When adding new domain values:
+
+1. Create the type:
+```typescript
+export type PaymentStatus = 'pending' | 'completed' | 'failed';
+```
+
+2. Create constants:
+```typescript
+export const PAYMENT_STATUS = {
+  PENDING: 'pending' as const,
+  COMPLETED: 'completed' as const,
+  FAILED: 'failed' as const,
+} as const;
+```
+
+3. Always use constants, never literals.
+
+**See `.claude/CODE_STANDARDS.md` for complete reference.**
+
+---
+
+**Remember**: This is not optional. Clean Architecture + SOLID + Typed Constants is our standard.
 **Always code as if the person maintaining your code is a violent psychopath who knows where you live.**
 
 ---
 
-*Last Updated: 2025-12-22*
-*Architecture: Clean Architecture + SOLID*
+*Last Updated: 2025-12-30*
+*Architecture: Clean Architecture + SOLID + Typed Constants*
 *GDPR Compliant: Yes*
 *CAN-SPAM Compliant: Yes*
