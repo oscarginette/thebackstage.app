@@ -34,6 +34,7 @@ export interface ErrorResponse {
  *
  * Handles both known AppError instances and unexpected errors.
  * All unexpected errors are logged with full context.
+ * Uses error catalog for consistent error codes and messages.
  */
 export function createErrorResponse(
   error: unknown,
@@ -41,6 +42,16 @@ export function createErrorResponse(
 ): NextResponse<ErrorResponse> {
   // Handle known app errors with proper status codes
   if (error instanceof AppError) {
+    // Log known errors with context
+    console.error(`[${requestId}] AppError (${error.code}):`, {
+      message: error.message,
+      code: error.code,
+      status: error.status,
+      details: error.details,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+    });
+
     return NextResponse.json(
       {
         error: error.message,
@@ -57,17 +68,18 @@ export function createErrorResponse(
   const errorMessage = error instanceof Error ? error.message : 'Internal server error';
 
   // Log unexpected errors for monitoring and debugging
-  console.error('Unexpected error:', {
+  console.error(`[${requestId}] Unexpected error:`, {
     message: errorMessage,
     stack: error instanceof Error ? error.stack : undefined,
+    error: error instanceof Error ? error : String(error),
     requestId,
     timestamp: new Date().toISOString(),
   });
 
   return NextResponse.json(
     {
-      error: 'Internal server error',
-      code: 'INTERNAL_ERROR',
+      error: errorMessage,
+      code: 'UNEXPECTED_ERROR',
       status: 500,
       requestId,
     },

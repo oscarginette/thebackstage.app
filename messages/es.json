@@ -397,5 +397,70 @@
         "noSubmissions": "No hay envíos todavía"
       }
     }
+  },
+  "errors": {
+    "auth": {
+      "required": "Debes iniciar sesión para acceder a este contenido",
+      "invalidCredentials": "Credenciales inválidas. Por favor, verifica tu email y contraseña",
+      "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente",
+      "tokenInvalid": "Token de autenticación inválido. Por favor, inicia sesión nuevamente"
+    },
+    "authorization": {
+      "forbidden": "No tienes permiso para acceder a este recurso",
+      "insufficientPermissions": "Permisos insuficientes para realizar esta acción",
+      "resourceAccessDenied": "Acceso denegado a este recurso"
+    },
+    "resource": {
+      "notFound": "Recurso no encontrado",
+      "userNotFound": "Usuario no encontrado. Verifica que la cuenta exista",
+      "campaignNotFound": "Campaña no encontrada. Puede haber sido eliminada",
+      "contactNotFound": "Contacto no encontrado en tu audiencia",
+      "templateNotFound": "Plantilla no encontrada. Verifica que no haya sido eliminada",
+      "gateNotFound": "Gate de descarga no encontrado"
+    },
+    "validation": {
+      "generic": "Los datos ingresados no son válidos. Por favor, verifica la información",
+      "invalidEmail": "El email ingresado no es válido. Formato esperado: ejemplo@dominio.com",
+      "invalidInput": "Entrada inválida. Por favor, revisa los datos ingresados",
+      "missingRequiredField": "Campo requerido faltante. Por favor, completa todos los campos obligatorios",
+      "fieldTooLong": "El campo excede la longitud máxima permitida",
+      "fieldTooShort": "El campo no cumple con la longitud mínima requerida"
+    },
+    "business": {
+      "quotaExceeded": "Has excedido tu cuota. Actualiza tu plan para continuar",
+      "duplicateResource": "Este recurso ya existe. Verifica que no esté duplicado",
+      "conflict": "Conflicto al procesar la solicitud. Otro proceso pudo haber modificado los datos",
+      "operationNotAllowed": "Esta operación no está permitida en este momento"
+    },
+    "database": {
+      "generic": "Error de base de datos. Estamos trabajando para solucionarlo",
+      "connectionFailed": "No pudimos conectar con la base de datos. Intenta nuevamente en unos momentos",
+      "queryFailed": "Error al consultar la base de datos. Por favor, intenta nuevamente",
+      "constraintViolation": "La operación viola una restricción de datos. Verifica la información ingresada"
+    },
+    "external": {
+      "generic": "Error al comunicarse con un servicio externo. Intenta nuevamente",
+      "emailProvider": "Error del proveedor de email. No pudimos enviar los emails en este momento",
+      "brevoApi": "Error de la API de Brevo. Intenta sincronizar nuevamente más tarde",
+      "soundcloudApi": "Error de la API de SoundCloud. Verifica tu conexión",
+      "spotifyApi": "Error de la API de Spotify. Verifica tu conexión"
+    },
+    "internal": {
+      "generic": "Error interno del servidor. Hemos sido notificados y estamos trabajando en ello",
+      "configuration": "Error de configuración del servidor. Contacta con soporte",
+      "unexpected": "Ocurrió un error inesperado. Hemos registrado el problema"
+    },
+    "settings": {
+      "loadFailed": "No pudimos cargar tu configuración. Por favor, recarga la página",
+      "updateFailed": "No pudimos guardar los cambios. Intenta nuevamente",
+      "invalidData": "Los datos de configuración no son válidos. Verifica la información"
+    },
+    "common": {
+      "tryAgain": "Intentar nuevamente",
+      "goHome": "Ir al inicio",
+      "contactSupport": "Si el problema persiste, contacta con soporte",
+      "errorCode": "Código de error",
+      "technicalDetails": "Detalles técnicos (solo para desarrollo)"
+    }
   }
 }
