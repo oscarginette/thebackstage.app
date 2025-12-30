@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Modal from '@/components/ui/Modal';
 import { SoundCloudTrack } from '../../types/dashboard';
 
 interface EmailPreviewModalProps {
@@ -73,9 +74,11 @@ export default function EmailPreviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      size="6xl"
+      customHeader={
         <div className="p-6 border-b border-[#E8E6DF]">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -126,7 +129,9 @@ export default function EmailPreviewModal({
             </div>
           )}
         </div>
-
+      }
+    >
+      <>
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Editor Panel (if edit mode) */}
@@ -262,7 +267,7 @@ export default function EmailPreviewModal({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </>
+    </Modal>
   );
 }

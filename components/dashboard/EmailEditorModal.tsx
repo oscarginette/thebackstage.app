@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Modal from '@/components/ui/Modal';
 import { EmailContent, EmailTemplate } from '../../types/dashboard';
 import TemplateChooser from './TemplateChooser';
 import EmailContentEditor from './EmailContentEditor';
@@ -61,9 +62,11 @@ export default function EmailEditorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      size="6xl"
+      customHeader={
         <div className="p-8 border-b border-[#E8E6DF]">
           <div className="flex items-center justify-between">
             <div>
@@ -87,24 +90,23 @@ export default function EmailEditorModal({
             </button>
           </div>
         </div>
-
-        {/* Content */}
-        {step === 'choose' ? (
-          <TemplateChooser
-            onSelectBlank={handleSelectBlank}
-            onSelectDefault={handleSelectDefault}
-            onClose={onClose}
-          />
-        ) : (
-          <EmailContentEditor
-            initialContent={content}
-            onSave={onSave}
-            onSaveDraft={onSaveDraft}
-            onClose={onClose}
-            saving={saving}
-          />
-        )}
-      </div>
-    </div>
+      }
+    >
+      {step === 'choose' ? (
+        <TemplateChooser
+          onSelectBlank={handleSelectBlank}
+          onSelectDefault={handleSelectDefault}
+          onClose={onClose}
+        />
+      ) : (
+        <EmailContentEditor
+          initialContent={content}
+          onSave={onSave}
+          onSaveDraft={onSaveDraft}
+          onClose={onClose}
+          saving={saving}
+        />
+      )}
+    </Modal>
   );
 }
