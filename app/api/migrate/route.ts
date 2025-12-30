@@ -27,6 +27,29 @@ export async function POST() {
       WHERE max_contacts IS NULL OR max_monthly_emails IS NULL
     `;
 
+    // Fix contacts table for multi-tenant support
+    console.log('[Migration] Fixing contacts table for multi-tenant...');
+
+    // Add user_id column if it doesn't exist
+    await sql`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_contacts_user_id ON contacts(user_id)`;
+
+    // Drop old UNIQUE constraint on email (if exists)
+    await sql`ALTER TABLE contacts DROP CONSTRAINT IF EXISTS contacts_email_key`;
+
+    // Add UNIQUE constraint on (user_id, email) for multi-tenant support
+    await sql`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint
+          WHERE conname = 'contacts_user_id_email_key'
+        ) THEN
+          ALTER TABLE contacts ADD CONSTRAINT contacts_user_id_email_key UNIQUE (user_id, email);
+        END IF;
+      END $$
+    `;
+
     // 2. Create contact_import_history table
     console.log('[Migration] Creating contact_import_history table...');
     await sql`
@@ -95,6 +118,7 @@ export async function POST() {
       message: 'Migration completed successfully',
       details: {
         subscription_columns_added: true,
+        contacts_table_fixed: true,
         contact_import_history_table_created: true,
         email_events_table_created: true
       }
