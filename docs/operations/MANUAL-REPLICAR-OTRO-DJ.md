@@ -150,9 +150,6 @@ RESEND_WEBHOOK_SECRET="whsec_..."
 
 # App
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
-
-# Webhooks (opcional - si usas Hypeddit)
-HYPEDIT_WEBHOOK_SECRET="webhook_secret_2024"
 ```
 
 ### En Vercel (producción)

@@ -77,9 +77,6 @@ SENDER_EMAIL=info@geebeat.com
 # Base URL de tu app (para links de unsubscribe)
 NEXT_PUBLIC_APP_URL=https://backstage-art.vercel.app
 
-# Webhook secret para Hypedit (genera uno random)
-HYPEDIT_WEBHOOK_SECRET=tu_secreto_super_seguro_aqui
-
 # Database (ya debería existir)
 POSTGRES_URL=postgresql://...
 ```
@@ -374,10 +371,6 @@ LIMIT 50;
 ---
 
 ## 🆘 Troubleshooting
-
-### "Unauthorized" en webhook
-- Verifica que el header `X-Webhook-Secret` sea exacto
-- Revisa que la variable `HYPEDIT_WEBHOOK_SECRET` esté en Vercel
 
 ### "No hay contactos suscritos"
 - Ejecuta `SELECT * FROM contacts WHERE subscribed = true`

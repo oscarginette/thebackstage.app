@@ -366,7 +366,6 @@ vercel --prod=false
 |----------|----------|--------|--------------|
 | `RESEND_WEBHOOK_SECRET` | Production | `whsec_xxx...` | Resend Dashboard → Webhooks → [Endpoint] → Signing Secret |
 | `STRIPE_WEBHOOK_SECRET` | If using Stripe | `whsec_xxx...` | Stripe Dashboard → Developers → Webhooks → [Endpoint] → Signing Secret |
-| `HYPEDIT_WEBHOOK_SECRET` | If using Hypedit | Any string | Your own secret (simple matching, not HMAC) |
 
 ---
 
