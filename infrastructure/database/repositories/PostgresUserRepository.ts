@@ -44,7 +44,14 @@ export class PostgresUserRepository implements IUserRepository {
           role,
           active,
           created_at,
-          updated_at
+          updated_at,
+          name,
+          subscription_plan,
+          max_monthly_emails,
+          emails_sent_this_month,
+          quota_reset_at,
+          subscription_started_at,
+          subscription_expires_at
       `;
 
       if (result.rows.length === 0) {
@@ -59,7 +66,14 @@ export class PostgresUserRepository implements IUserRepository {
         row.role,
         row.active,
         new Date(row.created_at),
-        new Date(row.updated_at)
+        new Date(row.updated_at),
+        row.subscription_plan,
+        row.max_monthly_emails,
+        row.emails_sent_this_month,
+        new Date(row.quota_reset_at),
+        row.name,
+        row.subscription_started_at ? new Date(row.subscription_started_at) : undefined,
+        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined
       );
     } catch (error) {
       console.error('PostgresUserRepository.create error:', error);

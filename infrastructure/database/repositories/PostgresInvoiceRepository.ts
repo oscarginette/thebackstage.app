@@ -80,7 +80,7 @@ export class PostgresInvoiceRepository implements IInvoiceRepository {
       ORDER BY created DESC
     `;
 
-    return result.map((row) => Invoice.fromDatabase(row));
+    return result.map((row: any) => Invoice.fromDatabase(row));
   }
 
   /**
@@ -93,7 +93,7 @@ export class PostgresInvoiceRepository implements IInvoiceRepository {
       ORDER BY created DESC
     `;
 
-    return result.map((row) => Invoice.fromDatabase(row));
+    return result.map((row: any) => Invoice.fromDatabase(row));
   }
 
   /**

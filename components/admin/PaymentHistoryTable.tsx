@@ -176,6 +176,7 @@ export default function PaymentHistoryTable({ onAddPayment }: PaymentHistoryTabl
         <Toast
           message={toast.message}
           type={toast.type}
+          isVisible={true}
           onClose={() => setToast(null)}
         />
       )}

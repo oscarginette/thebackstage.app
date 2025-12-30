@@ -61,13 +61,13 @@ export class GetAllUsersUseCase {
       return {
         id: user.id,
         email: user.email,
-        name: user.name,
+        name: user.name ?? null,
         role: user.role,
         active: user.active,
         createdAt: user.createdAt,
         subscriptionPlan: user.subscriptionPlan,
-        subscriptionStartedAt: user.subscriptionStartedAt,
-        subscriptionExpiresAt: user.subscriptionExpiresAt,
+        subscriptionStartedAt: user.subscriptionStartedAt ?? null,
+        subscriptionExpiresAt: user.subscriptionExpiresAt ?? null,
         maxMonthlyEmails: user.maxMonthlyEmails,
         quota: {
           emailsSent: user.emailsSentThisMonth,
