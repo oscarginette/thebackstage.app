@@ -42,25 +42,19 @@ export class GetAllUsersUseCase {
   ) {}
 
   async execute(adminUserId: number): Promise<UserWithQuota[]> {
-    console.log('[GetAllUsersUseCase] Starting execution for admin:', adminUserId);
-
     // Verify admin user
     const adminUser = await this.userRepository.findById(adminUserId);
-    console.log('[GetAllUsersUseCase] Admin user:', adminUser?.email, 'isAdmin:', adminUser?.isAdmin());
 
     if (!adminUser) {
-      console.log('[GetAllUsersUseCase] Admin user not found');
       throw new UnauthorizedError('User not found');
     }
 
     if (!adminUser.isAdmin()) {
-      console.log('[GetAllUsersUseCase] User is not admin');
       throw new UnauthorizedError('Admin access required');
     }
 
     // Get all users
     const users = await this.userRepository.findAll();
-    console.log('[GetAllUsersUseCase] Found users:', users.length);
 
     // Map users with quota data (quota is directly in User entity)
     const usersWithQuota = users.map((user) => {
@@ -84,7 +78,6 @@ export class GetAllUsersUseCase {
       };
     });
 
-    console.log('[GetAllUsersUseCase] Returning users with quota:', usersWithQuota.length);
     return usersWithQuota;
   }
 }

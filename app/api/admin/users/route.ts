@@ -13,14 +13,10 @@ import { PostgresUserRepository } from '@/infrastructure/database/repositories/P
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[Admin Users API] Starting request...');
-
     // Check authentication
     const session = await auth();
-    console.log('[Admin Users API] Session:', session?.user?.email, 'Role:', session?.user?.role);
 
     if (!session?.user) {
-      console.log('[Admin Users API] No session found');
       return NextResponse.json(
         { error: 'Unauthorized. Please log in.' },
         { status: 401 }
@@ -29,7 +25,6 @@ export async function GET(request: NextRequest) {
 
     // Check admin role
     if (session.user.role !== 'admin') {
-      console.log('[Admin Users API] User is not admin:', session.user.role);
       return NextResponse.json(
         { error: 'Admin access required.' },
         { status: 403 }
@@ -39,10 +34,8 @@ export async function GET(request: NextRequest) {
     // Get admin user
     const userRepository = new PostgresUserRepository();
     const adminUser = await userRepository.findByEmail(session.user.email!);
-    console.log('[Admin Users API] Admin user found:', adminUser?.id);
 
     if (!adminUser) {
-      console.log('[Admin Users API] Admin user not found in database');
       return NextResponse.json(
         { error: 'Admin user not found' },
         { status: 404 }
@@ -52,7 +45,6 @@ export async function GET(request: NextRequest) {
     // Execute use case
     const useCase = new GetAllUsersUseCase(userRepository);
     const users = await useCase.execute(adminUser.id);
-    console.log('[Admin Users API] Users fetched:', users.length);
 
     return NextResponse.json(
       {

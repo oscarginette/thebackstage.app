@@ -1,65 +1,63 @@
 /**
- * Run Multi-Tenant Migration
+ * Run Subscription System Migration
  *
- * Executes the multi-tenant migration SQL file using @vercel/postgres
+ * Executes the subscription system migration SQL file
  */
 
+// IMPORTANT: Load env vars FIRST before any imports
 import * as dotenv from 'dotenv';
-import { sql } from '@vercel/postgres';
+dotenv.config({ path: '.env.local' });
+
+import { Pool } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Load .env.local (Next.js default)
-dotenv.config({ path: '.env.local' });
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+});
 
 async function runMigration() {
-  console.log('🚀 Running multi-tenant migration...\n');
+  console.log('🚀 Running subscription system migration...\n');
 
   try {
     // Read migration SQL file
-    const migrationPath = path.join(process.cwd(), 'sql', 'migration-multi-tenant.sql');
+    const migrationPath = path.join(process.cwd(), 'sql', 'migration-subscription-system.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
 
     // Execute migration
     console.log('📝 Executing migration SQL...');
-    await sql.query(migrationSQL);
+    await pool.query(migrationSQL);
 
     console.log('✅ Migration executed successfully!\n');
 
-    // Verify tables created
-    console.log('🔍 Verifying new tables...');
+    // Verify subscription columns added
+    console.log('🔍 Verifying subscription columns...');
 
-    const tables = await sql`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-      AND table_name IN ('users', 'user_settings', 'sessions')
-    `;
-
-    console.log(`✅ Found ${tables.rows.length} new tables:`);
-    tables.rows.forEach(row => console.log(`   - ${row.table_name}`));
-
-    // Verify user_id columns added
-    console.log('\n🔍 Verifying user_id columns...');
-    const columns = await sql`
-      SELECT table_name, column_name
+    const columns = await pool.query(`
+      SELECT column_name
       FROM information_schema.columns
-      WHERE column_name = 'user_id'
-      AND table_schema = 'public'
-      ORDER BY table_name
-    `;
+      WHERE table_name = 'users'
+      AND column_name IN ('subscription_started_at', 'subscription_expires_at', 'max_contacts', 'max_monthly_emails')
+      ORDER BY column_name
+    `);
 
-    console.log(`✅ Found user_id in ${columns.rows.length} tables:`);
-    columns.rows.forEach(row => console.log(`   - ${row.table_name}.user_id`));
+    console.log(`✅ Found ${columns.rows.length} subscription columns in users table:`);
+    columns.rows.forEach(row => console.log(`   - ${row.column_name}`));
+
+    // Verify pricing_plans table
+    console.log('\n🔍 Verifying pricing_plans table...');
+    const plans = await pool.query('SELECT plan_name, max_contacts, max_monthly_emails FROM pricing_plans ORDER BY price_monthly_eur');
+
+    console.log(`✅ Found ${plans.rows.length} pricing plans:`);
+    plans.rows.forEach((row: any) => console.log(`   - ${row.plan_name}: ${row.max_contacts} contacts, ${row.max_monthly_emails || 'unlimited'} emails/month`));
 
     console.log('\n✅ Migration complete!\n');
-    console.log('Next steps:');
-    console.log('  1. npm install next-auth@beta bcrypt @types/bcrypt');
-    console.log('  2. Create domain entities and repositories');
-    console.log('  3. Run data migration script\n');
+
+    await pool.end();
 
   } catch (error) {
     console.error('❌ Migration failed:', error);
+    await pool.end();
     process.exit(1);
   }
 

@@ -89,7 +89,13 @@ export class PostgresUserRepository implements IUserRepository {
           role,
           active,
           created_at,
-          updated_at
+          updated_at,
+          subscription_plan,
+          subscription_started_at,
+          subscription_expires_at,
+          monthly_quota,
+          emails_sent_this_month,
+          quota_reset_at
         FROM users
         WHERE LOWER(email) = LOWER(${email.trim()})
         LIMIT 1
@@ -108,7 +114,13 @@ export class PostgresUserRepository implements IUserRepository {
         row.active,
         new Date(row.created_at),
         new Date(row.updated_at),
-        row.name
+        row.subscription_plan ?? 'free',
+        row.monthly_quota ?? 1000,
+        row.emails_sent_this_month ?? 0,
+        row.quota_reset_at ? new Date(row.quota_reset_at) : new Date(),
+        row.name,
+        row.subscription_started_at ? new Date(row.subscription_started_at) : undefined,
+        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined
       );
     } catch (error) {
       console.error('PostgresUserRepository.findByEmail error:', error);
@@ -132,7 +144,13 @@ export class PostgresUserRepository implements IUserRepository {
           role,
           active,
           created_at,
-          updated_at
+          updated_at,
+          subscription_plan,
+          subscription_started_at,
+          subscription_expires_at,
+          monthly_quota,
+          emails_sent_this_month,
+          quota_reset_at
         FROM users
         WHERE id = ${id}
         LIMIT 1
@@ -151,7 +169,13 @@ export class PostgresUserRepository implements IUserRepository {
         row.active,
         new Date(row.created_at),
         new Date(row.updated_at),
-        row.name
+        row.subscription_plan ?? 'free',
+        row.monthly_quota ?? 1000,
+        row.emails_sent_this_month ?? 0,
+        row.quota_reset_at ? new Date(row.quota_reset_at) : new Date(),
+        row.name,
+        row.subscription_started_at ? new Date(row.subscription_started_at) : undefined,
+        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined
       );
     } catch (error) {
       console.error('PostgresUserRepository.findById error:', error);
@@ -223,7 +247,13 @@ export class PostgresUserRepository implements IUserRepository {
           role,
           active,
           created_at,
-          updated_at
+          updated_at,
+          subscription_plan,
+          subscription_started_at,
+          subscription_expires_at,
+          monthly_quota,
+          emails_sent_this_month,
+          quota_reset_at
         FROM users
         ORDER BY created_at DESC
       `;
@@ -237,7 +267,13 @@ export class PostgresUserRepository implements IUserRepository {
           row.active,
           new Date(row.created_at),
           new Date(row.updated_at),
-          row.name
+          row.subscription_plan ?? 'free',
+          row.monthly_quota ?? 1000,
+          row.emails_sent_this_month ?? 0,
+          row.quota_reset_at ? new Date(row.quota_reset_at) : new Date(),
+          row.name,
+          row.subscription_started_at ? new Date(row.subscription_started_at) : undefined,
+          row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined
         )
       );
     } catch (error) {

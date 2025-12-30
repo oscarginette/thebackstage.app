@@ -44,12 +44,10 @@ export default function AdminPage() {
 
   const fetchUsers = async () => {
     try {
-      console.log('[Admin Page] Fetching users...');
       setLoading(true);
       setError(null);
 
       const response = await fetch('/api/admin/users');
-      console.log('[Admin Page] Response status:', response.status);
 
       if (!response.ok) {
         if (response.status === 403) {
@@ -59,17 +57,13 @@ export default function AdminPage() {
           throw new Error('Unauthorized. Please log in.');
         }
         const errorData = await response.json();
-        console.log('[Admin Page] Error data:', errorData);
         throw new Error(errorData.error || 'Failed to fetch users');
       }
 
       const data = await response.json();
-      console.log('[Admin Page] Response data:', data);
-      console.log('[Admin Page] Users count:', data.users?.length);
-      console.log('[Admin Page] First user:', data.users?.[0]);
       setUsers(data.users);
     } catch (err) {
-      console.error('[Admin Page] Fetch users error:', err);
+      console.error('Fetch users error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load users');
     } finally {
       setLoading(false);
