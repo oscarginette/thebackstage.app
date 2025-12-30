@@ -3,6 +3,7 @@
  *
  * Displays warning banner when user approaches or exceeds quota limits.
  * Shows at 80%+ usage for contacts or emails.
+ * ADMIN BYPASS: Admins never see quota warnings.
  *
  * Clean Architecture: Presentation component with clear visual hierarchy.
  */
@@ -12,6 +13,7 @@
 import { AlertTriangle, Mail, Users, AlertCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { PATHS } from '@/lib/paths';
+import { useSession } from 'next-auth/react';
 
 interface QuotaWarningProps {
   contactsUsed: number;
@@ -26,6 +28,14 @@ export default function QuotaWarning({
   emailsUsed,
   emailsLimit,
 }: QuotaWarningProps) {
+  const { data: session } = useSession();
+
+  // ADMIN BYPASS: Admins never see quota warnings
+  const isAdmin = session?.user?.role === 'admin';
+  if (isAdmin) {
+    return null;
+  }
+
   // Calculate usage percentages
   const contactsPercentage = (contactsUsed / contactsLimit) * 100;
   const emailsPercentage = (emailsUsed / emailsLimit) * 100;
@@ -61,10 +71,46 @@ export default function QuotaWarning({
   const progressFillColor = isExceeded ? 'bg-red-500' : 'bg-orange-500';
   
   // Labels
-  const title = isExceeded ? 'Service Paused: Quota Limit Reached' : 'Approaching Plan Limits';
-  const description = isExceeded 
-    ? 'Your account has exceeded its usage limits. Please upgrade your plan immediately to restore full access to the platform.' 
-    : 'You are nearing your usage limits. We recommend upgrading soon to ensure uninterrupted service.';
+  const getLabels = () => {
+    if (contactsExceeded && emailsExceeded) {
+      return {
+        title: 'Service Paused: Plan Limits Reached',
+        description: 'You have reached both your contact capacity and monthly email allowance. Upgrade your plan to restore full access.'
+      };
+    }
+    if (contactsExceeded) {
+      return {
+        title: 'Plan Capacity Reached',
+        description: 'You have reached the maximum number of contacts for your current plan. Upgrade to continue growing your audience.'
+      };
+    }
+    if (emailsExceeded) {
+      return {
+        title: 'Monthly Emails Exhausted',
+        description: 'You have reached your monthly email limit. Upgrade your plan to continue sending campaigns this month.'
+      };
+    }
+    
+    // Approaching limits (80%+)
+    if (contactsPercentage >= 80 && emailsPercentage >= 80) {
+      return {
+        title: 'Approaching Plan Limits',
+        description: 'You are nearing both your contact and email limits. Consider upgrading to avoid service interruption.'
+      };
+    }
+    if (contactsPercentage >= 80) {
+      return {
+        title: 'Reaching Contact Capacity',
+        description: 'You are approaching your account contact limit. Upgrade soon to keep adding new fans to your list.'
+      };
+    }
+    return {
+      title: 'Monthly Emails Running Low',
+      description: 'You have used most of your monthly email allowance. Consider upgrading to ensure your campaigns keep going.'
+    };
+  };
+
+  const { title, description } = getLabels();
 
   return (
     <div className={`rounded-2xl border p-6 mb-8 backdrop-blur-sm transition-all ${containerClasses}`}>
@@ -139,7 +185,7 @@ export default function QuotaWarning({
         <div className="flex-shrink-0 self-start md:self-center">
           <Link
             href={PATHS.UPGRADE}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-neutral-900 hover:bg-neutral-800 transition-all hover:scale-105 shadow-xl shadow-black/10 whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-neutral-900 hover:bg-neutral-800 transition-all hover:scale-105 shadow-xl shadow-black/10 whitespace-nowrap"
           >
             {isExceeded ? 'Restore Access' : 'Upgrade Plan'}
             <ArrowRight className="w-4 h-4" />

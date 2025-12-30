@@ -2,12 +2,13 @@
  * useQuotaAccess Hook
  *
  * Checks if user has access to features based on quota limits and subscription status.
- * Returns loading state, access permission, and quota information.
+ * ADMIN BYPASS: Admins have unlimited access to all features.
  *
  * Clean Architecture: Presentation layer hook for UI state management.
  */
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
 interface QuotaInfo {
   currentContacts: number;
@@ -33,9 +34,13 @@ interface UseQuotaAccessResult {
 }
 
 export function useQuotaAccess(): UseQuotaAccessResult {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // ADMIN BYPASS: Admins have unlimited access
+  const isAdmin = session?.user?.role === 'admin';
 
   useEffect(() => {
     fetchQuotaInfo();
@@ -63,6 +68,19 @@ export function useQuotaAccess(): UseQuotaAccessResult {
     } finally {
       setLoading(false);
     }
+  }
+
+  // ADMIN BYPASS: Admins never have restrictions
+  if (isAdmin) {
+    return {
+      loading: false,
+      hasAccess: true,
+      isExpired: false,
+      isContactLimitReached: false,
+      isEmailLimitReached: false,
+      quotaInfo,
+      error,
+    };
   }
 
   // Check if subscription has expired
