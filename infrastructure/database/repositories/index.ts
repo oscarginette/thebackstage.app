@@ -11,6 +11,7 @@ import { PostgresDownloadSubmissionRepository } from './PostgresDownloadSubmissi
 import { PostgresProductRepository } from './PostgresProductRepository';
 import { PostgresPriceRepository } from './PostgresPriceRepository';
 import { PostgresSubscriptionRepository } from './PostgresSubscriptionRepository';
+import { PostgresInvoiceRepository } from './PostgresInvoiceRepository';
 
 // Singleton instances
 export const trackRepository = new PostgresTrackRepository();
@@ -28,3 +29,4 @@ export const downloadSubmissionRepository = new PostgresDownloadSubmissionReposi
 export const productRepository = new PostgresProductRepository();
 export const priceRepository = new PostgresPriceRepository();
 export const subscriptionRepository = new PostgresSubscriptionRepository();
+export const invoiceRepository = new PostgresInvoiceRepository();
