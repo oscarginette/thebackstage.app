@@ -13,6 +13,7 @@
  * - Dry-run mode available
  */
 
+import 'dotenv/config'; // Load .env.local
 import { sql } from '@vercel/postgres';
 import { readFileSync } from 'fs';
 import { join } from 'path';
