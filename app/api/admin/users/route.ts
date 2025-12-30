@@ -10,7 +10,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { GetAllUsersUseCase } from '@/domain/services/admin/GetAllUsersUseCase';
 import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
-import { PostgresQuotaTrackingRepository } from '@/infrastructure/database/repositories/PostgresQuotaTrackingRepository';
 
 export async function GET(request: NextRequest) {
   try {

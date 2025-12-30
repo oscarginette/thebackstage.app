@@ -9,7 +9,6 @@
  */
 
 import { IUserRepository } from '@/domain/repositories/IUserRepository';
-import { IQuotaTrackingRepository } from '@/domain/repositories/IQuotaTrackingRepository';
 
 export interface UserWithQuota {
   id: number;
@@ -39,8 +38,7 @@ export class UnauthorizedError extends Error {
 
 export class GetAllUsersUseCase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly quotaRepository: IQuotaTrackingRepository
+    private readonly userRepository: IUserRepository
   ) {}
 
   async execute(adminUserId: number): Promise<UserWithQuota[]> {
@@ -64,34 +62,29 @@ export class GetAllUsersUseCase {
     const users = await this.userRepository.findAll();
     console.log('[GetAllUsersUseCase] Found users:', users.length);
 
-    // Enrich with quota data
-    const usersWithQuota = await Promise.all(
-      users.map(async (user) => {
-        const quota = await this.quotaRepository.getByUserId(user.id);
+    // Map users with quota data (quota is directly in User entity)
+    const usersWithQuota = users.map((user) => {
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        active: user.active,
+        createdAt: user.createdAt,
+        subscriptionPlan: user.subscriptionPlan,
+        subscriptionStartedAt: user.subscriptionStartedAt,
+        subscriptionExpiresAt: user.subscriptionExpiresAt,
+        maxMonthlyEmails: user.maxMonthlyEmails,
+        quota: {
+          emailsSent: user.emailsSentThisMonth,
+          monthlyLimit: user.maxMonthlyEmails,
+          remaining: user.maxMonthlyEmails - user.emailsSentThisMonth,
+          lastReset: user.quotaResetAt,
+        },
+      };
+    });
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          active: user.active,
-          createdAt: user.createdAt,
-          subscriptionPlan: user.subscriptionPlan,
-          subscriptionStartedAt: user.subscriptionStartedAt,
-          subscriptionExpiresAt: user.subscriptionExpiresAt,
-          maxMonthlyEmails: user.maxMonthlyEmails,
-          quota: quota
-            ? {
-                emailsSent: quota.emailsSentToday,
-                monthlyLimit: quota.monthlyLimit,
-                remaining: quota.getRemainingQuota(),
-                lastReset: quota.lastResetDate,
-              }
-            : null,
-        };
-      })
-    );
-
+    console.log('[GetAllUsersUseCase] Returning users with quota:', usersWithQuota.length);
     return usersWithQuota;
   }
 }
