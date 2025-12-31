@@ -133,59 +133,32 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
     updates: VerificationStatusUpdate
   ): Promise<DownloadSubmission> {
     try {
-      const setFields: string[] = [];
-      const values: any[] = [];
-      let paramIndex = 1;
+      // Prepare conditional values with timestamps
+      const now = new Date();
+      const emailVerified = updates.emailVerified;
+      const soundcloudRepostVerified = updates.soundcloudRepostVerified;
+      const soundcloudRepostVerifiedAt = updates.soundcloudRepostVerified ? now : undefined;
+      const soundcloudFollowVerified = updates.soundcloudFollowVerified;
+      const soundcloudFollowVerifiedAt = updates.soundcloudFollowVerified ? now : undefined;
+      const spotifyConnected = updates.spotifyConnected;
+      const spotifyConnectedAt = updates.spotifyConnected ? now : undefined;
 
-      if (updates.emailVerified !== undefined) {
-        setFields.push(`email_verified = $${paramIndex++}`);
-        values.push(updates.emailVerified);
-      }
-
-      if (updates.soundcloudRepostVerified !== undefined) {
-        setFields.push(`soundcloud_repost_verified = $${paramIndex++}`);
-        values.push(updates.soundcloudRepostVerified);
-
-        if (updates.soundcloudRepostVerified) {
-          setFields.push(`soundcloud_repost_verified_at = $${paramIndex++}`);
-          values.push(new Date());
-        }
-      }
-
-      if (updates.soundcloudFollowVerified !== undefined) {
-        setFields.push(`soundcloud_follow_verified = $${paramIndex++}`);
-        values.push(updates.soundcloudFollowVerified);
-
-        if (updates.soundcloudFollowVerified) {
-          setFields.push(`soundcloud_follow_verified_at = $${paramIndex++}`);
-          values.push(new Date());
-        }
-      }
-
-      if (updates.spotifyConnected !== undefined) {
-        setFields.push(`spotify_connected = $${paramIndex++}`);
-        values.push(updates.spotifyConnected);
-
-        if (updates.spotifyConnected) {
-          setFields.push(`spotify_connected_at = $${paramIndex++}`);
-          values.push(new Date());
-        }
-      }
-
-      // Always update updated_at
-      setFields.push(`updated_at = $${paramIndex++}`);
-      values.push(new Date());
-
-      // Add WHERE clause id
-      values.push(id);
-
-      const result = await sql.query(
-        `UPDATE download_submissions
-         SET ${setFields.join(', ')}
-         WHERE id = $${values.length}
-         RETURNING *`,
-        values
-      );
+      // Use COALESCE to update only provided fields
+      // Vercel Postgres template literal syntax
+      const result = await sql`
+        UPDATE download_submissions
+        SET
+          email_verified = COALESCE(${emailVerified}, email_verified),
+          soundcloud_repost_verified = COALESCE(${soundcloudRepostVerified}, soundcloud_repost_verified),
+          soundcloud_repost_verified_at = COALESCE(${soundcloudRepostVerifiedAt}, soundcloud_repost_verified_at),
+          soundcloud_follow_verified = COALESCE(${soundcloudFollowVerified}, soundcloud_follow_verified),
+          soundcloud_follow_verified_at = COALESCE(${soundcloudFollowVerifiedAt}, soundcloud_follow_verified_at),
+          spotify_connected = COALESCE(${spotifyConnected}, spotify_connected),
+          spotify_connected_at = COALESCE(${spotifyConnectedAt}, spotify_connected_at),
+          updated_at = ${now}
+        WHERE id = ${id}
+        RETURNING *
+      `;
 
       if (result.rowCount === 0 || result.rows.length === 0) {
         throw new Error('Submission not found');

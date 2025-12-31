@@ -128,109 +128,40 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
 
   async update(userId: number, gateId: string, input: Partial<CreateGateInput>): Promise<DownloadGate> {
     try {
-      // Build dynamic UPDATE query
-      const updates: string[] = [];
-      const values: any[] = [];
-
-      if (input.slug !== undefined) {
-        updates.push('slug = $' + (values.length + 1));
-        values.push(input.slug);
-      }
-      if (input.title !== undefined) {
-        updates.push('title = $' + (values.length + 1));
-        values.push(input.title);
-      }
-      if (input.artistName !== undefined) {
-        updates.push('artist_name = $' + (values.length + 1));
-        values.push(input.artistName);
-      }
-      if (input.genre !== undefined) {
-        updates.push('genre = $' + (values.length + 1));
-        values.push(input.genre);
-      }
-      if (input.description !== undefined) {
-        updates.push('description = $' + (values.length + 1));
-        values.push(input.description);
-      }
-      if (input.artworkUrl !== undefined) {
-        updates.push('artwork_url = $' + (values.length + 1));
-        values.push(input.artworkUrl);
-      }
-      if (input.soundcloudTrackId !== undefined) {
-        updates.push('soundcloud_track_id = $' + (values.length + 1));
-        values.push(input.soundcloudTrackId);
-      }
-      if (input.soundcloudTrackUrl !== undefined) {
-        updates.push('soundcloud_track_url = $' + (values.length + 1));
-        values.push(input.soundcloudTrackUrl);
-      }
-      if (input.soundcloudUserId !== undefined) {
-        updates.push('soundcloud_user_id = $' + (values.length + 1));
-        values.push(input.soundcloudUserId);
-      }
-      if (input.fileUrl !== undefined) {
-        updates.push('file_url = $' + (values.length + 1));
-        values.push(input.fileUrl);
-      }
-      if (input.fileSizeMb !== undefined) {
-        updates.push('file_size_mb = $' + (values.length + 1));
-        values.push(input.fileSizeMb);
-      }
-      if (input.fileType !== undefined) {
-        updates.push('file_type = $' + (values.length + 1));
-        values.push(input.fileType);
-      }
-      if (input.requireEmail !== undefined) {
-        updates.push('require_email = $' + (values.length + 1));
-        values.push(input.requireEmail);
-      }
-      if (input.requireSoundcloudRepost !== undefined) {
-        updates.push('require_soundcloud_repost = $' + (values.length + 1));
-        values.push(input.requireSoundcloudRepost);
-      }
-      if (input.requireSoundcloudFollow !== undefined) {
-        updates.push('require_soundcloud_follow = $' + (values.length + 1));
-        values.push(input.requireSoundcloudFollow);
-      }
-      if (input.requireSpotifyConnect !== undefined) {
-        updates.push('require_spotify_connect = $' + (values.length + 1));
-        values.push(input.requireSpotifyConnect);
-      }
-      if (input.active !== undefined) {
-        updates.push('active = $' + (values.length + 1));
-        values.push(input.active);
-      }
-      if (input.maxDownloads !== undefined) {
-        updates.push('max_downloads = $' + (values.length + 1));
-        values.push(input.maxDownloads);
-      }
-      if (input.expiresAt !== undefined) {
-        updates.push('expires_at = $' + (values.length + 1));
-        values.push(input.expiresAt);
+      // Get current gate first
+      const existing = await this.findById(userId, gateId);
+      if (!existing) {
+        throw new Error('Download gate not found');
       }
 
-      // Always update updated_at
-      updates.push('updated_at = CURRENT_TIMESTAMP');
-
-      if (updates.length === 1) {
-        // Only updated_at is being updated, return existing
-        const existing = await this.findById(userId, gateId);
-        if (!existing) {
-          throw new Error('Download gate not found');
-        }
-        return existing;
-      }
-
-      // Add WHERE clause values
-      values.push(gateId, userId);
-
-      const result = await sql.query(
-        `UPDATE download_gates
-         SET ${updates.join(', ')}
-         WHERE id = $${values.length - 1} AND user_id = $${values.length}
-         RETURNING *`,
-        values
-      );
+      // Use COALESCE to update only provided fields
+      // Vercel Postgres template literal syntax
+      const result = await sql`
+        UPDATE download_gates
+        SET
+          slug = COALESCE(${input.slug}, slug),
+          title = COALESCE(${input.title}, title),
+          artist_name = COALESCE(${input.artistName}, artist_name),
+          genre = COALESCE(${input.genre}, genre),
+          description = COALESCE(${input.description}, description),
+          artwork_url = COALESCE(${input.artworkUrl}, artwork_url),
+          soundcloud_track_id = COALESCE(${input.soundcloudTrackId}, soundcloud_track_id),
+          soundcloud_track_url = COALESCE(${input.soundcloudTrackUrl}, soundcloud_track_url),
+          soundcloud_user_id = COALESCE(${input.soundcloudUserId}, soundcloud_user_id),
+          file_url = COALESCE(${input.fileUrl}, file_url),
+          file_size_mb = COALESCE(${input.fileSizeMb}, file_size_mb),
+          file_type = COALESCE(${input.fileType}, file_type),
+          require_email = COALESCE(${input.requireEmail}, require_email),
+          require_soundcloud_repost = COALESCE(${input.requireSoundcloudRepost}, require_soundcloud_repost),
+          require_soundcloud_follow = COALESCE(${input.requireSoundcloudFollow}, require_soundcloud_follow),
+          require_spotify_connect = COALESCE(${input.requireSpotifyConnect}, require_spotify_connect),
+          active = COALESCE(${input.active}, active),
+          max_downloads = COALESCE(${input.maxDownloads}, max_downloads),
+          expires_at = COALESCE(${input.expiresAt}, expires_at),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${gateId} AND user_id = ${userId}
+        RETURNING *
+      `;
 
       if (result.rowCount === 0 || result.rows.length === 0) {
         throw new Error('Download gate not found');
