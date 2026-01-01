@@ -70,7 +70,11 @@ export class GetSoundCloudTracksUseCase {
     sentTrackIds: Set<string>
   ): SoundCloudTrackDTO[] {
     return rawTracks.map(item => {
-      const trackId = item.guid || item.link;
+      // Defensive normalization: ensure trackId is always a string
+      // (handles cases where RSS parser returns objects instead of strings)
+      const rawTrackId = item.guid || item.link;
+      const trackId = this.normalizeToString(rawTrackId);
+
       return {
         trackId,
         title: item.title || 'Sin título',
@@ -81,5 +85,16 @@ export class GetSoundCloudTracksUseCase {
         alreadySent: trackId ? sentTrackIds.has(trackId) : false
       };
     });
+  }
+
+  /**
+   * Defensive helper to ensure values are strings
+   * Handles XML parser quirks where values may be objects with #text property
+   */
+  private normalizeToString(value: any): string {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object' && '#text' in value) return value['#text'];
+    if (value && typeof value === 'object' && 'toString' in value) return value.toString();
+    return '';
   }
 }
