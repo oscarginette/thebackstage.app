@@ -128,6 +128,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
   const columns = [
     {
       header: 'Contact',
+      className: 'flex-[2.5] min-w-[240px]',
       accessor: (contact: Contact) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
@@ -139,17 +140,21 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
           </div>
         </div>
       ),
+      sortKey: (contact: Contact) => contact.email.toLowerCase(),
     },
     {
       header: 'Source',
+      className: 'flex-1 min-w-[140px]',
       accessor: (contact: Contact) => (
         <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200/50">
           {contact.source}
         </span>
       ),
+      sortKey: (contact: Contact) => contact.source,
     },
     {
       header: 'Status',
+      className: 'flex-1 min-w-[140px]',
       accessor: (contact: Contact) => (
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
           contact.subscribed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
@@ -158,12 +163,15 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
           {contact.subscribed ? 'Subscribed' : 'Unsubscribed'}
         </div>
       ),
+      sortKey: (contact: Contact) => contact.subscribed ? 1 : 0,
     },
     {
       header: 'Added',
+      className: 'flex-1 min-w-[120px]',
       accessor: (contact: Contact) => (
         <div className="text-xs text-gray-500 font-medium">{formatDate(contact.createdAt)}</div>
       ),
+      sortKey: (contact: Contact) => new Date(contact.createdAt),
     },
   ];
 
