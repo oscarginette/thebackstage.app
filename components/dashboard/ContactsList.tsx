@@ -150,7 +150,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
           {contact.source}
         </span>
       ),
-      sortKey: (contact: Contact) => contact.source,
+      sortKey: (contact: Contact) => contact.source || '',
     },
     {
       header: 'Status',
