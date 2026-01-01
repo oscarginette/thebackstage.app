@@ -1,38 +1,46 @@
 /**
  * POST /api/send-track
  *
- * Send email for a SoundCloud track with quota enforcement.
- * Uses SendTrackEmailUseCase with quota tracking.
+ * Send new track announcement email to all subscribed contacts.
+ * Uses SendNewTrackEmailsUseCase to batch send to subscribers.
  *
  * Clean Architecture: API route only orchestrates, business logic in use case.
  */
 
 import { NextResponse } from 'next/server';
+import { render } from '@react-email/components';
 import { UseCaseFactory } from '@/lib/di-container';
 import { isAppError } from '@/lib/errors';
 import { auth } from '@/lib/auth';
 import { SendTrackSchema } from '@/lib/validation-schemas';
+import { getAppUrl } from '@/lib/env';
+import NewTrackEmail from '@/emails/new-track';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 /**
- * Send track email with quota enforcement
+ * Send new track email to all subscribed contacts
  *
  * Body:
- * - to: string (required) - Recipient email
- * - subject: string (required) - Email subject
- * - html: string (required) - Email HTML content
- * - from: string (optional) - Sender email
- * - replyTo: string (optional) - Reply-to email
- * - headers: Record<string, string> (optional) - Custom headers
+ * - trackId: string (required) - Track ID
+ * - title: string (required) - Track title
+ * - url: string (required) - Track URL
+ * - coverImage: string (optional) - Cover image URL
+ * - publishedAt: string (required) - Published date
+ * - customContent: object (optional) - Custom email content
+ *   - subject: string (optional) - Email subject
+ *   - greeting: string (optional) - Email greeting
+ *   - message: string (optional) - Email message
+ *   - signature: string (optional) - Email signature
  *
  * Response:
  * {
  *   success: boolean,
- *   messageId?: string,
- *   error?: string,
- *   quotaRemaining: number
+ *   sent: number,
+ *   failed: number,
+ *   totalSubscribers: number,
+ *   error?: string
  * }
  */
 export async function POST(request: Request) {
@@ -61,18 +69,35 @@ export async function POST(request: Request) {
 
     const userId = parseInt(session.user.id);
 
+    // Build email subject
+    const subject = validatedData.customContent?.subject || `New Track: ${validatedData.title}`;
+
+    // Generate HTML from React email template
+    const emailHtml = await render(
+      NewTrackEmail({
+        trackName: validatedData.title,
+        trackUrl: validatedData.url,
+        coverImage: validatedData.coverImage || '',
+        customContent: validatedData.customContent,
+      })
+    );
+
     // Get use case from factory (DI)
-    const useCase = UseCaseFactory.createSendTrackEmailUseCase();
+    const useCase = UseCaseFactory.createSendNewTrackEmailsUseCase();
 
     // Execute use case with validated data
     const result = await useCase.execute({
       userId,
-      to: validatedData.to,
-      subject: validatedData.subject,
-      html: validatedData.html,
-      from: validatedData.from,
-      replyTo: validatedData.replyTo,
-      headers: validatedData.headers as Record<string, string> | undefined
+      track: {
+        trackId: validatedData.trackId,
+        title: validatedData.title,
+        url: validatedData.url,
+        coverImage: validatedData.coverImage,
+        publishedAt: validatedData.publishedAt,
+      },
+      emailHtml,
+      subject,
+      baseUrl: getAppUrl(),
     });
 
     return NextResponse.json(result);

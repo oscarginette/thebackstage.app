@@ -17,15 +17,20 @@ import { z } from 'zod';
 
 /**
  * Schema for POST /api/send-track
- * Sends a track email with quota enforcement
+ * Sends new track email to all subscribed contacts
  */
 export const SendTrackSchema = z.object({
-  to: z.string().email('Invalid recipient email address'),
-  subject: z.string().min(1, 'Subject is required').max(500, 'Subject too long'),
-  html: z.string().min(1, 'HTML content is required'),
-  from: z.string().email('Invalid sender email address').optional(),
-  replyTo: z.string().email('Invalid reply-to email address').optional(),
-  headers: z.record(z.string(), z.string()).optional(),
+  trackId: z.string().min(1, 'Track ID is required'),
+  title: z.string().min(1, 'Track title is required').max(500, 'Title too long'),
+  url: z.string().url('Invalid track URL'),
+  coverImage: z.string().url('Invalid cover image URL').optional(),
+  publishedAt: z.string().min(1, 'Published date is required'),
+  customContent: z.object({
+    subject: z.string().min(1, 'Subject is required').max(500, 'Subject too long').optional(),
+    greeting: z.string().max(200, 'Greeting too long').optional(),
+    message: z.string().optional(),
+    signature: z.string().max(500, 'Signature too long').optional(),
+  }).optional(),
 });
 
 export type SendTrackInput = z.infer<typeof SendTrackSchema>;
