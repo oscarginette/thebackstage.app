@@ -13,20 +13,18 @@ export class PostgresTrackRepository implements ITrackRepository {
 
   async save(track: Track, userId: number): Promise<void> {
     await sql`
-      INSERT INTO soundcloud_tracks (user_id, track_id, title, url, published_at, cover_image)
+      INSERT INTO soundcloud_tracks (track_id, title, url, published_at, cover_image)
       VALUES (
-        ${userId},
         ${track.trackId},
         ${track.title},
         ${track.url},
         ${track.publishedAt},
         ${track.coverImage || null}
       )
-      ON CONFLICT (user_id, track_id) DO UPDATE SET
+      ON CONFLICT (track_id) DO UPDATE SET
         title = EXCLUDED.title,
         url = EXCLUDED.url,
-        cover_image = EXCLUDED.cover_image,
-        updated_at = CURRENT_TIMESTAMP
+        cover_image = EXCLUDED.cover_image
     `;
   }
 
