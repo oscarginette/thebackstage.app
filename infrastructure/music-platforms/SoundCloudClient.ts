@@ -85,8 +85,15 @@ export class SoundCloudClient implements IMusicPlatformClient {
   }
 
   parseTrackData(rawData: any): any {
+    // Normalize guid - can be string or object with #text property
+    const normalizeGuid = (guid: any): string => {
+      if (typeof guid === 'string') return guid;
+      if (guid && typeof guid === 'object' && '#text' in guid) return guid['#text'];
+      return '';
+    };
+
     return {
-      guid: rawData.guid,
+      guid: normalizeGuid(rawData.guid),
       link: rawData.link,
       title: rawData.title,
       pubDate: rawData.pubDate,
