@@ -8,7 +8,7 @@ export default function Header() {
 
       <div className="relative z-10 flex flex-col items-start">
         <h1 className="text-4xl md:text-5xl font-serif tracking-tight mb-1.5 text-[#1c1c1c] leading-[0.9]">
-          Backstage
+          The Backstage
         </h1>
 
         <p className="text-sm md:text-base text-gray-500 font-light max-w-lg leading-relaxed">

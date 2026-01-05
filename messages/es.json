@@ -1,8 +1,8 @@
 {
   "nav": {
-    "brand": "Backstage",
+    "brand": "The Backstage",
     "product": "Producto",
-    "whyBackstage": "Por qué Backstage",
+    "whyBackstage": "Por qué The Backstage",
     "features": "Características",
     "pricing": "Precios",
     "calculator": "Calculadora",
@@ -11,7 +11,7 @@
     "settings": "Ajustes"
   },
   "hero": {
-    "badge": "Backstage para Artistas",
+    "badge": "The Backstage para Artistas",
     "launchBadge": "Promoción de Lanzamiento: Gates Ilimitados",
     "title": {
       "line1": "Haz música.",
@@ -48,7 +48,7 @@
     "flywheel": {
       "title": "Más Gates =",
       "titleAccent": "Más Crecimiento",
-      "subtitle": "El Volante de Backstage: Usa gates ilimitados para construir tu audiencia. A diferencia de otros, no te cobramos por las herramientas que necesitas para crecer.",
+      "subtitle": "El Volante de The Backstage: Usa gates ilimitados para construir tu audiencia. A diferencia de otros, no te cobramos por las herramientas que necesitas para crecer.",
       "words": {
         "moreGigs": "Más Bolos",
         "moreFans": "Más Fans",
@@ -191,7 +191,7 @@
       "line1": "Deja de pagar por",
       "line2": "herramientas que no usas."
     },
-    "subtitle": "Calcula cuánto te ahorras hoy mismo al unificar tu stack de marketing en Backstage.",
+    "subtitle": "Calcula cuánto te ahorras hoy mismo al unificar tu stack de marketing en The Backstage.",
     "replaces": "Reemplaza a:",
     "calculator": {
       "currentAudience": "Tu audiencia actual",
@@ -201,7 +201,7 @@
       "make": "Make.com (Automations)",
       "brevo": "Brevo (Email Marketing)",
       "estimatedTotal": "Coste total estimado",
-      "yourPlan": "Tu plan en Backstage",
+      "yourPlan": "Tu plan en The Backstage",
       "perMonth": "/mes",
       "allIncluded": "Todo incluido. Sin sorpresas.",
       "annualSavings": "Tu ahorro anual",
@@ -217,7 +217,7 @@
       "line3": "?"
     },
     "cta": "Empezar Gratis",
-    "brand": "Backstage",
+    "brand": "The Backstage",
     "copyright": "© 2025",
     "privacy": "Privacidad",
     "terms": "Términos",

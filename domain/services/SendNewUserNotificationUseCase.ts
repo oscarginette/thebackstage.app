@@ -93,7 +93,7 @@ export class SendNewUserNotificationUseCase {
         subject,
         html,
         from: env.SENDER_EMAIL
-          ? `Backstage <${env.SENDER_EMAIL}>`
+          ? `The Backstage <${env.SENDER_EMAIL}>`
           : undefined,
       });
 

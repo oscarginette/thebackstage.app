@@ -3,6 +3,7 @@ export interface EmailParams {
   subject: string;
   html: string;
   from?: string;
+  replyTo?: string; // Reply-To header - responses go to this address
   tags?: Array<{ name: string; value: string }>;
   unsubscribeUrl?: string; // For List-Unsubscribe header (CAN-SPAM compliance)
 }

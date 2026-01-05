@@ -213,8 +213,8 @@ export async function GET(request: Request) {
     // 6. Follow artist (non-blocking - connection succeeds even if follow fails)
     if (result.success) {
       try {
-        // Get the gate to find the artist user
-        const gate = await downloadGateRepository.findById(oauthState.gateId);
+        // Get the gate to find the artist user (findBySlug since we don't have userId in this context)
+        const gate = await downloadGateRepository.findBySlug(oauthState.gateId);
 
         if (gate) {
           // Get the artist user to retrieve their Spotify ID

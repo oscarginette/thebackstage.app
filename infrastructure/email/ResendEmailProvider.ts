@@ -20,6 +20,12 @@ export class ResendEmailProvider implements IEmailProvider {
         tags: params.tags
       };
 
+      // Add Reply-To header if specified
+      // Enables responses to go to a different address (e.g., user's email)
+      if (params.replyTo) {
+        emailPayload.reply_to = params.replyTo;
+      }
+
       // Add List-Unsubscribe header for CAN-SPAM compliance
       // This enables Gmail/Outlook "Unsubscribe" button
       if (params.unsubscribeUrl) {
@@ -33,6 +39,7 @@ export class ResendEmailProvider implements IEmailProvider {
         to: params.to,
         subject: params.subject,
         from: emailPayload.from,
+        replyTo: emailPayload.reply_to,
         hasUnsubscribe: !!params.unsubscribeUrl,
         htmlLength: params.html?.length || 0,
       });

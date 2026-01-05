@@ -19,7 +19,7 @@ export class NewUserSignupEmail {
    * Generate subject line for admin notification
    */
   static getSubject(params: NewUserSignupEmailParams): string {
-    return `[Backstage] New user signup: ${params.userEmail}`;
+    return `[The Backstage] New user signup: ${params.userEmail}`;
   }
 
   /**
@@ -35,7 +35,7 @@ export class NewUserSignupEmail {
     return `
 New User Signup
 
-A new user has registered for Backstage:
+A new user has registered for The Backstage:
 
 Email: ${params.userEmail}
 Name: ${params.userName || 'Not provided'}
@@ -45,7 +45,7 @@ View user details:
 ${params.adminPanelUrl}
 
 ---
-Backstage Admin Notification
+The Backstage Admin Notification
 `.trim();
   }
 
@@ -70,7 +70,7 @@ Backstage Admin Notification
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <h2 style="color: #2563eb; margin-bottom: 20px;">New User Signup</h2>
 
-  <p style="margin-bottom: 15px;">A new user has registered for Backstage:</p>
+  <p style="margin-bottom: 15px;">A new user has registered for The Backstage:</p>
 
   <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
     <tr>
@@ -90,7 +90,7 @@ Backstage Admin Notification
   <a href="${params.adminPanelUrl}" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">View User Details</a>
 
   <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
-    Backstage Admin Notification
+    The Backstage Admin Notification
   </p>
 </body>
 </html>

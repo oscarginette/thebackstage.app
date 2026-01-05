@@ -55,7 +55,7 @@ export default function ProductShowcase() {
               {/* App Header */}
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h1 className="text-3xl font-serif text-foreground mb-1">Backstage</h1>
+                  <h1 className="text-3xl font-serif text-foreground mb-1">The Backstage</h1>
                   <p className="text-sm text-foreground/40 font-light">The Artist's Command Center</p>
                 </div>
                 <div className="text-right">

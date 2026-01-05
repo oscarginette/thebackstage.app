@@ -1,8 +1,8 @@
 {
   "nav": {
-    "brand": "Backstage",
+    "brand": "The Backstage",
     "product": "Product",
-    "whyBackstage": "Why Backstage",
+    "whyBackstage": "Why The Backstage",
     "features": "Features",
     "pricing": "Pricing",
     "calculator": "Calculator",
@@ -11,7 +11,7 @@
     "settings": "Settings"
   },
   "hero": {
-    "badge": "Backstage for Artists",
+    "badge": "The Backstage for Artists",
     "launchBadge": "Launch Special: Free Unlimited Gates",
     "title": {
       "line1": "Make music.",
@@ -191,7 +191,7 @@
       "line1": "Stop paying for",
       "line2": "tools you don't use."
     },
-    "subtitle": "Calculate how much you save today by unifying your marketing stack with Backstage.",
+    "subtitle": "Calculate how much you save today by unifying your marketing stack with The Backstage.",
     "replaces": "Replaces:",
     "calculator": {
       "currentAudience": "Your current audience",
@@ -201,7 +201,7 @@
       "make": "Make.com (Automations)",
       "brevo": "Brevo (Email Marketing)",
       "estimatedTotal": "Estimated total cost",
-      "yourPlan": "Your Backstage Plan",
+      "yourPlan": "Your Plan on The Backstage",
       "perMonth": "/mo",
       "allIncluded": "Everything included. No surprises.",
       "annualSavings": "Your annual savings",
@@ -217,7 +217,7 @@
       "line3": "?"
     },
     "cta": "Get Started for Free",
-    "brand": "Backstage",
+    "brand": "The Backstage",
     "copyright": "© 2025",
     "privacy": "Privacy",
     "terms": "Terms",

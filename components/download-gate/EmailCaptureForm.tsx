@@ -75,7 +75,7 @@ export function EmailCaptureForm({ onSubmit }: EmailCaptureFormProps) {
         </button>
 
         <p className="text-[10px] text-foreground/50 leading-relaxed mt-6">
-          By providing your email address, you agree that your email address will be shared with the author of this download and that you may receive emails from the author and Backstage. You can withdraw this consent from Backstage or the author of this content by unsubscribing from any emails received. For more information see our Privacy Policy <a href="#" className="underline">here</a>.
+          By providing your email address, you agree that your email address will be shared with the author of this download and that you may receive emails from the author and The Backstage. You can withdraw this consent from The Backstage or the author of this content by unsubscribing from any emails received. For more information see our Privacy Policy <a href="#" className="underline">here</a>.
         </p>
         
         <p className="text-center text-[10px] text-foreground/40 mt-4">

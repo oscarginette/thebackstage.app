@@ -38,7 +38,7 @@ export class SubscriptionActivatedEmail {
     return `
 ${greeting},
 
-Welcome to Backstage! Your ${params.planName} subscription is now active.
+Welcome to The Backstage! Your ${params.planName} subscription is now active.
 
 Your Plan Features:
 - Contacts Limit: ${params.contactsLimit.toLocaleString()} contacts
@@ -55,7 +55,7 @@ Best regards,
 The Backstage Team
 
 ---
-Backstage - Email Marketing for Artists
+The Backstage - Email Marketing for Artists
 `.trim();
   }
 
@@ -82,7 +82,7 @@ Backstage - Email Marketing for Artists
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: white; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 30px;">
-    <h1 style="margin: 0; font-size: 28px;">Welcome to Backstage!</h1>
+    <h1 style="margin: 0; font-size: 28px;">Welcome to The Backstage!</h1>
     <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Your ${params.planName} subscription is now active</p>
   </div>
 
@@ -115,7 +115,7 @@ Backstage - Email Marketing for Artists
   </p>
 
   <p style="margin-top: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
-    Backstage - Email Marketing for Artists
+    The Backstage - Email Marketing for Artists
   </p>
 </body>
 </html>
