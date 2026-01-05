@@ -27,7 +27,8 @@ export async function POST(request: Request) {
           message: customContent.message || '',
           signature: customContent.signature || '',
           coverImage: coverImage || '',
-          unsubscribeUrl
+          unsubscribeUrl,
+          emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
         })
       );
     } else {

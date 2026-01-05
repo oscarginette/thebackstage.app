@@ -211,21 +211,18 @@ export class SubmitEmailUseCase {
    * Track submit analytics event
    * @param gateId - Gate ID
    * @param input - Submission input
-   * @returns Analytics event ID (for pixel deduplication)
    */
-  private async trackSubmitEvent(gateId: string, input: SubmitEmailInput): Promise<string | null> {
+  private async trackSubmitEvent(gateId: string, input: SubmitEmailInput): Promise<void> {
     try {
-      const analyticsEvent = await this.analyticsRepository.track({
+      await this.analyticsRepository.track({
         gateId: gateId,
         eventType: 'submit',
         ipAddress: input.ipAddress,
         userAgent: input.userAgent,
       });
-      return analyticsEvent.id;
     } catch (error) {
       // Non-critical error: submission succeeds even if analytics tracking fails
       console.error('Failed to track submit event (non-critical):', error);
-      return null;
     }
   }
 

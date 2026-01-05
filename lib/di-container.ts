@@ -32,6 +32,7 @@ import { PostgresEmailCampaignRepository } from '@/infrastructure/database/repos
 import { PostgresEmailLogRepository } from '@/infrastructure/database/repositories/PostgresEmailLogRepository';
 import { PostgresEmailEventRepository } from '@/infrastructure/database/repositories/PostgresEmailEventRepository';
 import { PostgresEmailAnalyticsRepository } from '@/infrastructure/database/repositories/PostgresEmailAnalyticsRepository';
+import { PostgresEmailSignatureRepository } from '@/infrastructure/database/repositories/PostgresEmailSignatureRepository';
 import { PostgresExecutionLogRepository } from '@/infrastructure/database/repositories/PostgresExecutionLogRepository';
 import { PostgresContactImportHistoryRepository } from '@/infrastructure/database/repositories/PostgresContactImportHistoryRepository';
 import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
@@ -63,6 +64,7 @@ import type { IEmailCampaignRepository } from '@/domain/repositories/IEmailCampa
 import type { IEmailLogRepository } from '@/domain/repositories/IEmailLogRepository';
 import type { IEmailEventRepository } from '@/domain/repositories/IEmailEventRepository';
 import type { IEmailAnalyticsRepository } from '@/domain/repositories/IEmailAnalyticsRepository';
+import type { IEmailSignatureRepository } from '@/domain/repositories/IEmailSignatureRepository';
 import type { IExecutionLogRepository } from '@/domain/repositories/IExecutionLogRepository';
 import type { IContactImportHistoryRepository } from '@/domain/repositories/IContactImportHistoryRepository';
 import type { IUserRepository } from '@/domain/repositories/IUserRepository';
@@ -128,6 +130,7 @@ import { GetDraftsUseCase } from '@/domain/services/GetDraftsUseCase';
 import { SaveDraftUseCase } from '@/domain/services/SaveDraftUseCase';
 import { GetEmailStatsUseCase } from '@/domain/services/GetEmailStatsUseCase';
 import { GetCampaignStatsUseCase } from '@/domain/services/GetCampaignStatsUseCase';
+import { GetUserEmailSignatureUseCase } from '@/domain/services/GetUserEmailSignatureUseCase';
 import { ProcessEmailEventUseCase } from '@/domain/services/ProcessEmailEventUseCase';
 import { UploadCoverImageUseCase } from '@/domain/services/UploadCoverImageUseCase';
 import { GetUserSettingsUseCase } from '@/domain/services/GetUserSettingsUseCase';
@@ -202,6 +205,10 @@ export class RepositoryFactory {
 
   static createEmailAnalyticsRepository(): IEmailAnalyticsRepository {
     return new PostgresEmailAnalyticsRepository();
+  }
+
+  static createEmailSignatureRepository(): IEmailSignatureRepository {
+    return new PostgresEmailSignatureRepository();
   }
 
   // Quota & Execution
@@ -353,12 +360,16 @@ export class UseCaseFactory {
   }
 
   static createSendCustomEmailUseCase(): SendCustomEmailUseCase {
+    const signatureRepo = RepositoryFactory.createEmailSignatureRepository();
+    const getSignatureUseCase = new GetUserEmailSignatureUseCase(signatureRepo);
+
     return new SendCustomEmailUseCase(
       RepositoryFactory.createContactRepository(),
       ProviderFactory.createEmailProvider(),
       RepositoryFactory.createEmailLogRepository(),
       RepositoryFactory.createExecutionLogRepository(),
-      RepositoryFactory.createEmailCampaignRepository()
+      RepositoryFactory.createEmailCampaignRepository(),
+      getSignatureUseCase
     );
   }
 
@@ -568,8 +579,12 @@ export class UseCaseFactory {
   }
 
   static createSaveDraftUseCase(): SaveDraftUseCase {
+    const signatureRepo = RepositoryFactory.createEmailSignatureRepository();
+    const getSignatureUseCase = new GetUserEmailSignatureUseCase(signatureRepo);
+
     return new SaveDraftUseCase(
-      RepositoryFactory.createEmailCampaignRepository()
+      RepositoryFactory.createEmailCampaignRepository(),
+      getSignatureUseCase
     );
   }
 

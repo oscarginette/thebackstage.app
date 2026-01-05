@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Modal, { ModalBody, ModalFooter } from '../ui/Modal';
-import { LIST_COLORS, LIST_COLOR_OPTIONS } from '@/domain/types/list-colors';
+import { LIST_COLORS, LIST_COLOR_OPTIONS, ListColor } from '@/domain/types/list-colors';
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -12,7 +12,7 @@ interface CreateListModalProps {
 export default function CreateListModal({ onClose, onSuccess }: CreateListModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState(LIST_COLORS.INDIGO);
+  const [color, setColor] = useState<ListColor>(LIST_COLORS.INDIGO);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

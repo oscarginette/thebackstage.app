@@ -52,8 +52,9 @@ export interface TrackPixelEventInput {
   /**
    * Deduplication ID (UUID from analytics table)
    * Prevents same event being counted twice
+   * Optional since analytics repository no longer returns IDs
    */
-  analyticsEventId: string;
+  analyticsEventId?: string;
 
   /**
    * User email (optional)
@@ -141,7 +142,7 @@ export class TrackPixelEventUseCase {
 
           // Build event data
           const eventData: PixelEventData = {
-            eventId: input.analyticsEventId,
+            eventId: input.analyticsEventId || crypto.randomUUID(), // Fallback to random UUID
             eventName,
             eventTime: Math.floor(Date.now() / 1000), // Unix timestamp (seconds)
             eventSourceUrl,

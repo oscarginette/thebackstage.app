@@ -27,6 +27,7 @@ import { IExecutionLogRepository } from '../repositories/IExecutionLogRepository
 import { sql } from '@/lib/db';
 import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';
+import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 export interface PlatformCheckResult {
   userId: number;
@@ -230,6 +231,7 @@ export class CheckAllMusicPlatformsUseCase {
           trackUrl: latestTrack.url,
           coverImage: latestTrack.coverImage || '',
           unsubscribeUrl: '', // Set per contact by use case
+          emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
         })
       );
 

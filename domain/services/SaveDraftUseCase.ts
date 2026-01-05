@@ -10,6 +10,7 @@
  */
 
 import { IEmailCampaignRepository } from '@/domain/repositories/IEmailCampaignRepository';
+import { GetUserEmailSignatureUseCase } from './GetUserEmailSignatureUseCase';
 import { render } from '@react-email/components';
 import CustomEmail from '@/emails/custom-email';
 import { env, getAppUrl, getBaseUrl } from '@/lib/env';
@@ -41,7 +42,10 @@ export class ValidationError extends Error {
 }
 
 export class SaveDraftUseCase {
-  constructor(private campaignRepository: IEmailCampaignRepository) {}
+  constructor(
+    private campaignRepository: IEmailCampaignRepository,
+    private getSignatureUseCase: GetUserEmailSignatureUseCase
+  ) {}
 
   async execute(input: SaveDraftInput): Promise<SaveDraftResult> {
     // 1. Validate input
@@ -87,13 +91,17 @@ export class SaveDraftUseCase {
     const baseUrl = getAppUrl();
     const tempUnsubscribeUrl = `${baseUrl}/unsubscribe?token=TEMP_TOKEN`;
 
+    // Get user's email signature
+    const emailSignature = await this.getSignatureUseCase.execute(input.userId);
+
     return await render(
       CustomEmail({
         greeting: input.greeting,
         message: input.message,
         signature: input.signature,
         coverImage: input.coverImage || '',
-        unsubscribeUrl: tempUnsubscribeUrl
+        unsubscribeUrl: tempUnsubscribeUrl,
+        emailSignature: emailSignature.toJSON()
       })
     );
   }

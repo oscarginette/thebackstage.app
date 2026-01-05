@@ -39,8 +39,8 @@ export class PostgresAutoSaveSubscriptionRepository
           ${input.artistSpotifyId},
           ${input.accessTokenEncrypted},
           ${input.refreshTokenEncrypted},
-          ${input.tokenExpiresAt},
-          ${input.nextCheckAt}
+          ${input.tokenExpiresAt.toISOString()},
+          ${input.nextCheckAt.toISOString()}
         )
         RETURNING id
       `;

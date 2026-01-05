@@ -12,6 +12,7 @@ import { spotifyRepository } from '@/infrastructure/music-platforms';
 import { resendEmailProvider } from '@/infrastructure/email';
 import { sql } from '@/lib/db';
 import { env, getAppUrl, getBaseUrl } from '@/lib/env';
+import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -104,6 +105,7 @@ export async function GET() {
             trackUrl: latestTrack.url,
             coverImage: latestTrack.coverImage || '',
             unsubscribeUrl: '', // Will be set per contact by use case
+            emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
           })
         );
 

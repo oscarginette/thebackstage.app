@@ -10,6 +10,7 @@ import {
 } from '@/infrastructure/database/repositories';
 import { resendEmailProvider } from '@/infrastructure/email';
 import { env, getAppUrl, getBaseUrl } from '@/lib/env';
+import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,6 +69,7 @@ export async function POST() {
             'Testing Email Tracking System - This is a test email to verify email events are being tracked correctly.',
           signature: 'Test System',
         },
+        emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
       })
     );
 

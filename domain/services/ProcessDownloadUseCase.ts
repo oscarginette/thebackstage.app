@@ -147,19 +147,16 @@ export class ProcessDownloadUseCase {
   /**
    * Track download analytics event
    * @param gateId - Gate ID
-   * @returns Analytics event ID (for pixel deduplication)
    */
-  private async trackDownloadEvent(gateId: string): Promise<string | null> {
+  private async trackDownloadEvent(gateId: string): Promise<void> {
     try {
-      const analyticsEvent = await this.analyticsRepository.track({
+      await this.analyticsRepository.track({
         gateId: gateId,
         eventType: 'download',
       });
-      return analyticsEvent.id;
     } catch (error) {
       // Non-critical error: download succeeds even if analytics tracking fails
       console.error('Failed to track download event (non-critical):', error);
-      return null;
     }
   }
 
