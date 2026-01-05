@@ -12,6 +12,7 @@ import { soundCloudRepository } from '@/infrastructure/music-platforms';
 import { resendEmailProvider } from '@/infrastructure/email';
 import { sql } from '@/lib/db';
 import { env, getAppUrl, getBaseUrl } from '@/lib/env';
+import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 // Permitir hasta 60s de ejecución
 export const maxDuration = 60;
@@ -105,6 +106,7 @@ export async function GET() {
             trackUrl: latestTrack.url,
             coverImage: latestTrack.coverImage || '',
             unsubscribeUrl: '', // Will be set per contact by use case
+            emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
           })
         );
 

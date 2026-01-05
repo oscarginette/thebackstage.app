@@ -15,6 +15,7 @@ import { auth } from '@/lib/auth';
 import { SendTrackSchema } from '@/lib/validation-schemas';
 import { getAppUrl } from '@/lib/env';
 import NewTrackEmail from '@/emails/new-track';
+import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
         trackUrl: validatedData.url,
         coverImage: validatedData.coverImage || '',
         customContent: validatedData.customContent,
+        emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
       })
     );
 

@@ -3,6 +3,7 @@ import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';
 import CustomEmail from '@/emails/custom-email';
 import { env, getAppUrl, getBaseUrl } from '@/lib/env';
+import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,8 @@ export async function POST(request: Request) {
           trackName: trackName || 'Test Track',
           trackUrl: trackUrl || 'https://soundcloud.com',
           coverImage: coverImage || '',
-          unsubscribeUrl
+          unsubscribeUrl,
+          emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
         })
       );
     }
@@ -56,7 +58,8 @@ export async function GET() {
         trackName: 'Test Track Name',
         trackUrl: 'https://soundcloud.com/test',
         coverImage: 'https://i1.sndcdn.com/artworks-PvWznzRX9GmmRIlq-mlYTvA-t3000x3000.png',
-        unsubscribeUrl: `${baseUrl}/unsubscribe?token=test_token`
+        unsubscribeUrl: `${baseUrl}/unsubscribe?token=test_token`,
+        emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
       })
     );
 
