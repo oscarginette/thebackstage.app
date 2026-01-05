@@ -4,7 +4,7 @@ import { PostgresUserSettingsRepository } from '@/infrastructure/database/reposi
 import { GetUserSettingsUseCase } from '@/domain/services/GetUserSettingsUseCase';
 import SettingsClient from './SettingsClient';
 import { PATHS } from '@/lib/paths';
-import { SettingsLoadError, DatabaseError } from '@/lib/errors';
+import { SettingsLoadError, DatabaseError, NotFoundError } from '@/lib/errors';
 
 export default async function SettingsPage() {
   console.log('[SettingsPage] START - Loading settings page');
@@ -44,7 +44,7 @@ export default async function SettingsPage() {
         spotifyId: settings?.spotifyId,
       });
     } catch (error) {
-      // Wrap database errors with specific error code
+      // Log error details
       console.error('[SettingsPage] ERROR loading settings:', {
         userId,
         errorType: error?.constructor?.name,
@@ -52,8 +52,17 @@ export default async function SettingsPage() {
         errorStack: error instanceof Error ? error.stack : undefined,
       });
 
+      // Handle NotFoundError specifically - user doesn't exist
+      if (error instanceof NotFoundError) {
+        console.error('[SettingsPage] USER NOT FOUND - userId:', userId);
+        throw new NotFoundError(`User with ID ${userId} not found`, {
+          userId,
+          originalError: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      // Handle database connection errors
       if (error instanceof Error) {
-        // Check if it's a database error
         if (error.message.includes('database') || error.message.includes('connection') || error.message.includes('relation')) {
           console.error('[SettingsPage] DATABASE ERROR detected');
           throw new DatabaseError('Failed to connect to database while loading settings', {
@@ -63,6 +72,7 @@ export default async function SettingsPage() {
           });
         }
 
+        // Generic settings load error for other cases
         console.error('[SettingsPage] SETTINGS LOAD ERROR');
         throw new SettingsLoadError(`Failed to load settings for user ${userId}`, {
           userId,

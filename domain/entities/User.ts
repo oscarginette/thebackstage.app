@@ -32,6 +32,9 @@ export interface UserProps {
   maxMonthlyEmails: number;
   emailsSentThisMonth: number;
   quotaResetAt: Date;
+
+  // Platform Integrations
+  spotifyId?: string;
 }
 
 export interface CreateUserInput {
@@ -116,6 +119,10 @@ export class User {
 
   get quotaResetAt(): Date {
     return this.props.quotaResetAt;
+  }
+
+  get spotifyId(): string | undefined {
+    return this.props.spotifyId;
   }
 
   isAdmin(): boolean {

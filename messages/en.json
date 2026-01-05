@@ -397,5 +397,11 @@
         "noSubmissions": "No submissions yet"
       }
     }
+  },
+  "errors": {
+    "resource": {
+      "notFound": "Resource not found",
+      "userNotFound": "User not found. Please contact support if you believe this is an error."
+    }
   }
 }

@@ -7,13 +7,7 @@
 import { sql } from '@/lib/db';
 import { UserSettings } from '@/domain/entities/UserSettings';
 import { IUserSettingsRepository, UpdateUserSettingsInput } from '@/domain/repositories/IUserSettingsRepository';
-
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
+import { NotFoundError } from '@/lib/errors';
 
 export class PostgresUserSettingsRepository implements IUserSettingsRepository {
 
