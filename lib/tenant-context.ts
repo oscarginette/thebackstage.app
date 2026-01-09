@@ -99,7 +99,8 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function requireAdmin(): Promise<void> {
   const context = await getTenantContext();
-  if (context.role !== 'admin') {
+  const { USER_ROLES } = await import('@/domain/types/user-roles');
+  if (context.role !== USER_ROLES.ADMIN) {
     throw new Error('Forbidden: Admin access required');
   }
 }
