@@ -4,6 +4,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { Search, Filter, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { CARD_STYLES, INPUT_STYLES, BUTTON_STYLES, TEXT_STYLES, cn } from '@/domain/types/design-tokens';
+import DataTableFilters, { FilterDefinition, ActiveFilters } from './DataTableFilters';
 
 type SortDirection = 'asc' | 'desc' | null;
 
@@ -31,6 +32,11 @@ interface DataTableProps<T> {
   getItemId?: (item: T) => number;
   selectedIds?: number[];
   onSelectionChange?: (ids: number[]) => void;
+  // Filter props
+  filters?: FilterDefinition[];
+  filterPredicates?: Record<string, (item: T, value: string | string[]) => boolean>;
+  initialFilters?: ActiveFilters;
+  onFilterChange?: (filters: ActiveFilters) => void;
 }
 
 export default function DataTable<T>({
@@ -48,10 +54,15 @@ export default function DataTable<T>({
   getItemId,
   selectedIds = [],
   onSelectionChange,
+  filters = [],
+  filterPredicates = {},
+  initialFilters = {},
+  onFilterChange,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColumnIndex, setSortColumnIndex] = useState<number | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>(initialFilters);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSort = (columnIndex: number) => {
@@ -74,10 +85,36 @@ export default function DataTable<T>({
     }
   };
 
+  const handleFilterChange = (key: string, value: string | string[] | null) => {
+    const newFilters = { ...activeFilters };
+
+    if (value === null) {
+      delete newFilters[key];
+    } else {
+      newFilters[key] = value;
+    }
+
+    setActiveFilters(newFilters);
+    onFilterChange?.(newFilters);
+  };
+
   const sortedAndFilteredData = useMemo(() => {
     let result = [...data];
 
-    // Step 1: Sort ALL data (if sorting is active)
+    // Step 1: Apply filters FIRST (before sorting and search)
+    if (Object.keys(activeFilters).length > 0) {
+      result = result.filter((item) => {
+        // Apply ALL active filters (AND logic)
+        return Object.entries(activeFilters).every(([key, value]) => {
+          const predicate = filterPredicates[key];
+          if (!predicate) return true; // Skip if no predicate defined
+
+          return predicate(item, value);
+        });
+      });
+    }
+
+    // Step 2: Sort filtered data (if sorting is active)
     if (sortColumnIndex !== null && sortDirection) {
       const column = columns[sortColumnIndex];
       if (column.sortKey) {
@@ -109,14 +146,14 @@ export default function DataTable<T>({
       }
     }
 
-    // Step 2: Apply search filter
+    // Step 3: Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((item) => searchFields(item).toLowerCase().includes(query));
     }
 
     return result;
-  }, [data, searchQuery, searchFields, sortColumnIndex, sortDirection, columns]);
+  }, [data, searchQuery, searchFields, sortColumnIndex, sortDirection, columns, activeFilters, filterPredicates]);
 
   const handleSelectAll = () => {
     if (!selectable || !getItemId || !onSelectionChange) return;
@@ -188,15 +225,15 @@ export default function DataTable<T>({
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
             {actions}
-            <button className={cn(
-              BUTTON_STYLES.base,
-              BUTTON_STYLES.variant.secondary,
-              BUTTON_STYLES.size.sm,
-              'flex items-center gap-2 rounded-xl active:scale-95'
-            )}>
-              <Filter className="w-4 h-4" />
-              <span>Filters</span>
-            </button>
+            {filters.length > 0 && (
+              <DataTableFilters
+                filters={filters}
+                activeFilters={activeFilters}
+                onFilterChange={handleFilterChange}
+                totalCount={data.length}
+                filteredCount={sortedAndFilteredData.length}
+              />
+            )}
           </div>
         </div>
 
