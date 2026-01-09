@@ -1,13 +1,46 @@
+/**
+ * Reset Track API Route
+ *
+ * Admin endpoint to delete test tracks matching a pattern.
+ * Used for cleaning up test data.
+ *
+ * SECURITY: This should be protected with admin authentication in production.
+ * Clean Architecture: API route orchestrates, business logic in use case.
+ */
+
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { UseCaseFactory } from '@/lib/di-container';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * GET /api/reset-track
+ *
+ * Deletes tracks with titles matching '%Kamiel%'
+ *
+ * Response:
+ * {
+ *   success: true,
+ *   message: string,
+ *   deletedCount?: number
+ * }
+ */
 export async function GET() {
   try {
-    await sql`DELETE FROM soundcloud_tracks WHERE title LIKE '%Kamiel%'`;
-    return NextResponse.json({ success: true, message: 'Track deleted' });
+    const useCase = UseCaseFactory.createDeleteTracksByPatternUseCase();
+    const result = await useCase.execute({
+      titlePattern: '%Kamiel%',
+    });
+
+    return NextResponse.json(result);
   } catch (error: unknown) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+    console.error('Reset track error:', error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        success: false,
+      },
+      { status: 500 }
+    );
   }
 }
