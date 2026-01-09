@@ -7,6 +7,7 @@ import Link from 'next/link';
 import DataTable from './DataTable';
 import { Button } from '@/components/ui/Button';
 import { useTranslations } from '@/lib/i18n/context';
+import { FilterDefinition, ActiveFilters } from './DataTableFilters';
 
 export default function DownloadGatesList() {
   const t = useTranslations('dashboard.gates.list');
@@ -41,6 +42,54 @@ export default function DownloadGatesList() {
     } catch (error) {
       console.error('Error deleting gate:', error);
     }
+  };
+
+  /**
+   * Filter Definitions
+   */
+  const GATE_FILTERS: FilterDefinition[] = [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Paused', value: 'paused' },
+      ],
+    },
+    {
+      key: 'performance',
+      label: 'Performance',
+      type: 'select',
+      options: [
+        { label: 'High (>10%)', value: 'high' },
+        { label: 'Medium (5-10%)', value: 'medium' },
+        { label: 'Low (<5%)', value: 'low' },
+      ],
+    },
+  ];
+
+  /**
+   * Filter Predicates
+   */
+  const filterPredicates: Record<string, (gate: DownloadGate, value: string | string[]) => boolean> = {
+    status: (gate, value) => {
+      const isActive = gate.active;
+      return value === 'active' ? isActive : !isActive;
+    },
+    performance: (gate, value) => {
+      const conversionRate = gate.stats.conversionRate;
+      if (value === 'high') {
+        return conversionRate > 10;
+      }
+      if (value === 'medium') {
+        return conversionRate >= 5 && conversionRate <= 10;
+      }
+      if (value === 'low') {
+        return conversionRate < 5;
+      }
+      return true;
+    },
   };
 
   const columns = [
@@ -174,6 +223,8 @@ export default function DownloadGatesList() {
       searchFields={(gate) => `${gate.title} ${gate.slug}`}
       emptyMessage={t('emptyMessage')}
       emptyIcon={<BarChart2 className="w-16 h-16" />}
+      filters={GATE_FILTERS}
+      filterPredicates={filterPredicates}
     />
   );
 }
