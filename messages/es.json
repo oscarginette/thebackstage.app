@@ -465,7 +465,13 @@
         "spotify": "Spotify",
         "downloaded": "Downloaded",
         "pending": "Pending",
-        "noSubmissions": "No hay envíos todavía"
+        "noSubmissions": "No hay envíos todavía",
+        "statusFilter": "Estado",
+        "statusAll": "Todos",
+        "verificationFilter": "Verificación",
+        "verificationAll": "Todos",
+        "allVerified": "Todo Verificado",
+        "notVerified": "No Verificado"
       }
     }
   },
