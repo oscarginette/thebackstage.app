@@ -22,11 +22,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { CheckNewReleasesUseCase } from '@/domain/services/CheckNewReleasesUseCase';
-import { PostgresAutoSaveSubscriptionRepository } from '@/infrastructure/database/repositories/PostgresAutoSaveSubscriptionRepository';
-import { PostgresSavedReleasesRepository } from '@/infrastructure/database/repositories/PostgresSavedReleasesRepository';
-import { SpotifyClient } from '@/lib/spotify-client';
-import { TokenEncryption } from '@/infrastructure/encryption/TokenEncryption';
+import { UseCaseFactory, RepositoryFactory } from '@/lib/di-container';
 import { env } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
@@ -60,17 +56,8 @@ export async function GET(request: Request) {
     console.log('[Cron] Starting Spotify release check...');
 
     // 2. Initialize dependencies
-    const subscriptionRepository = new PostgresAutoSaveSubscriptionRepository();
-    const savedReleasesRepository = new PostgresSavedReleasesRepository();
-    const spotifyClient = new SpotifyClient();
-    const tokenEncryption = new TokenEncryption();
-
-    const checkNewReleasesUseCase = new CheckNewReleasesUseCase(
-      subscriptionRepository,
-      savedReleasesRepository,
-      spotifyClient,
-      tokenEncryption
-    );
+    const subscriptionRepository = RepositoryFactory.createAutoSaveSubscriptionRepository();
+    const checkNewReleasesUseCase = UseCaseFactory.createCheckNewReleasesUseCase();
 
     // 3. Get subscriptions due for check
     const subscriptions = await subscriptionRepository.findDueForCheck();
