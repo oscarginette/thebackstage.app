@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { UpdateUserAppearanceUseCase } from '@/domain/services/UpdateUserAppearanceUseCase';
-import { GetUserAppearanceUseCase } from '@/domain/services/GetUserAppearanceUseCase';
-import { PostgresUserAppearanceRepository } from '@/infrastructure/database/repositories/PostgresUserAppearanceRepository';
+import { UseCaseFactory } from '@/lib/di-container';
 import { Theme, THEMES } from '@/domain/types/appearance';
 
 /**
@@ -48,10 +46,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Execute Use Case (business logic)
-    const appearanceRepository = new PostgresUserAppearanceRepository();
-    const updateAppearanceUseCase = new UpdateUserAppearanceUseCase(
-      appearanceRepository
-    );
+    const updateAppearanceUseCase = UseCaseFactory.createUpdateUserAppearanceUseCase();
 
     const result = await updateAppearanceUseCase.execute({
       userId: Number(session.user.id),
@@ -103,10 +98,7 @@ export async function GET() {
     }
 
     // Execute Use Case
-    const appearanceRepository = new PostgresUserAppearanceRepository();
-    const getAppearanceUseCase = new GetUserAppearanceUseCase(
-      appearanceRepository
-    );
+    const getAppearanceUseCase = UseCaseFactory.createGetUserAppearanceUseCase();
 
     const appearance = await getAppearanceUseCase.execute(
       Number(session.user.id)

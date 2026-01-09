@@ -1,15 +1,18 @@
+/**
+ * Test Email API Route
+ *
+ * Admin endpoint to send a test email for system verification.
+ * Tests email sending, tracking, and event handling.
+ *
+ * Clean Architecture: API route orchestrates, business logic in use case.
+ */
+
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
 import { render } from '@react-email/components';
 import NewTrackEmail from '@/emails/new-track';
-import { SendTestEmailUseCase, ValidationError } from '@/domain/services/SendTestEmailUseCase';
-import {
-  contactRepository,
-  trackRepository,
-  emailLogRepository,
-} from '@/infrastructure/database/repositories';
-import { resendEmailProvider } from '@/infrastructure/email';
-import { env, getAppUrl, getBaseUrl } from '@/lib/env';
+import { UseCaseFactory } from '@/lib/di-container';
+import { ValidationError } from '@/domain/services/SendTestEmailUseCase';
+import { getAppUrl } from '@/lib/env';
 import { EmailSignature } from '@/domain/value-objects/EmailSignature';
 
 export const dynamic = 'force-dynamic';
@@ -18,16 +21,23 @@ export const dynamic = 'force-dynamic';
  * POST /api/test-email
  * Sends a test email to verify email system
  *
- * Clean Architecture: Only HTTP concerns (contact creation, JSON response)
- * Business logic delegated to SendTestEmailUseCase
+ * Response:
+ * {
+ *   success: true,
+ *   message: string,
+ *   recipient: string,
+ *   resendId: string,
+ *   track: string,
+ *   duration: number,
+ *   nextSteps: string[]
+ * }
  */
 export async function POST() {
   const startTime = Date.now();
 
   try {
     const testEmail = 'noreply@thebackstage.app';
-    const baseUrl =
-      getAppUrl();
+    const baseUrl = getAppUrl();
 
     // Test track data
     const testTrack = {
@@ -38,23 +48,6 @@ export async function POST() {
         'https://i1.sndcdn.com/avatars-000000000000-000000-t500x500.jpg',
       publishedAt: new Date().toISOString(),
     };
-
-    // Find or create test contact
-    let contact = await sql`
-      SELECT id, email, name, unsubscribe_token
-      FROM contacts
-      WHERE email = ${testEmail}
-      LIMIT 1
-    `;
-
-    if (contact.rows.length === 0) {
-      const newContact = await sql`
-        INSERT INTO contacts (email, name, subscribed)
-        VALUES (${testEmail}, 'Gee Beat Test', true)
-        RETURNING id, email, name, unsubscribe_token
-      `;
-      contact.rows[0] = newContact.rows[0];
-    }
 
     // Render email HTML
     const emailHtml = await render(
@@ -74,12 +67,7 @@ export async function POST() {
     );
 
     // Send test email using use case
-    const useCase = new SendTestEmailUseCase(
-      contactRepository,
-      resendEmailProvider,
-      trackRepository,
-      emailLogRepository
-    );
+    const useCase = UseCaseFactory.createSendTestEmailUseCase();
 
     const result = await useCase.execute({
       userId: 1, // Default test user
@@ -111,12 +99,15 @@ export async function POST() {
   } catch (error: unknown) {
     // Handle validation errors
     if (error instanceof ValidationError) {
-      return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 400 }
+      );
     }
 
     console.error('Error in test email:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

@@ -6,9 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { GetUserEmailSignatureUseCase } from '@/domain/services/GetUserEmailSignatureUseCase';
-import { UpdateEmailSignatureUseCase } from '@/domain/services/UpdateEmailSignatureUseCase';
-import { PostgresEmailSignatureRepository } from '@/infrastructure/database/repositories/PostgresEmailSignatureRepository';
+import { UseCaseFactory, RepositoryFactory } from '@/lib/di-container';
 import { EmailSignatureSchema } from '@/lib/validation-schemas';
 import { z } from 'zod';
 
@@ -22,8 +20,7 @@ export async function GET(request: NextRequest) {
 
     const userId = parseInt(session.user.id);
 
-    const repository = new PostgresEmailSignatureRepository();
-    const useCase = new GetUserEmailSignatureUseCase(repository);
+    const useCase = UseCaseFactory.createGetUserEmailSignatureUseCase();
 
     const signature = await useCase.execute(userId);
 
@@ -60,8 +57,7 @@ export async function PUT(request: NextRequest) {
 
     const validatedData = validationResult.data;
 
-    const repository = new PostgresEmailSignatureRepository();
-    const useCase = new UpdateEmailSignatureUseCase(repository);
+    const useCase = UseCaseFactory.createUpdateEmailSignatureUseCase();
 
     await useCase.execute({
       userId,
@@ -94,7 +90,7 @@ export async function DELETE(request: NextRequest) {
 
     const userId = parseInt(session.user.id);
 
-    const repository = new PostgresEmailSignatureRepository();
+    const repository = RepositoryFactory.createEmailSignatureRepository();
     await repository.delete(userId);
 
     return NextResponse.json({ success: true });

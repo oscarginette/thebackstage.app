@@ -9,13 +9,9 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
-import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
+import { RepositoryFactory } from '@/lib/di-container';
 
 export const dynamic = 'force-dynamic';
-
-const userRepository = new PostgresUserRepository();
-const contactRepository = new PostgresContactRepository();
 
 /**
  * GET /api/user/quota
@@ -49,6 +45,10 @@ export async function GET() {
     }
 
     const userId = parseInt(session.user.id);
+
+    // Get repositories from DI container
+    const userRepository = RepositoryFactory.createUserRepository();
+    const contactRepository = RepositoryFactory.createContactRepository();
 
     // Get quota information from user repository
     const quotaInfo = await userRepository.getQuotaInfo(userId);

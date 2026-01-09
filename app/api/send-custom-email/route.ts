@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
-import { SendCustomEmailUseCase, ValidationError } from '@/domain/services/SendCustomEmailUseCase';
-import { CheckEmailQuotaUseCase } from '@/domain/services/CheckEmailQuotaUseCase';
-import { GetUserEmailSignatureUseCase } from '@/domain/services/GetUserEmailSignatureUseCase';
-import {
-  contactRepository,
-  emailLogRepository,
-  executionLogRepository,
-  emailCampaignRepository
-} from '@/infrastructure/database/repositories';
-import { PostgresEmailSignatureRepository } from '@/infrastructure/database/repositories/PostgresEmailSignatureRepository';
-import { resendEmailProvider } from '@/infrastructure/email';
-import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
+import { ValidationError } from '@/domain/services/SendCustomEmailUseCase';
+import { UseCaseFactory, RepositoryFactory } from '@/lib/di-container';
 import { auth } from '@/lib/auth';
 import { SendCustomEmailSchema } from '@/lib/validation-schemas';
 import { ListFilterCriteria } from '@/domain/value-objects/ListFilterCriteria';
@@ -95,8 +85,8 @@ export async function POST(request: Request) {
     // Skip quota check if saving as draft
     if (!validatedData.saveAsDraft) {
       // Check email quota BEFORE sending
-      const userRepository = new PostgresUserRepository();
-      const checkEmailQuotaUseCase = new CheckEmailQuotaUseCase(userRepository);
+      const contactRepository = RepositoryFactory.createContactRepository();
+      const checkEmailQuotaUseCase = UseCaseFactory.createCheckEmailQuotaUseCase();
 
       // Get contact count to estimate emails to be sent (with list filtering)
       const filterCriteria = listFilter || ListFilterCriteria.allContacts();
@@ -129,18 +119,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Initialize signature repository and use case
-    const signatureRepository = new PostgresEmailSignatureRepository();
-    const getSignatureUseCase = new GetUserEmailSignatureUseCase(signatureRepository);
-
-    const useCase = new SendCustomEmailUseCase(
-      contactRepository,
-      resendEmailProvider,
-      emailLogRepository,
-      executionLogRepository,
-      emailCampaignRepository,
-      getSignatureUseCase
-    );
+    // Initialize use case via DI container
+    const useCase = UseCaseFactory.createSendCustomEmailUseCase();
 
     const result = await useCase.execute({
       userId,
