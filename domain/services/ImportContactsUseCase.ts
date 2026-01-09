@@ -192,7 +192,8 @@ export class ImportContactsUseCase {
         name: contact.name,
         subscribed: contact.subscribed,
         source: source === 'csv' ? 'csv_import' : 'json_import',
-        metadata: contact.metadata
+        metadata: contact.metadata,
+        createdAt: contact.createdAt
       }));
 
       // Call repository bulk import

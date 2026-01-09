@@ -1,6 +1,7 @@
 import { ImportedContact, ValidationError } from '@/domain/entities/ImportedContact';
 import { ColumnMapping } from '@/domain/value-objects/ColumnMapping';
 import type { ContactMetadata } from '@/domain/types/metadata';
+import { parseDate, isDateColumn } from '@/domain/utils/date-parser';
 
 /**
  * ValidateImportDataUseCase
@@ -68,8 +69,11 @@ export class ValidateImportDataUseCase {
         // Extract subscribed status (optional, defaults to true)
         const subscribed = this.extractSubscribed(row, mapping.subscribedColumn);
 
+        // Extract created_at date from date columns (optional)
+        const createdAt = this.extractCreatedAt(row, mapping);
+
         // Extract metadata from unmapped columns
-        const metadata = this.extractMetadata(row, mapping);
+        const metadata = this.extractMetadata(row, mapping, createdAt);
 
         // Create ImportedContact entity (validates internally)
         const contact = ImportedContact.create(
@@ -77,7 +81,8 @@ export class ValidateImportDataUseCase {
           name,
           subscribed,
           metadata,
-          rowNumber
+          rowNumber,
+          createdAt
         );
 
         validContacts.push(contact);
@@ -176,10 +181,69 @@ export class ValidateImportDataUseCase {
   }
 
   /**
+   * Extract created_at date from date-like columns
+   * Automatically detects columns with date keywords and parses them
+   * Supports relative dates ("7 months ago"), ISO dates, and standard formats
+   *
+   * Returns null if no date column found or unparseable
+   */
+  private extractCreatedAt(row: any, mapping: ColumnMapping): Date | null {
+    // Look through all available columns for date-like columns
+    const allColumns = Object.keys(row);
+
+    // Priority 1: Look for specific date column names
+    const dateColumnPriority = [
+      'created_at',
+      'created',
+      'date_created',
+      'contact_since',
+      'contactsince',
+      'since',
+      'joined',
+      'date_joined',
+      'signup_date',
+      'subscribed_at',
+      'added',
+      'date_added'
+    ];
+
+    // Find first matching column
+    for (const priorityColumn of dateColumnPriority) {
+      const matchingColumn = allColumns.find(
+        col => col.toLowerCase().replace(/[_\s-]/g, '') === priorityColumn.replace(/[_\s-]/g, '')
+      );
+
+      if (matchingColumn) {
+        const value = row[matchingColumn];
+        const parsedDate = parseDate(value);
+
+        if (parsedDate) {
+          return parsedDate;
+        }
+      }
+    }
+
+    // Priority 2: Look for any column with date keywords
+    const dateColumn = allColumns.find(col => isDateColumn(col));
+
+    if (dateColumn) {
+      const value = row[dateColumn];
+      const parsedDate = parseDate(value);
+
+      if (parsedDate) {
+        return parsedDate;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Extract metadata from unmapped columns
    * Creates JSONB-compatible object
+   * Excludes the date column used for created_at
    */
-  private extractMetadata(row: any, mapping: ColumnMapping): ContactMetadata {
+  private extractMetadata(row: any, mapping: ColumnMapping, createdAt: Date | null): ContactMetadata {
     const metadata: ContactMetadata = {};
 
     // Get all unmapped columns (not email, name, or subscribed)
@@ -187,7 +251,12 @@ export class ValidateImportDataUseCase {
       const value = row[columnName];
 
       if (value !== null && value !== undefined && value !== '') {
-        metadata[columnName] = value;
+        // If this column was used for created_at, store original value for reference
+        if (createdAt && isDateColumn(columnName)) {
+          metadata[columnName] = value; // Keep original value like "7 months ago"
+        } else {
+          metadata[columnName] = value;
+        }
       }
     }
 

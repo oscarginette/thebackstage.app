@@ -18,7 +18,8 @@ export class ImportedContact {
     public readonly name: string | null,
     public readonly subscribed: boolean,
     public readonly metadata: ContactMetadata,
-    public readonly rowNumber: number
+    public readonly rowNumber: number,
+    public readonly createdAt: Date | null = null
   ) {
     this.validate();
   }
@@ -54,14 +55,16 @@ export class ImportedContact {
     name: string | null,
     subscribed: boolean,
     metadata: ContactMetadata,
-    rowNumber: number
+    rowNumber: number,
+    createdAt: Date | null = null
   ): ImportedContact {
     return new ImportedContact(
       email.trim(),
       name ? name.trim() : null,
       subscribed,
       metadata,
-      rowNumber
+      rowNumber,
+      createdAt
     );
   }
 }
