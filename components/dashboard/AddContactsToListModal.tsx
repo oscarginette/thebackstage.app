@@ -5,6 +5,7 @@ import Modal, { ModalBody, ModalFooter } from '../ui/Modal';
 import type { ContactListWithStats } from '@/domain/repositories/IContactListRepository';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/domain/types/design-tokens';
+import { Check } from 'lucide-react';
 
 interface AddContactsToListModalProps {
   contactIds: number[];
@@ -18,7 +19,7 @@ export default function AddContactsToListModal({
   onSuccess,
 }: AddContactsToListModalProps) {
   const [lists, setLists] = useState<ContactListWithStats[]>([]);
-  const [selectedListId, setSelectedListId] = useState<string>('');
+  const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,18 +41,29 @@ export default function AddContactsToListModal({
     }
   };
 
+  const handleToggle = (listId: string) => {
+    if (selectedListIds.includes(listId)) {
+      setSelectedListIds(selectedListIds.filter((id) => id !== listId));
+    } else {
+      setSelectedListIds([...selectedListIds, listId]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedListId) return;
+    if (selectedListIds.length === 0) return;
 
     setAdding(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/contact-lists/${selectedListId}/add-contacts`, {
+      const response = await fetch('/api/contacts/add-to-lists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contactIds }),
+        body: JSON.stringify({
+          contactIds,
+          listIds: selectedListIds
+        }),
       });
 
       if (!response.ok) {
@@ -59,7 +71,17 @@ export default function AddContactsToListModal({
         throw new Error(data.error || 'Failed to add contacts');
       }
 
-      onSuccess();
+      const result = await response.json();
+
+      if (result.failedLists > 0) {
+        const failedNames = result.results
+          .filter((r: any) => !r.success)
+          .map((r: any) => r.listName)
+          .join(', ');
+        setError(`Some lists failed: ${failedNames}`);
+      } else {
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -71,7 +93,7 @@ export default function AddContactsToListModal({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={`Add ${contactIds.length} Contact(s) to List`}
+      title={`Add ${contactIds.length} Contact(s) to Lists`}
       size="md"
       closeOnBackdropClick={!adding}
     >
@@ -87,21 +109,43 @@ export default function AddContactsToListModal({
             ) : (
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold uppercase tracking-widest text-foreground/60">
-                  Select List
+                  Select Lists ({selectedListIds.length} selected)
                 </label>
-                <select
-                  value={selectedListId}
-                  onChange={(e) => setSelectedListId(e.target.value)}
-                  className="w-full h-10 px-4 rounded-xl border border-foreground/10 bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all text-sm font-medium text-foreground disabled:bg-foreground/5 disabled:text-foreground/40 disabled:cursor-not-allowed"
-                  disabled={adding}
-                >
-                  <option value="">-- Select a list --</option>
+                <div className="max-h-64 overflow-y-auto border border-foreground/10 rounded-xl p-3 space-y-2">
                   {lists.map((item) => (
-                    <option key={item.list.id} value={item.list.id}>
-                      {item.list.name} ({item.totalContacts} contacts)
-                    </option>
+                    <label
+                      key={item.list.id}
+                      className={cn(
+                        'flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all',
+                        'hover:bg-foreground/5',
+                        selectedListIds.includes(item.list.id) && 'bg-accent/10 ring-1 ring-accent/20'
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedListIds.includes(item.list.id)}
+                        onChange={() => handleToggle(item.list.id)}
+                        disabled={adding}
+                        className="w-4 h-4 text-accent focus:ring-accent/20 rounded border-foreground/20"
+                      />
+                      <div
+                        className="w-6 h-6 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: item.list.color }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {item.list.name}
+                        </div>
+                        <div className="text-xs text-foreground/60">
+                          {item.totalContacts} contacts
+                        </div>
+                      </div>
+                      {selectedListIds.includes(item.list.id) && (
+                        <Check className="w-4 h-4 text-accent flex-shrink-0" />
+                      )}
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
             )}
 
@@ -124,12 +168,15 @@ export default function AddContactsToListModal({
           </Button>
           <Button
             type="submit"
-            disabled={adding || !selectedListId}
+            disabled={adding || selectedListIds.length === 0}
             loading={adding}
             variant="primary"
             className="bg-accent hover:bg-accent/90"
           >
-            {adding ? 'Adding...' : 'Add to List'}
+            {adding
+              ? 'Adding...'
+              : `Add to ${selectedListIds.length} List${selectedListIds.length !== 1 ? 's' : ''}`
+            }
           </Button>
         </ModalFooter>
       </form>
