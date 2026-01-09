@@ -174,6 +174,7 @@ import { DeleteContactListUseCase } from '@/domain/services/DeleteContactListUse
 import { AddContactsToListUseCase } from '@/domain/services/AddContactsToListUseCase';
 import { RemoveContactsFromListUseCase } from '@/domain/services/RemoveContactsFromListUseCase';
 import { AddContactsToMultipleListsUseCase } from '@/domain/services/AddContactsToMultipleListsUseCase';
+import { GetListContactsUseCase } from '@/domain/services/GetListContactsUseCase';
 import { GetUserAppearanceUseCase } from '@/domain/services/GetUserAppearanceUseCase';
 import { UpdateUserAppearanceUseCase } from '@/domain/services/UpdateUserAppearanceUseCase';
 import { UpdateEmailSignatureUseCase } from '@/domain/services/UpdateEmailSignatureUseCase';
@@ -182,8 +183,8 @@ import { CreateAutoSaveSubscriptionUseCase } from '@/domain/services/CreateAutoS
 import { TrackPixelEventUseCase } from '@/domain/services/TrackPixelEventUseCase';
 import { GetPaymentHistoryUseCase } from '@/domain/services/GetPaymentHistoryUseCase';
 import { CreateManualPaymentUseCase } from '@/domain/services/CreateManualPaymentUseCase';
-// import { UpdateEmailTemplateUseCase } from '@/domain/services/UpdateEmailTemplateUseCase'; // TODO: Create this UseCase
-// import { DeleteEmailTemplateUseCase } from '@/domain/services/DeleteEmailTemplateUseCase'; // TODO: Create this UseCase
+import { UpdateEmailTemplateUseCase } from '@/domain/services/email-templates/UpdateEmailTemplateUseCase';
+import { DeleteEmailTemplateUseCase } from '@/domain/services/email-templates/DeleteEmailTemplateUseCase';
 import { CheckNewReleasesUseCase } from '@/domain/services/CheckNewReleasesUseCase';
 import { ImportBrevoContactsUseCase } from '@/domain/services/ImportBrevoContactsUseCase';
 import { GetBrevoImportHistoryUseCase } from '@/domain/services/GetBrevoImportHistoryUseCase';
@@ -849,7 +850,7 @@ export class UseCaseFactory {
 
   static createBulkActivateUsersUseCase(): BulkActivateUsersUseCase {
     return new BulkActivateUsersUseCase(
-      UseCaseFactory.createActivateUserSubscriptionUseCase()
+      RepositoryFactory.createUserRepository()
     );
   }
 
@@ -941,6 +942,12 @@ export class UseCaseFactory {
     );
   }
 
+  static createGetListContactsUseCase(): GetListContactsUseCase {
+    return new GetListContactsUseCase(
+      RepositoryFactory.createContactListRepository()
+    );
+  }
+
   // ============================================================================
   // User Appearance Use Cases
   // ============================================================================
@@ -1003,11 +1010,12 @@ export class UseCaseFactory {
   }
 
   static createCheckNewReleasesUseCase(): CheckNewReleasesUseCase {
+    const { TokenEncryption } = require('@/infrastructure/encryption/TokenEncryption');
     return new CheckNewReleasesUseCase(
       RepositoryFactory.createAutoSaveSubscriptionRepository(),
       RepositoryFactory.createSavedReleasesRepository(),
-      RepositoryFactory.createUserRepository(),
-      ProviderFactory.createEmailProvider()
+      new SpotifyClient(),
+      new TokenEncryption()
     );
   }
 
@@ -1015,19 +1023,17 @@ export class UseCaseFactory {
   // Email Template Use Cases
   // ============================================================================
 
-  // TODO: Uncomment when UpdateEmailTemplateUseCase is created
-  // static createUpdateEmailTemplateUseCase(): UpdateEmailTemplateUseCase {
-  //   return new UpdateEmailTemplateUseCase(
-  //     RepositoryFactory.createEmailTemplateRepository()
-  //   );
-  // }
+  static createUpdateEmailTemplateUseCase(): UpdateEmailTemplateUseCase {
+    return new UpdateEmailTemplateUseCase(
+      RepositoryFactory.createEmailTemplateRepository()
+    );
+  }
 
-  // TODO: Uncomment when DeleteEmailTemplateUseCase is created
-  // static createDeleteEmailTemplateUseCase(): DeleteEmailTemplateUseCase {
-  //   return new DeleteEmailTemplateUseCase(
-  //     RepositoryFactory.createEmailTemplateRepository()
-  //   );
-  // }
+  static createDeleteEmailTemplateUseCase(): DeleteEmailTemplateUseCase {
+    return new DeleteEmailTemplateUseCase(
+      RepositoryFactory.createEmailTemplateRepository()
+    );
+  }
 
   // ============================================================================
   // Pixel Tracking Use Cases
@@ -1045,5 +1051,27 @@ export class UseCaseFactory {
 
   static createUploadCoverImageUseCase(imageStorageProvider: IImageStorageProvider): UploadCoverImageUseCase {
     return new UploadCoverImageUseCase(imageStorageProvider);
+  }
+
+  // ============================================================================
+  // Admin Use Cases
+  // ============================================================================
+
+  static createGetAllUsersUseCase(): GetAllUsersUseCase {
+    return new GetAllUsersUseCase(
+      RepositoryFactory.createUserRepository()
+    );
+  }
+
+  static createToggleUserActiveUseCase(): ToggleUserActiveUseCase {
+    return new ToggleUserActiveUseCase(
+      RepositoryFactory.createUserRepository()
+    );
+  }
+
+  static createUpdateUserQuotaUseCase(): UpdateUserQuotaUseCase {
+    return new UpdateUserQuotaUseCase(
+      RepositoryFactory.createUserRepository()
+    );
   }
 }
