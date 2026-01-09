@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { Users, Trash2, Mail, Filter, Search, FolderPlus } from 'lucide-react';
+import { Users, Trash2, Mail, Filter, Search, FolderPlus, Download } from 'lucide-react';
 import DataTable from './DataTable';
 import ImportContactsButton from './ImportContactsButton';
 import BrevoImportWizardModal from './BrevoImportWizardModal';
 import AddContactsToListModal from './AddContactsToListModal';
+import { ExportModal } from './ExportModal';
 import Toast from '@/components/ui/Toast';
 import Modal, { ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Card } from '@/components/ui/Card';
@@ -35,6 +36,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning'>('success');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddToListModal, setShowAddToListModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     fetchContacts();
@@ -218,8 +220,16 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
               size="sm"
               className="bg-[#0B996E]/10 text-[#0B996E] hover:bg-[#0B996E]/20 border-[#0B996E]/30"
             >
-              <Mail className="w-4 h-4" />
               Import from Brevo
+            </Button>
+            <Button
+              onClick={() => setShowExportModal(true)}
+              variant="secondary"
+              size="sm"
+              className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
+            >
+              <Download className="w-4 h-4" />
+              Download CSV
             </Button>
             {selectedIds.length > 0 && (
               <>
@@ -315,6 +325,14 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
           }}
         />
       )}
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        selectedIds={selectedIds}
+        totalContacts={stats?.totalContacts || 0}
+      />
 
       {/* Toast for notifications */}
       <Toast
