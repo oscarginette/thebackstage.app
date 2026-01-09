@@ -1,8 +1,40 @@
+/**
+ * Database Migration API Route
+ *
+ * Admin endpoint for running database migrations.
+ * This route intentionally uses direct SQL queries as migrations need low-level
+ * database access to modify schema (ALTER TABLE, CREATE TABLE, etc.).
+ *
+ * ARCHITECTURAL NOTE:
+ * This route violates Clean Architecture principles by design:
+ * - Migrations are infrastructure-level operations, not business logic
+ * - They need direct SQL access for DDL operations (ALTER, CREATE, DROP)
+ * - Creating use cases for migrations would add unnecessary abstraction
+ * - This is an admin-only, rarely-used endpoint for schema updates
+ *
+ * SECURITY: This should be protected with admin authentication in production.
+ * For production, consider using proper migration tools like Prisma Migrate or Flyway.
+ *
+ * Clean Architecture: Intentionally exempted (infrastructure operation).
+ */
+
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * POST /api/migrate
+ *
+ * Runs database migrations to update schema
+ *
+ * Response:
+ * {
+ *   success: true,
+ *   message: string,
+ *   details: object
+ * }
+ */
 export async function POST() {
   try {
     console.log('[Migration] Starting database migration...');

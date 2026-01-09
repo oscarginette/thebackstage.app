@@ -2,11 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { ColumnMapping } from '@/domain/value-objects/ColumnMapping';
 import { ValidateImportDataUseCase } from '@/domain/services/ValidateImportDataUseCase';
-import { ImportContactsUseCase } from '@/domain/services/ImportContactsUseCase';
-import { CheckContactQuotaUseCase } from '@/domain/services/CheckContactQuotaUseCase';
-import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
-import { PostgresContactImportHistoryRepository } from '@/infrastructure/database/repositories/PostgresContactImportHistoryRepository';
-import { PostgresUserRepository } from '@/infrastructure/database/repositories/PostgresUserRepository';
+import { UseCaseFactory, RepositoryFactory } from '@/lib/di-container';
 import { ImportContactsSchema } from '@/lib/validation-schemas';
 
 export const maxDuration = 60; // Maximum duration for import (60 seconds)
@@ -78,13 +74,8 @@ export async function POST(request: Request) {
     }
 
     // 4.5. Check quota (informational, doesn't block import)
-    const contactRepository = new PostgresContactRepository();
-    const userRepository = new PostgresUserRepository();
-
-    const checkQuotaUseCase = new CheckContactQuotaUseCase(
-      userRepository,
-      contactRepository
-    );
+    const contactRepository = RepositoryFactory.createContactRepository();
+    const checkQuotaUseCase = UseCaseFactory.createCheckContactQuotaUseCase();
 
     const quotaCheck = await checkQuotaUseCase.execute({
       userId,
@@ -92,12 +83,7 @@ export async function POST(request: Request) {
     });
 
     // 5. Execute import with Dependency Injection (always allow)
-    const importHistoryRepository = new PostgresContactImportHistoryRepository();
-
-    const importUseCase = new ImportContactsUseCase(
-      contactRepository,
-      importHistoryRepository
-    );
+    const importUseCase = UseCaseFactory.createImportContactsUseCase();
 
     const importResult = await importUseCase.execute({
       userId,
