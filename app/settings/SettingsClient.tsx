@@ -93,7 +93,7 @@ export default function SettingsClient({
     <div className="min-h-screen h-screen relative flex flex-col bg-background selection:bg-accent/30 selection:text-foreground overflow-hidden">
       {/* Background Aurora Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[1000px] h-[600px] bg-aurora-light opacity-30 dark:opacity-10 blur-[120px] animate-blob" />
+        <div className="absolute top-0 left-1/4 w-[1000px] h-[600px] bg-aurora-light dark:bg-aurora-dark opacity-30 dark:opacity-100 blur-[120px] animate-blob" />
         <div className="absolute bottom-0 right-1/4 w-[800px] h-[500px] bg-accent/5 blur-[100px] animate-blob animation-delay-2000" />
       </div>
 
@@ -110,7 +110,7 @@ export default function SettingsClient({
         </Link>
 
         <div className="font-serif italic text-xl text-foreground/80">
-          Backstage Settings
+          The Backstage Settings
         </div>
 
         <div className="w-8 h-8" />
@@ -123,7 +123,7 @@ export default function SettingsClient({
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <div className="bg-white/60 dark:bg-black/40 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+          <div className="bg-white/90 dark:bg-[#0A0A0A] backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-serif text-foreground">
@@ -139,7 +139,7 @@ export default function SettingsClient({
                 type="button"
                 onClick={handleLogoutClick}
                 disabled={isLoggingOut}
-                className="group relative h-8 px-3 rounded-lg border border-border/40 bg-white/40 dark:bg-black/20 text-foreground/40 hover:text-foreground/70 hover:border-border/60 hover:bg-white/60 dark:hover:bg-white/10 text-xs font-medium transition-all disabled:opacity-70"
+                className="group relative h-8 px-3 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 text-foreground/60 hover:text-foreground hover:border-black/20 hover:bg-white dark:hover:bg-white/10 text-xs font-medium transition-all disabled:opacity-70"
               >
                 <span className="flex items-center gap-1.5">
                   <LogOut className="w-3 h-3" />
@@ -156,7 +156,7 @@ export default function SettingsClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/40 dark:bg-black/30 backdrop-blur-2xl border border-white/60 dark:border-white/5 rounded-2xl p-6 shadow-sm"
+            className="bg-white/90 dark:bg-[#0A0A0A] backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl p-6 shadow-sm"
           >
             <div className="mb-5">
               <h2 className="text-base font-serif mb-1 text-foreground">{t("personalInfo")}</h2>
@@ -172,7 +172,7 @@ export default function SettingsClient({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full h-10 px-4 rounded-xl border border-border/60 bg-white/50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 focus:bg-white dark:focus:bg-black/50 transition-all text-sm font-medium text-foreground"
+                  className="w-full h-10 px-4 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111] focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 focus:bg-white dark:focus:bg-[#161616] transition-all text-sm font-medium text-foreground"
                   placeholder="John Doe"
                 />
               </div>
@@ -181,7 +181,7 @@ export default function SettingsClient({
                 <label className="text-[9px] font-black uppercase tracking-[0.15em] text-foreground/40 ml-1">
                   {t("email")}
                 </label>
-                <div className="w-full h-10 px-4 rounded-xl border border-border/40 bg-black/5 dark:bg-white/5 flex items-center text-foreground/30 text-sm font-medium cursor-not-allowed select-none">
+                <div className="w-full h-10 px-4 rounded-xl border border-black/10 bg-black/[0.02] dark:bg-[#111] dark:border-white/5 flex items-center text-foreground/40 text-sm font-medium cursor-not-allowed select-none">
                   {userEmail}
                 </div>
                 <p className="text-[8px] text-foreground/30 ml-1 italic">Cannot be modified</p>
@@ -194,7 +194,7 @@ export default function SettingsClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white/40 dark:bg-black/30 backdrop-blur-2xl border border-white/60 dark:border-white/5 rounded-2xl p-6 shadow-sm"
+            className="bg-white/90 dark:bg-[#0A0A0A] backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl p-6 shadow-sm"
           >
             <div className="mb-5">
               <h2 className="text-base font-serif mb-1 text-foreground">Appearance</h2>
@@ -209,7 +209,7 @@ export default function SettingsClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/40 dark:bg-black/30 backdrop-blur-2xl border border-white/60 dark:border-white/5 rounded-2xl p-6 shadow-sm"
+            className="bg-white/90 dark:bg-[#0A0A0A] backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl p-6 shadow-sm"
           >
             <div className="mb-5">
               <h2 className="text-base font-serif mb-1 text-foreground">{t("platforms")}</h2>
@@ -237,7 +237,7 @@ export default function SettingsClient({
                   type="text"
                   value={soundcloudUrl}
                   onChange={(e) => setSoundcloudUrl(e.target.value)}
-                  className="w-full h-10 px-4 rounded-xl border border-border/60 bg-white/50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-[#FF5500]/20 focus:border-[#FF5500]/40 focus:bg-white dark:focus:bg-black/50 transition-all text-sm font-medium placeholder:text-foreground/20 text-foreground"
+                  className="w-full h-10 px-4 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111] focus:outline-none focus:ring-2 focus:ring-[#FF5500]/20 focus:border-[#FF5500]/40 focus:bg-white dark:focus:bg-[#161616] transition-all text-sm font-medium placeholder:text-foreground/30 text-foreground"
                   placeholder="https://soundcloud.com/geebeatmusic"
                 />
                 <p className="text-[10px] text-foreground/40 ml-1">
@@ -265,7 +265,7 @@ export default function SettingsClient({
                   type="text"
                   value={spotifyUrl}
                   onChange={(e) => setSpotifyUrl(e.target.value)}
-                  className="w-full h-10 px-4 rounded-xl border border-border/60 bg-white/50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-[#1DB954]/20 focus:border-[#1DB954]/40 focus:bg-white dark:focus:bg-black/50 transition-all text-sm font-medium placeholder:text-foreground/20 text-foreground"
+                  className="w-full h-10 px-4 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/20 focus:border-[#1DB954]/40 focus:bg-white dark:focus:bg-[#161616] transition-all text-sm font-medium placeholder:text-foreground/30 text-foreground"
                   placeholder="https://open.spotify.com/artist/..."
                 />
                 <p className="text-[10px] text-foreground/40 ml-1">

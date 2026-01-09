@@ -2,18 +2,21 @@
 
 import { useTheme } from '@/infrastructure/theme/ThemeProvider';
 import { THEMES, Theme } from '@/domain/types/appearance';
+import { THEME_TOGGLE_STYLES, TEXT_STYLES, cn } from '@/domain/types/design-tokens';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
 /**
  * ThemeSwitcher Component
  *
- * UI component for switching themes.
+ * Modern UI component for switching themes.
+ * Inspired by Geist Design System's theme switcher.
  * Updates both client-side (cookie/localStorage) and server-side (database).
  *
  * Clean Architecture:
  * - Presentation layer (UI only)
  * - Single responsibility (SRP)
  * - Uses ThemeProvider context for state management
+ * - Uses centralized design tokens (DRY + SOLID)
  *
  * USAGE:
  * ```tsx
@@ -40,38 +43,55 @@ export function ThemeSwitcher() {
     }
   };
 
-  const themes: Array<{ value: Theme; label: string; icon: React.ReactNode }> = [
-    { value: THEMES.LIGHT, label: 'Light', icon: <Sun className="h-4 w-4" /> },
-    { value: THEMES.DARK, label: 'Dark', icon: <Moon className="h-4 w-4" /> },
-    { value: THEMES.SYSTEM, label: 'System', icon: <Monitor className="h-4 w-4" /> },
+  const themes: Array<{
+    value: Theme;
+    label: string;
+    icon: React.ReactNode;
+    description: string;
+  }> = [
+    {
+      value: THEMES.LIGHT,
+      label: 'Light',
+      icon: <Sun className="w-4 h-4" />,
+      description: 'Light appearance'
+    },
+    {
+      value: THEMES.DARK,
+      label: 'Dark',
+      icon: <Moon className="w-4 h-4" />,
+      description: 'Dark appearance'
+    },
+    {
+      value: THEMES.SYSTEM,
+      label: 'System',
+      icon: <Monitor className="w-4 h-4" />,
+      description: 'Sync with system'
+    },
   ];
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">Appearance</label>
-      <div className="flex gap-2">
+    <div className="space-y-3">
+      {/* Compact toggle group - Using design tokens */}
+      <div className={THEME_TOGGLE_STYLES.container}>
         {themes.map(({ value, label, icon }) => (
           <button
             key={value}
             onClick={() => handleThemeChange(value)}
-            className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg border transition-all
-              ${
-                theme === value
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card text-card-foreground border-border hover:bg-muted'
-              }
-            `}
+            className={cn(
+              THEME_TOGGLE_STYLES.button,
+              theme === value ? THEME_TOGGLE_STYLES.active : THEME_TOGGLE_STYLES.inactive
+            )}
             aria-label={`Switch to ${label} theme`}
             aria-pressed={theme === value}
           >
             {icon}
-            <span className="text-sm">{label}</span>
+            <span>{label}</span>
           </button>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">
-        Choose your preferred color scheme
+
+      <p className={TEXT_STYLES.body.muted}>
+        Choose your preferred color scheme for the interface
       </p>
     </div>
   );

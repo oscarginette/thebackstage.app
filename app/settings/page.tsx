@@ -4,7 +4,7 @@ import { PostgresUserSettingsRepository } from '@/infrastructure/database/reposi
 import { GetUserSettingsUseCase } from '@/domain/services/GetUserSettingsUseCase';
 import SettingsClient from './SettingsClient';
 import { PATHS } from '@/lib/paths';
-import { SettingsLoadError, DatabaseError, NotFoundError } from '@/lib/errors';
+import { SettingsLoadError, DatabaseError, NotFoundError, UserNotFoundError } from '@/lib/errors';
 
 export default async function SettingsPage() {
   console.log('[SettingsPage] START - Loading settings page');
@@ -55,7 +55,7 @@ export default async function SettingsPage() {
       // Handle NotFoundError specifically - user doesn't exist
       if (error instanceof NotFoundError) {
         console.error('[SettingsPage] USER NOT FOUND - userId:', userId);
-        throw new NotFoundError(`User with ID ${userId} not found`, {
+        throw new UserNotFoundError(`User with ID ${userId} not found`, {
           userId,
           originalError: error instanceof Error ? error.message : String(error),
         });

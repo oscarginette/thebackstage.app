@@ -194,12 +194,12 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
   }
 
   return (
-    <div className="bg-white/40 backdrop-blur-2xl border border-white/60 rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white/90 dark:bg-[#0A0A0A] backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
       {/* Header - Always Visible */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-6 flex items-center justify-between hover:bg-white/20 transition-colors"
+        className="w-full p-6 flex items-center justify-between hover:bg-white/20 dark:hover:bg-white/10 transition-colors"
       >
         <div className="flex items-center gap-3">
           <Mail className="w-5 h-5 text-[#0B996E]" />
@@ -234,7 +234,7 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-6 pt-4 border-t border-white/40">
+            <div className="px-6 pb-6 pt-4 border-t border-white/40 dark:border-white/10">
 
       {/* Error/Success Messages */}
       <AnimatePresence mode="wait">
@@ -285,7 +285,7 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="xkeysib-••••••••••••••••••••••••••••••"
-              className="w-full h-10 px-4 rounded-xl border border-border/60 bg-white/50 focus:outline-none focus:ring-2 focus:ring-[#0B996E]/20 focus:border-[#0B996E]/40 focus:bg-white transition-all text-sm font-medium font-mono"
+              className="w-full h-10 px-4 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111] focus:outline-none focus:ring-2 focus:ring-[#0B996E]/20 focus:border-[#0B996E]/40 focus:bg-white dark:focus:bg-[#161616] transition-all text-sm font-medium font-mono text-foreground"
               onKeyDown={(e) => e.key === 'Enter' && handleConnect()}
             />
           </div>
@@ -362,10 +362,10 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
       {status.connected && status.integration && (
         <div className="space-y-4">
           {/* Account Info */}
-          <div className="bg-emerald-50/50 border border-emerald-200/50 rounded-xl p-4">
+          <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-200/50 dark:border-emerald-500/10 rounded-xl p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
@@ -396,7 +396,7 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/60 rounded-lg p-3 text-center">
+            <div className="bg-white/60 dark:bg-[#111] rounded-lg p-3 text-center">
               <p className="text-xl font-bold text-foreground">
                 {status.integration.stats.contactsFromBrevo}
               </p>
@@ -404,7 +404,7 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
                 Contacts
               </p>
             </div>
-            <div className="bg-white/60 rounded-lg p-3 text-center">
+            <div className="bg-white/60 dark:bg-[#111] rounded-lg p-3 text-center">
               <p className="text-xl font-bold text-foreground">
                 {status.integration.stats.totalImports}
               </p>
@@ -412,7 +412,7 @@ export default function BrevoIntegration({ userId }: BrevoIntegrationProps) {
                 Imports
               </p>
             </div>
-            <div className="bg-white/60 rounded-lg p-3 text-center">
+            <div className="bg-white/60 dark:bg-[#111] rounded-lg p-3 text-center">
               <p className="text-xl font-bold text-foreground">
                 {status.integration.stats.lastSuccessfulImport
                   ? new Date(status.integration.stats.lastSuccessfulImport).toLocaleDateString()
