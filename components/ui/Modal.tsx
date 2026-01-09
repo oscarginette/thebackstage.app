@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { CARD_STYLES, TEXT_STYLES, BUTTON_STYLES, cn } from '@/domain/types/design-tokens';
 
 interface ModalProps {
   isOpen: boolean;
@@ -37,7 +38,14 @@ const sizeClasses = {
  * - Configurable sizes
  * - Optional header with title
  * - Backdrop blur effect
+ * - Dark mode support via design tokens
  * - Prevents body scroll when open
+ *
+ * Architecture:
+ * - Uses CARD_STYLES for consistent background and borders
+ * - Uses TEXT_STYLES for typography
+ * - Uses BUTTON_STYLES for interactive elements
+ * - Fully backward compatible with existing API
  *
  * @example
  * <Modal
@@ -71,7 +79,17 @@ export default function Modal({
       onClick={closeOnBackdropClick ? onClose : undefined}
     >
       <div
-        className={`bg-white rounded-3xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col ${className}`}
+        className={cn(
+          // Background & borders (dark mode adaptive)
+          CARD_STYLES.background.solid,
+          CARD_STYLES.border.default,
+          // Base structure
+          'rounded-3xl shadow-2xl w-full max-h-[90vh] overflow-hidden flex flex-col',
+          // Size
+          sizeClasses[size],
+          // Custom overrides
+          className
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Custom Header */}
@@ -79,22 +97,35 @@ export default function Modal({
 
         {/* Default Header (optional) */}
         {!hideDefaultHeader && !customHeader && (title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-[#E8E6DF]">
+          <div className={cn(
+            'flex items-center justify-between p-6 border-b',
+            CARD_STYLES.border.default
+          )}>
             <div>
               {title && (
-                <h2 className="text-2xl font-bold text-[#1c1c1c]">{title}</h2>
+                <h2 className={cn(
+                  'text-2xl font-bold',
+                  'text-foreground'
+                )}>{title}</h2>
               )}
               {subtitle && (
-                <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+                <p className={cn(
+                  TEXT_STYLES.body.base,
+                  'text-foreground/60 mt-1'
+                )}>{subtitle}</p>
               )}
             </div>
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className={cn(
+                  'p-2 rounded-lg transition-colors',
+                  'hover:bg-black/5 dark:hover:bg-white/5',
+                  'text-foreground/60 hover:text-foreground'
+                )}
                 aria-label="Close modal"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5" />
               </button>
             )}
           </div>
@@ -111,10 +142,18 @@ export default function Modal({
 
 /**
  * ModalBody - Scrollable content area
+ *
+ * Provides consistent padding for modal content.
+ * Uses design tokens for spacing.
+ *
+ * @example
+ * <ModalBody>
+ *   <p>Your content here</p>
+ * </ModalBody>
  */
 export function ModalBody({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`p-6 ${className}`}>
+    <div className={cn(CARD_STYLES.padding.md, className)}>
       {children}
     </div>
   );
@@ -122,10 +161,25 @@ export function ModalBody({ children, className = '' }: { children: ReactNode; c
 
 /**
  * ModalFooter - Fixed footer with actions
+ *
+ * Provides a footer area with border separator and muted background.
+ * Uses design tokens for adaptive dark mode support.
+ *
+ * @example
+ * <ModalFooter>
+ *   <Button variant="secondary">Cancel</Button>
+ *   <Button variant="primary">Save</Button>
+ * </ModalFooter>
  */
 export function ModalFooter({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`p-6 border-t border-[#E8E6DF] bg-gray-50 ${className}`}>
+    <div className={cn(
+      CARD_STYLES.padding.md,
+      'border-t',
+      CARD_STYLES.border.default,
+      'bg-black/[0.02] dark:bg-white/[0.02]',
+      className
+    )}>
       {children}
     </div>
   );
