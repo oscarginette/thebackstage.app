@@ -37,6 +37,12 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class UserNotFoundError extends AppError {
+  constructor(message: string = 'User not found', details?: unknown) {
+    super(message, ERROR_CODES.USER_NOT_FOUND, 404, details);
+  }
+}
+
 export class UnauthorizedError extends AppError {
   constructor(message: string = 'Unauthorized', details?: unknown) {
     super(message, ERROR_CODES.AUTH_REQUIRED, 401, details);
