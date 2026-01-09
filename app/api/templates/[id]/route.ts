@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
-import { GetEmailTemplatesUseCase } from '@/domain/services/email-templates/GetEmailTemplatesUseCase';
-import { UpdateEmailTemplateUseCase } from '@/domain/services/email-templates/UpdateEmailTemplateUseCase';
-import { DeleteEmailTemplateUseCase } from '@/domain/services/email-templates/DeleteEmailTemplateUseCase';
-import { PostgresEmailTemplateRepository } from '@/infrastructure/database/repositories/PostgresEmailTemplateRepository';
+import { UseCaseFactory } from '@/lib/di-container';
 import { UpdateEmailTemplateSchema } from '@/lib/validation-schemas';
-
-const emailTemplateRepository = new PostgresEmailTemplateRepository();
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const useCase = new GetEmailTemplatesUseCase(emailTemplateRepository);
+    const useCase = UseCaseFactory.createGetEmailTemplatesUseCase();
     const template = await useCase.getById(id);
     if (!template) return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     return NextResponse.json({ template: template.toJSON() });
@@ -33,7 +28,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       );
     }
 
-    const useCase = new UpdateEmailTemplateUseCase(emailTemplateRepository);
+    const useCase = UseCaseFactory.createUpdateEmailTemplateUseCase();
     const result = await useCase.execute({ id: id, ...validation.data });
     return NextResponse.json({ template: result.template.toJSON(), isNewVersion: result.isNewVersion });
   } catch (error: unknown) {
@@ -45,7 +40,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const useCase = new DeleteEmailTemplateUseCase(emailTemplateRepository);
+    const useCase = UseCaseFactory.createDeleteEmailTemplateUseCase();
     const result = await useCase.execute({ id: id });
     return NextResponse.json(result);
   } catch (error: unknown) {

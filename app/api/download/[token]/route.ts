@@ -8,17 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
-import { ProcessDownloadUseCase } from '@/domain/services/ProcessDownloadUseCase';
-import { PostgresDownloadSubmissionRepository } from '@/infrastructure/database/repositories/PostgresDownloadSubmissionRepository';
-import { PostgresDownloadGateRepository } from '@/infrastructure/database/repositories/PostgresDownloadGateRepository';
-import { PostgresDownloadAnalyticsRepository } from '@/infrastructure/database/repositories/PostgresDownloadAnalyticsRepository';
-import { PixelTrackingService } from '@/infrastructure/pixel/PixelTrackingService';
-
-// Singleton repository instances
-const submissionRepository = new PostgresDownloadSubmissionRepository();
-const gateRepository = new PostgresDownloadGateRepository();
-const analyticsRepository = new PostgresDownloadAnalyticsRepository();
-const pixelTrackingService = new PixelTrackingService();
+import { UseCaseFactory } from '@/lib/di-container';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,12 +32,7 @@ export async function GET(
     }
 
     // Initialize use case
-    const processDownloadUseCase = new ProcessDownloadUseCase(
-      submissionRepository,
-      gateRepository,
-      analyticsRepository,
-      pixelTrackingService
-    );
+    const processDownloadUseCase = UseCaseFactory.createProcessDownloadUseCase();
 
     // Execute
     const result = await processDownloadUseCase.execute({

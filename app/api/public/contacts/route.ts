@@ -5,12 +5,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
+import { RepositoryFactory } from '@/lib/di-container';
 import type { BulkImportContactInput } from '@/domain/repositories/IContactRepository';
 
 export const dynamic = 'force-dynamic';
-
-const contactRepository = new PostgresContactRepository();
 
 /**
  * POST /api/public/contacts
@@ -36,6 +34,9 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
+    // Get repository from DI container
+    const contactRepository = RepositoryFactory.createContactRepository();
 
     // Parse request body
     const body = await request.json();

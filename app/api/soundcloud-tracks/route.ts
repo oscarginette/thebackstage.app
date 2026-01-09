@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { GetSoundCloudTracksUseCase } from '@/domain/services/GetSoundCloudTracksUseCase';
-import { PostgresTrackRepository } from '@/infrastructure/database/repositories/PostgresTrackRepository';
-import { PostgresUserSettingsRepository } from '@/infrastructure/database/repositories/PostgresUserSettingsRepository';
-import { GetUserSettingsUseCase } from '@/domain/services/GetUserSettingsUseCase';
-import { SoundCloudClient } from '@/infrastructure/music-platforms/SoundCloudClient';
+import { UseCaseFactory } from '@/lib/di-container';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -28,8 +24,7 @@ export async function GET() {
     }
 
     // Get user's SoundCloud ID from settings
-    const settingsRepository = new PostgresUserSettingsRepository();
-    const settingsUseCase = new GetUserSettingsUseCase(settingsRepository);
+    const settingsUseCase = UseCaseFactory.createGetUserSettingsUseCase();
     const settings = await settingsUseCase.execute(parseInt(session.user.id));
 
     console.log('[SoundCloud API] Settings:', {
@@ -44,9 +39,7 @@ export async function GET() {
       );
     }
 
-    const trackRepository = new PostgresTrackRepository();
-    const soundCloudClient = new SoundCloudClient();
-    const useCase = new GetSoundCloudTracksUseCase(trackRepository, soundCloudClient);
+    const useCase = UseCaseFactory.createGetSoundCloudTracksUseCase();
 
     const userId = parseInt(session.user.id);
     console.log('[SoundCloud API] Fetching tracks for:', { soundcloudId: settings.soundcloudId, userId });

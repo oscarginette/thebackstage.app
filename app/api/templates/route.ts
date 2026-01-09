@@ -1,15 +1,11 @@
-import { CreateEmailTemplateUseCase } from '@/domain/services/email-templates/CreateEmailTemplateUseCase';
-import { GetEmailTemplatesUseCase } from '@/domain/services/email-templates/GetEmailTemplatesUseCase';
-import { PostgresEmailTemplateRepository } from '@/infrastructure/database/repositories/PostgresEmailTemplateRepository';
+import { UseCaseFactory } from '@/lib/di-container';
 import { withErrorHandler, generateRequestId } from '@/lib/error-handler';
 import { successResponse, createdResponse } from '@/lib/api-response';
 import { CreateEmailTemplateSchema } from '@/lib/validation-schemas';
 
-const emailTemplateRepository = new PostgresEmailTemplateRepository();
-
 export const GET = withErrorHandler(async () => {
   const requestId = generateRequestId();
-  const useCase = new GetEmailTemplatesUseCase(emailTemplateRepository);
+  const useCase = UseCaseFactory.createGetEmailTemplatesUseCase();
   const result = await useCase.execute({});
 
   return successResponse(
@@ -32,7 +28,7 @@ export const POST = withErrorHandler(async (request: Request) => {
     throw new Error(`Validation failed: ${JSON.stringify(validation.error.format())}`);
   }
 
-  const useCase = new CreateEmailTemplateUseCase(emailTemplateRepository);
+  const useCase = UseCaseFactory.createCreateEmailTemplateUseCase();
   const result = await useCase.execute(validation.data);
 
   return createdResponse(
