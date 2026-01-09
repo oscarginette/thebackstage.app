@@ -248,10 +248,14 @@
     "personalSubtitle": "Gestiona tu identidad en la plataforma",
     "fullName": "Nombre Completo",
     "email": "Correo Electrónico",
+    "appearance": "Apariencia",
+    "appearanceSubtitle": "Elige tu esquema de color",
     "platforms": "Conexiones de Plataforma",
     "platformsSubtitle": "Utilizado para automatización y obtención de datos",
     "soundcloud": "SoundCloud ID",
+    "soundcloudHelp": "Pega tu URL de perfil de SoundCloud",
     "spotify": "Spotify Artist ID",
+    "spotifyHelp": "Pega tu URL de artista de Spotify",
     "save": "Guardar Cambios",
     "saving": "Guardando...",
     "saved": "¡Guardado correctamente!",
@@ -274,7 +278,74 @@
     "submissions": "Envíos",
     "downloads": "Descargas",
     "conversion": "Conv %",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "createForm": {
+      "steps": {
+        "source": "Origen",
+        "sourceDescription": "URL de SoundCloud o Spotify",
+        "genre": "Género",
+        "genreDescription": "Clasifica tu track",
+        "details": "Detalles",
+        "detailsDescription": "Título y Portada",
+        "upload": "Subida",
+        "uploadDescription": "El archivo que recibirán los fans",
+        "settings": "Ajustes",
+        "settingsDescription": "Conversión y Límites",
+        "gateSteps": "Pasos del Gate",
+        "gateStepsDescription": "Requisitos sociales"
+      },
+      "source": {
+        "selectFromTracks": "Seleccionar de tus tracks",
+        "enterUrlManually": "Ingresar URL manualmente",
+        "selectSoundCloudTrack": "Selecciona un track de SoundCloud",
+        "noTracksFound": "No se encontraron tracks. Asegúrate de haber conectado tu cuenta de SoundCloud.",
+        "enterSourceUrl": "Ingresa la URL del track de origen",
+        "next": "Siguiente"
+      },
+      "genre": {
+        "label": "¿Cuál es el género?",
+        "selectGenre": "Seleccionar género...",
+        "searchGenres": "Buscar géneros...",
+        "noGenresFound": "No se encontraron géneros",
+        "continue": "Continuar"
+      },
+      "details": {
+        "trackTitle": "Título del Track",
+        "trackTitlePlaceholder": "Nombre de la canción...",
+        "artistName": "Nombre del Artista",
+        "artistNamePlaceholder": "Tu nombre de DJ...",
+        "artworkUrl": "URL de la Portada",
+        "artworkUrlPlaceholder": "https://...",
+        "looksGood": "Se ve bien"
+      },
+      "upload": {
+        "directDownloadUrl": "URL de descarga directa",
+        "urlPlaceholder": "Dropbox, GDrive, R2...",
+        "saveAndNext": "Guardar y Siguiente"
+      },
+      "settings": {
+        "maxDownloads": "Descargas Máximas",
+        "maxDownloadsPlaceholder": "Ilimitadas",
+        "customSlug": "Slug Personalizado",
+        "customSlugPlaceholder": "link-personalizado",
+        "finalSetup": "Configuración Final"
+      },
+      "gateSteps": {
+        "emailMarketing": "Email Marketing",
+        "alwaysOn": "Siempre ACTIVADO",
+        "soundcloudRepost": "Repost en SoundCloud",
+        "soundcloudFollow": "Seguir en SoundCloud",
+        "spotifyConnect": "Conectar con Spotify",
+        "createGate": "Crear Download Gate"
+      },
+      "preview": {
+        "title": "Vista Previa en Vivo"
+      },
+      "errors": {
+        "createFailed": "Error al crear el gate. Por favor intenta de nuevo.",
+        "loadingTracks": "Cargando tracks..."
+      }
+    }
   },
   "dashboard": {
     "stats": {
