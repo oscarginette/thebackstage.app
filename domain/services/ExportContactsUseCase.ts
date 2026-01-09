@@ -16,6 +16,7 @@
  */
 
 import { IContactRepository, Contact } from '@/domain/repositories/IContactRepository';
+import { IUserSettingsRepository } from '@/domain/repositories/IUserSettingsRepository';
 import { CsvGenerator } from '@/infrastructure/csv/CsvGenerator';
 import {
   ExportContactsInput,
@@ -29,6 +30,7 @@ import {
 export class ExportContactsUseCase {
   constructor(
     private contactRepository: IContactRepository,
+    private userSettingsRepository: IUserSettingsRepository,
     private csvGenerator: CsvGenerator
   ) {}
 
@@ -36,13 +38,16 @@ export class ExportContactsUseCase {
     // Validation
     this.validateInput(input);
 
+    // Fetch artist name if not provided
+    const artistName = await this.getArtistName(input.userId, input.artistName);
+
     // Fetch contacts based on scope
     const contacts = await this.fetchContacts(input);
 
     if (contacts.length === 0) {
       return {
         success: false,
-        filename: this.generateFilename(input.artistName, input.format),
+        filename: this.generateFilename(artistName, input.format),
         rowCount: 0,
         error: 'No contacts to export',
       };
@@ -58,7 +63,7 @@ export class ExportContactsUseCase {
     return {
       success: true,
       data,
-      filename: this.generateFilename(input.artistName, input.format),
+      filename: this.generateFilename(artistName, input.format),
       rowCount: contacts.length,
     };
   }
@@ -78,6 +83,26 @@ export class ExportContactsUseCase {
 
     if (!Object.values(EXPORT_SCOPES).includes(input.scope)) {
       throw new Error(`Invalid export scope: ${input.scope}`);
+    }
+  }
+
+  private async getArtistName(
+    userId: number,
+    providedName?: string | null
+  ): Promise<string | null> {
+    // If artist name was explicitly provided, use it
+    if (providedName !== undefined) {
+      return providedName;
+    }
+
+    // Otherwise, fetch from user settings
+    try {
+      const userSettings = await this.userSettingsRepository.getByUserId(userId);
+      return userSettings.name;
+    } catch (error) {
+      // If user settings not found, return null (filename will use default)
+      console.warn('[ExportContactsUseCase] Could not fetch user settings:', error);
+      return null;
     }
   }
 

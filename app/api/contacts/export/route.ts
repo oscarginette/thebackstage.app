@@ -19,10 +19,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { ExportContactsUseCase } from '@/domain/services/ExportContactsUseCase';
-import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
-import { PostgresUserSettingsRepository } from '@/infrastructure/database/repositories/PostgresUserSettingsRepository';
-import { CsvGenerator } from '@/infrastructure/csv/CsvGenerator';
+import { UseCaseFactory } from '@/lib/di-container';
 import {
   EXPORT_SCOPES,
   EXPORT_FORMATS,
@@ -43,17 +40,6 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = parseInt(session.user.id);
-
-    // Get artist name from user settings
-    let artistName: string | null = null;
-    try {
-      const userSettingsRepo = new PostgresUserSettingsRepository();
-      const userSettings = await userSettingsRepo.getByUserId(userId);
-      artistName = userSettings.name;
-    } catch (error) {
-      // If user settings not found, continue with null name
-      console.warn('[API Export] Could not fetch user settings:', error);
-    }
 
     // Parse query params
     const { searchParams } = new URL(request.url);
@@ -89,9 +75,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Execute use case (DI)
-    const contactRepository = new PostgresContactRepository();
-    const csvGenerator = new CsvGenerator();
-    const useCase = new ExportContactsUseCase(contactRepository, csvGenerator);
+    const useCase = UseCaseFactory.createExportContactsUseCase();
 
     const result = await useCase.execute({
       userId,
