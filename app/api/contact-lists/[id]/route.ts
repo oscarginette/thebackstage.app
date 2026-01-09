@@ -8,12 +8,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { UpdateContactListUseCase } from '@/domain/services/UpdateContactListUseCase';
-import { DeleteContactListUseCase } from '@/domain/services/DeleteContactListUseCase';
-import { PostgresContactListRepository } from '@/infrastructure/database/repositories/PostgresContactListRepository';
-
-const contactListRepository = new PostgresContactListRepository();
+import { auth } from '@/lib/auth';
+import { UseCaseFactory } from '@/lib/di-container';
 
 /**
  * PATCH /api/contact-lists/[id]
@@ -32,7 +28,7 @@ export async function PATCH(
 
     const body = await request.json();
 
-    const useCase = new UpdateContactListUseCase(contactListRepository);
+    const useCase = UseCaseFactory.createUpdateContactListUseCase();
     const list = await useCase.execute({
       userId: parseInt(session.user.id),
       listId: id,
@@ -86,7 +82,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const useCase = new DeleteContactListUseCase(contactListRepository);
+    const useCase = UseCaseFactory.createDeleteContactListUseCase();
     await useCase.execute({
       userId: parseInt(session.user.id),
       listId: id,

@@ -7,11 +7,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { RemoveContactsFromListUseCase } from '@/domain/services/RemoveContactsFromListUseCase';
-import { PostgresContactListRepository } from '@/infrastructure/database/repositories/PostgresContactListRepository';
-
-const contactListRepository = new PostgresContactListRepository();
+import { auth } from '@/lib/auth';
+import { UseCaseFactory } from '@/lib/di-container';
 
 /**
  * POST /api/contact-lists/[id]/remove-contacts
@@ -40,7 +37,7 @@ export async function POST(
       );
     }
 
-    const useCase = new RemoveContactsFromListUseCase(contactListRepository);
+    const useCase = UseCaseFactory.createRemoveContactsFromListUseCase();
     const result = await useCase.execute({
       userId: parseInt(session.user.id),
       listId: id,

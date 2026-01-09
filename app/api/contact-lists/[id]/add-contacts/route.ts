@@ -7,13 +7,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { AddContactsToListUseCase } from '@/domain/services/AddContactsToListUseCase';
-import { PostgresContactListRepository } from '@/infrastructure/database/repositories/PostgresContactListRepository';
-import { PostgresContactRepository } from '@/infrastructure/database/repositories/PostgresContactRepository';
-
-const contactListRepository = new PostgresContactListRepository();
-const contactRepository = new PostgresContactRepository();
+import { auth } from '@/lib/auth';
+import { UseCaseFactory } from '@/lib/di-container';
 
 /**
  * POST /api/contact-lists/[id]/add-contacts
@@ -42,10 +37,7 @@ export async function POST(
       );
     }
 
-    const useCase = new AddContactsToListUseCase(
-      contactListRepository,
-      contactRepository
-    );
+    const useCase = UseCaseFactory.createAddContactsToListUseCase();
     const result = await useCase.execute({
       userId: parseInt(session.user.id),
       listId: id,

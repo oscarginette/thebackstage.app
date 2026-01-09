@@ -8,12 +8,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { GetContactListsWithStatsUseCase } from '@/domain/services/GetContactListsWithStatsUseCase';
-import { CreateContactListUseCase } from '@/domain/services/CreateContactListUseCase';
-import { PostgresContactListRepository } from '@/infrastructure/database/repositories/PostgresContactListRepository';
-
-const contactListRepository = new PostgresContactListRepository();
+import { auth } from '@/lib/auth';
+import { UseCaseFactory } from '@/lib/di-container';
 
 /**
  * GET /api/contact-lists
@@ -26,7 +22,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const useCase = new GetContactListsWithStatsUseCase(contactListRepository);
+    const useCase = UseCaseFactory.createGetContactListsWithStatsUseCase();
     const lists = await useCase.execute(parseInt(session.user.id));
 
     return NextResponse.json({ lists });
@@ -52,7 +48,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const useCase = new CreateContactListUseCase(contactListRepository);
+    const useCase = UseCaseFactory.createCreateContactListUseCase();
     const list = await useCase.execute({
       userId: parseInt(session.user.id),
       name: body.name,
