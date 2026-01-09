@@ -176,23 +176,24 @@ function DashboardContent() {
             <Header />
             <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} isAdmin={isAdmin} />
           </div>
-          <div className="flex flex-col items-end gap-2 min-w-[280px]">
+          <div className="flex flex-col items-end gap-3 min-w-[320px]">
             {session?.user && (
-              <div className="text-right">
-                <div className="text-xs font-medium text-foreground">{session.user.email}</div>
-                <div className="text-[10px] text-foreground/40 uppercase tracking-wide">{session.user.role}</div>
+              <div className="flex items-center gap-4 px-4 py-2 rounded-2xl bg-white/40 dark:bg-white/5 border border-border/40 backdrop-blur-md">
+                <div className="text-right">
+                  <div className="text-xs font-bold text-foreground">{session.user.email}</div>
+                  <div className="text-[10px] text-foreground/40 uppercase tracking-widest font-black">{session.user.role}</div>
+                </div>
+                <div className="w-px h-8 bg-border/40" />
+                <Link
+                  href={PATHS.SETTINGS}
+                  className="group p-2 rounded-xl hover:bg-accent/10 transition-all active:scale-95"
+                  title="Settings"
+                >
+                  <SettingsIcon className="w-4 h-4 text-foreground/40 group-hover:text-accent group-hover:rotate-90 transition-all duration-500" />
+                </Link>
               </div>
             )}
-            <Link
-              href={PATHS.SETTINGS}
-              className="group flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/40 dark:bg-white/5 border border-border/60 hover:border-accent/40 hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-500 backdrop-blur-md active:scale-95 shadow-sm"
-            >
-              <SettingsIcon className="w-3.5 h-3.5 text-foreground/40 group-hover:text-accent group-hover:rotate-90 transition-all duration-700" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/50 group-hover:text-foreground transition-colors">
-                Settings
-              </span>
-            </Link>
-            <div className="hidden lg:block">
+            <div className="hidden lg:block pr-4">
               <div className="flex gap-1.5 justify-end">
                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
