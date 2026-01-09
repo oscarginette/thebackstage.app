@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Users, Trash2, Mail, Filter, Search, FolderPlus, Download } from 'lucide-react';
 import DataTable from './DataTable';
 import ImportContactsButton from './ImportContactsButton';
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { apiGet, isApiError } from '@/lib/api-client';
 import { GetContactsWithStatsResult } from '@/domain/services/GetContactsWithStatsUseCase';
 import { Contact, ContactStats } from '@/domain/repositories/IContactRepository';
+import { FilterDefinition, ActiveFilters } from './DataTableFilters';
 
 interface Props {
   onImportClick: () => void;
@@ -131,6 +132,76 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
     });
   };
 
+  // Extract unique sources from contacts data
+  const uniqueSources = useMemo(() => {
+    const sources = new Set(
+      contacts
+        .map(c => c.source)
+        .filter((source): source is string => source !== null && source !== undefined)
+    );
+    return Array.from(sources).sort();
+  }, [contacts]);
+
+  // Filter definitions
+  const CONTACT_FILTERS: FilterDefinition[] = useMemo(() => [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { label: 'Subscribed', value: 'subscribed' },
+        { label: 'Unsubscribed', value: 'unsubscribed' },
+      ],
+    },
+    {
+      key: 'source',
+      label: 'Source',
+      type: 'select',
+      options: uniqueSources.map(source => ({
+        label: source.charAt(0).toUpperCase() + source.slice(1),
+        value: source,
+      })),
+    },
+    {
+      key: 'dateRange',
+      label: 'Date Range',
+      type: 'select',
+      options: [
+        { label: 'Last 7 days', value: 'last_7' },
+        { label: 'Last 30 days', value: 'last_30' },
+        { label: 'Last 90 days', value: 'last_90' },
+        { label: 'All time', value: 'all' },
+      ],
+    },
+  ], [uniqueSources]);
+
+  // Filter predicates
+  const filterPredicates: Record<string, (item: Contact, value: string | string[]) => boolean> = {
+    status: (contact: Contact, value: string | string[]) => {
+      const statusValue = typeof value === 'string' ? value : value[0];
+      if (statusValue === 'subscribed') return contact.subscribed === true;
+      if (statusValue === 'unsubscribed') return contact.subscribed === false;
+      return true;
+    },
+    source: (contact: Contact, value: string | string[]) => {
+      const sourceValue = typeof value === 'string' ? value : value[0];
+      return contact.source === sourceValue;
+    },
+    dateRange: (contact: Contact, value: string | string[]) => {
+      const rangeValue = typeof value === 'string' ? value : value[0];
+      if (rangeValue === 'all') return true;
+
+      const contactDate = new Date(contact.createdAt);
+      const now = new Date();
+      const diffInDays = Math.floor((now.getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (rangeValue === 'last_7') return diffInDays <= 7;
+      if (rangeValue === 'last_30') return diffInDays <= 30;
+      if (rangeValue === 'last_90') return diffInDays <= 90;
+      return true;
+    },
+  };
+
   const columns = [
     {
       header: 'Contact',
@@ -211,6 +282,8 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
         getItemId={(c) => c.id}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
+        filters={CONTACT_FILTERS}
+        filterPredicates={filterPredicates}
         actions={
           <div className="flex gap-2">
             <ImportContactsButton onClick={onImportClick} />
