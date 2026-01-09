@@ -8,6 +8,8 @@ import BrevoImportWizardModal from './BrevoImportWizardModal';
 import AddContactsToListModal from './AddContactsToListModal';
 import Toast from '@/components/ui/Toast';
 import Modal, { ModalBody, ModalFooter } from '@/components/ui/Modal';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { apiGet, isApiError } from '@/lib/api-client';
 import { GetContactsWithStatsResult } from '@/domain/services/GetContactsWithStatsUseCase';
 import { Contact, ContactStats } from '@/domain/repositories/IContactRepository';
@@ -133,12 +135,12 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
       className: 'flex-[2.5] min-w-[240px]',
       accessor: (contact: Contact) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-foreground/60">
             <Users className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-sm font-bold text-[#1c1c1c]">{contact.email}</div>
-            <div className="text-[10px] text-gray-400">{contact.name || '-'}</div>
+            <div className="text-sm font-bold text-foreground">{contact.email}</div>
+            <div className="text-[10px] text-foreground/60">{contact.name || '-'}</div>
           </div>
         </div>
       ),
@@ -148,7 +150,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
       header: 'Source',
       className: 'flex-1 min-w-[140px]',
       accessor: (contact: Contact) => (
-        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200/50">
+        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-muted text-foreground/60 border border-border/50">
           {contact.source}
         </span>
       ),
@@ -171,7 +173,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
       header: 'Added',
       className: 'flex-1 min-w-[120px]',
       accessor: (contact: Contact) => (
-        <div className="text-xs text-gray-500 font-medium">{formatDate(contact.createdAt)}</div>
+        <div className="text-xs text-foreground/60 font-medium">{formatDate(contact.createdAt)}</div>
       ),
       sortKey: (contact: Contact) => new Date(contact.createdAt),
     },
@@ -187,10 +189,10 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
             { label: 'Last 30 Days', value: stats.newLast30Days, color: 'text-purple-600', bg: 'bg-purple-500/10' },
             { label: 'Unsubscribed', value: stats.unsubscribed, color: 'text-red-600', bg: 'bg-red-500/10' },
           ].map((s, i) => (
-            <div key={i} className="bg-white/40 backdrop-blur-xl p-4 rounded-2xl border border-[#E8E6DF]/50 flex flex-col gap-1">
-              <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{s.label}</span>
+            <Card key={i} variant="subtle" padding="sm" className="flex flex-col gap-1">
+              <span className="text-[9px] font-black text-foreground/60 uppercase tracking-widest">{s.label}</span>
               <span className={`text-xl font-serif ${s.color}`}>{s.value?.toLocaleString() ?? 0}</span>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -210,30 +212,36 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
         actions={
           <div className="flex gap-2">
             <ImportContactsButton onClick={onImportClick} />
-            <button
+            <Button
               onClick={handleBrevoImportClick}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B996E]/10 text-[#0B996E] hover:bg-[#0B996E]/20 transition-all border border-[#0B996E]/30 text-xs font-bold active:scale-95"
+              variant="secondary"
+              size="sm"
+              className="bg-[#0B996E]/10 text-[#0B996E] hover:bg-[#0B996E]/20 border-[#0B996E]/30"
             >
               <Mail className="w-4 h-4" />
               Import from Brevo
-            </button>
+            </Button>
             {selectedIds.length > 0 && (
               <>
-                <button
+                <Button
                   onClick={() => setShowAddToListModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-200 text-xs font-bold active:scale-95"
+                  variant="secondary"
+                  size="sm"
+                  className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-indigo-200"
                 >
                   <FolderPlus className="w-4 h-4" />
                   Add to List ({selectedIds.length})
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleDeleteClick}
                   disabled={deleting}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-200 text-xs font-bold active:scale-95 disabled:opacity-50"
+                  variant="danger"
+                  size="sm"
+                  loading={deleting}
                 >
                   <Trash2 className="w-4 h-4" />
                   {deleting ? 'Deleting...' : `Delete (${selectedIds.length})`}
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -267,28 +275,29 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
                 This action cannot be undone. This will permanently delete the selected contact{selectedIds.length !== 1 ? 's' : ''}.
               </p>
             </div>
-            <p className="text-sm text-gray-600">
-              You are about to delete <span className="font-bold text-gray-900">{selectedIds.length}</span> contact{selectedIds.length !== 1 ? 's' : ''}.
+            <p className="text-sm text-foreground/60">
+              You are about to delete <span className="font-bold text-foreground">{selectedIds.length}</span> contact{selectedIds.length !== 1 ? 's' : ''}.
             </p>
           </div>
         </ModalBody>
         <ModalFooter>
           <div className="flex gap-3 justify-end">
-            <button
+            <Button
               onClick={() => setShowDeleteModal(false)}
               disabled={deleting}
-              className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all border border-gray-200 text-sm font-bold active:scale-95 disabled:opacity-50"
+              variant="secondary"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleDeleteConfirm}
               disabled={deleting}
-              className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all border border-red-700 text-sm font-bold active:scale-95 disabled:opacity-50 flex items-center gap-2"
+              variant="danger"
+              loading={deleting}
             >
               <Trash2 className="w-4 h-4" />
               {deleting ? 'Deleting...' : 'Delete Contacts'}
-            </button>
+            </Button>
           </div>
         </ModalFooter>
       </Modal>

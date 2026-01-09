@@ -23,6 +23,10 @@ import {
 } from 'lucide-react';
 import GatePreview from './GatePreview';
 import GenreSelector from './GenreSelector';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { CARD_STYLES, cn } from '@/domain/types/design-tokens';
 
 export default function CreateGateForm() {
   const router = useRouter();
@@ -159,11 +163,16 @@ export default function CreateGateForm() {
           const isComplete = isStepComplete(step.id);
 
           return (
-            <div 
-              key={step.id} 
-              className={`bg-white/70 backdrop-blur-md rounded-2xl border transition-all duration-300 overflow-hidden ${
-                isOpen ? 'border-[#FF5500] shadow-lg ring-1 ring-[#FF5500]/10' : 'border-[#E8E6DF] hover:border-gray-300'
-              }`}
+            <Card
+              key={step.id}
+              variant="subtle"
+              padding="sm"
+              className={cn(
+                'transition-all duration-300 overflow-hidden',
+                isOpen
+                  ? 'border-accent shadow-lg ring-1 ring-accent/10'
+                  : 'hover:border-foreground/20'
+              )}
             >
               {/* Accordion Header */}
               <button
@@ -172,10 +181,11 @@ export default function CreateGateForm() {
                 className="w-full flex items-center justify-between p-4 text-left group"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                    isOpen ? 'bg-[#FF5500] text-white' : 
-                    isComplete ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400'
-                  }`}>
+                  <div className={cn(
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
+                    isOpen ? 'bg-accent text-white' :
+                    isComplete ? 'bg-emerald-500 text-white' : 'bg-foreground/10 text-foreground/40'
+                  )}>
                     {isComplete && !isOpen ? (
                       <CheckCircle2 className="w-5 h-5" />
                     ) : (
@@ -183,58 +193,61 @@ export default function CreateGateForm() {
                     )}
                   </div>
                   <div>
-                    <span className={`text-xs font-bold uppercase tracking-wider ${isOpen ? 'text-[#1c1c1c]' : 'text-gray-500'}`}>
+                    <span className={cn(
+                      'text-xs font-bold uppercase tracking-wider',
+                      isOpen ? 'text-foreground' : 'text-foreground/50'
+                    )}>
                       {step.name}
                     </span>
                   </div>
                 </div>
-                {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />}
+                {isOpen ? (
+                  <ChevronDown className="w-4 h-4 text-foreground/40" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-foreground/40 group-hover:translate-x-1 transition-transform" />
+                )}
               </button>
 
               {/* Accordion Content */}
               {isOpen && (
-                <div className="p-5 pt-1 border-t border-[#E8E6DF] animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="p-5 pt-1 border-t border-foreground/10 animate-in fade-in slide-in-from-top-2 duration-300">
                   {step.id === 1 && (
                     <div className="space-y-4">
                       {/* Toggle between track selector and manual URL */}
                       <div className="flex items-center gap-3 mb-4">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setUseManualUrl(false)}
-                          className={`flex-1 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${
-                            !useManualUrl
-                              ? 'bg-[#FF5500] text-white'
-                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                          }`}
+                          variant={!useManualUrl ? 'primary' : 'secondary'}
+                          size="sm"
+                          className="flex-1 uppercase"
                         >
                           Select from your tracks
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           onClick={() => setUseManualUrl(true)}
-                          className={`flex-1 px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${
-                            useManualUrl
-                              ? 'bg-[#FF5500] text-white'
-                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                          }`}
+                          variant={useManualUrl ? 'primary' : 'secondary'}
+                          size="sm"
+                          className="flex-1 uppercase"
                         >
                           Enter URL manually
-                        </button>
+                        </Button>
                       </div>
 
                       {!useManualUrl ? (
                         // Track Selector
                         <div className="space-y-3">
-                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                          <label className="text-xs font-bold uppercase tracking-widest text-foreground/40">
                             Select a SoundCloud track
                           </label>
                           {loadingTracks ? (
                             <div className="flex items-center justify-center py-8">
-                              <Loader2 className="w-6 h-6 animate-spin text-[#FF5500]" />
+                              <Loader2 className="w-6 h-6 animate-spin text-accent" />
                             </div>
                           ) : soundcloudTracks.length === 0 ? (
-                            <div className="p-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 text-center">
-                              <p className="text-sm text-gray-500">
+                            <div className="p-4 rounded-xl border border-dashed border-foreground/20 bg-foreground/5 text-center">
+                              <p className="text-sm text-foreground/60">
                                 No tracks found. Make sure you've connected your SoundCloud account.
                               </p>
                             </div>
@@ -245,11 +258,12 @@ export default function CreateGateForm() {
                                   key={track.trackId}
                                   type="button"
                                   onClick={() => handleTrackSelect(track.trackId)}
-                                  className={`w-full p-3 rounded-xl border text-left transition-all flex items-center gap-3 ${
+                                  className={cn(
+                                    'w-full p-3 rounded-xl border text-left transition-all flex items-center gap-3',
                                     selectedTrackId === track.trackId
-                                      ? 'border-[#FF5500] bg-[#FF5500]/5 ring-2 ring-[#FF5500]/20'
-                                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                  }`}
+                                      ? 'border-accent bg-accent/5 ring-2 ring-accent/20'
+                                      : 'border-foreground/10 hover:border-foreground/20 hover:bg-foreground/5'
+                                  )}
                                 >
                                   {track.coverImage && (
                                     <img
@@ -259,53 +273,51 @@ export default function CreateGateForm() {
                                     />
                                   )}
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-gray-900 truncate">
+                                    <p className="text-sm font-bold text-foreground truncate">
                                       {track.title}
                                     </p>
-                                    <p className="text-xs text-gray-500 truncate">
+                                    <p className="text-xs text-foreground/50 truncate">
                                       {new Date(track.publishedAt).toLocaleDateString()}
                                     </p>
                                   </div>
                                   {selectedTrackId === track.trackId && (
-                                    <CheckCircle2 className="w-5 h-5 text-[#FF5500] flex-shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-accent flex-shrink-0" />
                                   )}
                                 </button>
                               ))}
                             </div>
                           )}
                           <div className="flex justify-end pt-2">
-                            <button
+                            <Button
                               type="button"
                               onClick={() => setActiveStep(2)}
                               disabled={!selectedTrackId}
-                              className="px-6 py-3 rounded-xl bg-[#1c1c1c] text-white font-bold text-sm hover:bg-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Next
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       ) : (
                         // Manual URL Input
                         <div className="space-y-3">
-                          <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                          <label className="text-xs font-bold uppercase tracking-widest text-foreground/40">
                             Enter source track URL
                           </label>
                           <div className="flex gap-3">
-                            <input
+                            <Input
                               type="url"
                               name="soundcloudTrackUrl"
                               value={formData.soundcloudTrackUrl}
                               onChange={handleChange}
                               placeholder="https://soundcloud.com/..."
-                              className="flex-1 px-5 py-3 rounded-xl border border-[#E8E6DF] bg-white/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF5500]/10 focus:border-[#FF5500] transition-all text-sm"
+                              focusVariant="soundcloud"
                             />
-                            <button
+                            <Button
                               type="button"
                               onClick={() => setActiveStep(2)}
-                              className="px-6 py-3 rounded-xl bg-[#1c1c1c] text-white font-bold text-sm hover:bg-black transition-all active:scale-95"
                             >
                               Next
-                            </button>
+                            </Button>
                           </div>
                           <div className="flex items-center gap-4 mt-2">
                             <img
@@ -324,20 +336,19 @@ export default function CreateGateForm() {
 
                   {step.id === 2 && (
                     <div className="space-y-4">
-                      <label className="text-xs font-bold uppercase tracking-widest text-gray-400">What's the genre?</label>
+                      <label className="text-xs font-bold uppercase tracking-widest text-foreground/40">What's the genre?</label>
                       <GenreSelector
                         value={formData.genre}
                         onChange={(value) => setFormData(prev => ({ ...prev, genre: value }))}
                       />
                       <div className="flex justify-end gap-3 mt-4">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setActiveStep(3)}
                           disabled={!formData.genre}
-                          className="px-6 py-3 rounded-xl bg-[#1c1c1c] text-white font-bold text-sm hover:bg-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Continue
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -345,166 +356,178 @@ export default function CreateGateForm() {
                   {step.id === 3 && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <div className="space-y-2">
-                           <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Track Title</label>
-                           <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            placeholder="Song name..."
-                            className="w-full px-5 py-3 rounded-xl border border-[#E8E6DF] bg-white/50 focus:bg-white text-sm"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                           <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Artist Name</label>
-                           <input
-                            type="text"
-                            name="artistName"
-                            value={formData.artistName}
-                            onChange={handleChange}
-                            placeholder="Your DJ name..."
-                            className="w-full px-5 py-3 rounded-xl border border-[#E8E6DF] bg-white/50 focus:bg-white text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                         <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Artwork URL</label>
-                         <input
-                          type="url"
-                          name="artworkUrl"
-                          value={formData.artworkUrl}
+                        <Input
+                          label="Track Title"
+                          type="text"
+                          name="title"
+                          value={formData.title}
                           onChange={handleChange}
-                          placeholder="https://..."
-                          className="w-full px-5 py-3 rounded-xl border border-[#E8E6DF] bg-white/50 focus:bg-white text-sm"
+                          placeholder="Song name..."
+                        />
+                        <Input
+                          label="Artist Name"
+                          type="text"
+                          name="artistName"
+                          value={formData.artistName}
+                          onChange={handleChange}
+                          placeholder="Your DJ name..."
                         />
                       </div>
+                      <Input
+                        label="Artwork URL"
+                        type="url"
+                        name="artworkUrl"
+                        value={formData.artworkUrl}
+                        onChange={handleChange}
+                        placeholder="https://..."
+                      />
                       <div className="flex justify-end gap-3">
-                        <button onClick={() => setActiveStep(4)} className="px-6 py-3 rounded-xl bg-[#1c1c1c] text-white font-bold text-sm">Looks Good</button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveStep(4)}
+                        >
+                          Looks Good
+                        </Button>
                       </div>
                     </div>
                   )}
 
                   {step.id === 4 && (
                     <div className="space-y-4">
-                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Direct download URL</label>
-                       <div className="relative group">
-                        <input
+                      <div className="relative group">
+                        <Input
+                          label="Direct download URL"
                           type="url"
                           name="fileUrl"
                           value={formData.fileUrl}
                           onChange={handleChange}
                           placeholder="Dropbox, GDrive, R2..."
-                          className="w-full px-5 py-3 pr-12 rounded-xl border border-[#E8E6DF] bg-white/50 focus:bg-white text-sm"
+                          className="pr-12"
                         />
-                        <FileAudio className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-hover:text-[#FF5500] transition-colors" />
+                        <FileAudio className="absolute right-4 top-1/2 translate-y-1/4 w-4 h-4 text-foreground/30 group-hover:text-accent transition-colors" />
                       </div>
                       <div className="flex justify-end gap-3 pt-4">
-                        <button onClick={() => setActiveStep(5)} className="px-6 py-3 rounded-xl bg-[#1c1c1c] text-white font-bold text-sm">Save & Next</button>
+                        <Button
+                          type="button"
+                          onClick={() => setActiveStep(5)}
+                        >
+                          Save & Next
+                        </Button>
                       </div>
                     </div>
                   )}
 
                   {step.id === 5 && (
                     <div className="space-y-6">
-                       <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Max Downloads</label>
-                            <input
-                              type="number"
-                              name="maxDownloads"
-                              value={formData.maxDownloads || ''}
-                              onChange={handleChange}
-                              placeholder="Unlimited"
-                              className="w-full px-5 py-3 rounded-xl border border-[#E8E6DF] text-sm"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Custom Slug</label>
-                            <input
-                              type="text"
-                              name="slug"
-                              value={formData.slug}
-                              onChange={handleChange}
-                              placeholder="custom-link"
-                              className="w-full px-5 py-3 rounded-xl border border-[#E8E6DF] text-sm"
-                            />
-                          </div>
-                       </div>
-                       <div className="flex justify-end gap-3 font-bold">
-                        <button onClick={() => setActiveStep(6)} className="px-6 py-3 rounded-xl bg-[#1c1c1c] text-white font-bold text-sm">Final Setup</button>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="Max Downloads"
+                          type="number"
+                          name="maxDownloads"
+                          value={formData.maxDownloads || ''}
+                          onChange={handleChange}
+                          placeholder="Unlimited"
+                        />
+                        <Input
+                          label="Custom Slug"
+                          type="text"
+                          name="slug"
+                          value={formData.slug}
+                          onChange={handleChange}
+                          placeholder="custom-link"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          type="button"
+                          onClick={() => setActiveStep(6)}
+                        >
+                          Final Setup
+                        </Button>
                       </div>
                     </div>
                   )}
 
                   {step.id === 6 && (
                     <div className="space-y-4">
-                       <div className="p-3 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                             <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center"><CheckCircle2 className="w-3.5 h-3.5"/></div>
-                             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Email Marketing</span>
+                      <div className="p-3 rounded-xl border border-foreground/10 bg-foreground/5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
+                            <CheckCircle2 className="w-3.5 h-3.5"/>
                           </div>
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Always ON</span>
-                       </div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Email Marketing</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-foreground/40 uppercase">Always ON</span>
+                      </div>
 
-                       <div className="grid grid-cols-1 gap-2">
-                          {[
-                            { id: 'requireSoundcloudRepost' as const, label: 'SoundCloud Repost', icon: RefreshCw },
-                            { id: 'requireSoundcloudFollow' as const, label: 'SoundCloud Follow', icon: Plus },
-                            { id: 'requireSpotifyConnect' as const, label: 'Spotify Connect', icon: Music },
-                          ].map((req) => {
-                            const isChecked = formData[req.id];
-                            return (
-                             <div
+                      <div className="grid grid-cols-1 gap-2">
+                        {[
+                          { id: 'requireSoundcloudRepost' as const, label: 'SoundCloud Repost', icon: RefreshCw },
+                          { id: 'requireSoundcloudFollow' as const, label: 'SoundCloud Follow', icon: Plus },
+                          { id: 'requireSpotifyConnect' as const, label: 'Spotify Connect', icon: Music },
+                        ].map((req) => {
+                          const isChecked = formData[req.id];
+                          return (
+                            <div
                               key={req.id}
-                              className={`p-3 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
-                                isChecked ? 'border-[#FF5500]/20 bg-[#FF5500]/5' : 'border-gray-100 hover:border-gray-200'
-                              }`}
+                              className={cn(
+                                'p-3 rounded-xl border cursor-pointer flex items-center justify-between transition-all',
+                                isChecked ? 'border-accent/20 bg-accent/5' : 'border-foreground/10 hover:border-foreground/20'
+                              )}
                               onClick={() => setFormData((p: CreateGateFormData) => ({ ...p, [req.id]: !p[req.id] }))}
-                             >
-                               <div className="flex items-center gap-3">
-                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                                    isChecked ? 'bg-[#FF5500] text-white' : 'bg-gray-100 text-gray-400'
-                                  }`}>
-                                     <req.icon className="w-3.5 h-3.5" />
-                                  </div>
-                                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">{req.label}</span>
-                               </div>
-                               <input type="checkbox" checked={isChecked} readOnly className="w-3.5 h-3.5 rounded text-[#FF5500] focus:ring-[#FF5500] border-gray-300" />
-                             </div>
-                            );
-                          })}
-                       </div>
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  'w-7 h-7 rounded-lg flex items-center justify-center transition-colors',
+                                  isChecked ? 'bg-accent text-white' : 'bg-foreground/10 text-foreground/40'
+                                )}>
+                                  <req.icon className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">{req.label}</span>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                readOnly
+                                className="w-3.5 h-3.5 rounded text-accent focus:ring-accent border-foreground/30"
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
 
-                       <div className="flex justify-end pt-4">
-                          <button 
-                            onClick={handleSubmit}
-                            disabled={submitting}
-                            className="w-full md:w-auto px-6 py-3.5 rounded-xl bg-[#FF5500] text-white font-bold shadow-xl shadow-[#FF5500]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                          >
-                            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            <span>CREAR DOWNLOAD GATE</span>
-                          </button>
-                       </div>
+                      <div className="flex justify-end pt-4">
+                        <Button
+                          type="button"
+                          onClick={handleSubmit}
+                          disabled={submitting}
+                          loading={submitting}
+                          variant="primary"
+                          className="w-full md:w-auto bg-accent text-white hover:bg-accent/90 shadow-xl shadow-accent/20 hover:scale-[1.02] active:scale-95"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>CREAR DOWNLOAD GATE</span>
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
               )}
-            </div>
+            </Card>
           );
         })}
       </div>
 
       {/* Right Column: Preview Stick Side (Wider) */}
       <div className="lg:sticky lg:top-0 h-full w-full lg:w-[450px] flex flex-col items-center shrink-0">
-         <div className="w-full bg-white/50 backdrop-blur-sm p-8 rounded-3xl border border-[#E8E6DF] flex flex-col items-center h-full">
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 mb-6 self-start">Live Preview</h3>
-            <div className="flex-1 flex items-start justify-center w-full pt-2">
-               <div className="scale-90 xl:scale-100 origin-top transition-all">
-                  <GatePreview data={formData} />
-               </div>
+        <Card variant="subtle" padding="lg" className="w-full flex flex-col items-center h-full">
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground/40 mb-6 self-start">Live Preview</h3>
+          <div className="flex-1 flex items-start justify-center w-full pt-2">
+            <div className="scale-90 xl:scale-100 origin-top transition-all">
+              <GatePreview data={formData} />
             </div>
-         </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

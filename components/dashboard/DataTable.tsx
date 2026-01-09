@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Search, Filter, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { CARD_STYLES, INPUT_STYLES, BUTTON_STYLES, TEXT_STYLES, cn } from '@/domain/types/design-tokens';
 
 type SortDirection = 'asc' | 'desc' | null;
 
@@ -146,17 +147,27 @@ export default function DataTable<T>({
 
   if (loading) {
     return (
-      <div className="w-full bg-white/40 backdrop-blur-xl rounded-3xl border border-[#E8E6DF]/50 p-12 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-10 h-10 text-[#FF5500] animate-spin" />
-        <span className="text-sm font-medium text-gray-400">Loading data...</span>
+      <div className={cn(
+        CARD_STYLES.base,
+        CARD_STYLES.background.subtle,
+        CARD_STYLES.border.default,
+        'w-full rounded-3xl p-12 flex flex-col items-center justify-center gap-4'
+      )}>
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+        <span className={cn(TEXT_STYLES.body.base, 'text-muted-foreground')}>Loading data...</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-[#E8E6DF]/50 overflow-hidden shadow-2xl shadow-black/[0.02] flex flex-col">
+    <div className={cn(
+      CARD_STYLES.base,
+      CARD_STYLES.background.subtle,
+      CARD_STYLES.border.default,
+      'w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/[0.02] dark:shadow-black/20 flex flex-col'
+    )}>
       {/* Table Header / Toolbar */}
-      <div className="p-6 md:p-8 border-b border-[#E8E6DF]/40 space-y-6 flex-shrink-0">
+      <div className="p-6 md:p-8 border-b border-border/40 space-y-6 flex-shrink-0">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 max-w-md w-full">
             <input
@@ -164,13 +175,25 @@ export default function DataTable<T>({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full px-5 py-3 pl-12 rounded-2xl border border-[#E8E6DF]/60 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF5500]/10 focus:border-[#FF5500]/40 transition-all text-sm outline-none"
+              className={cn(
+                INPUT_STYLES.base,
+                INPUT_STYLES.appearance,
+                INPUT_STYLES.focus,
+                INPUT_STYLES.focusColors.primary,
+                INPUT_STYLES.text,
+                'px-5 py-3 pl-12 rounded-2xl'
+              )}
             />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#999]" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
             {actions}
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8E6DF]/60 bg-white/60 text-gray-500 hover:text-[#1c1c1c] hover:bg-white transition-all text-xs font-bold active:scale-95">
+            <button className={cn(
+              BUTTON_STYLES.base,
+              BUTTON_STYLES.variant.secondary,
+              BUTTON_STYLES.size.sm,
+              'flex items-center gap-2 rounded-xl active:scale-95'
+            )}>
               <Filter className="w-4 h-4" />
               <span>Filters</span>
             </button>
@@ -178,21 +201,21 @@ export default function DataTable<T>({
         </div>
 
         {/* Total count */}
-        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+        <div className={cn(TEXT_STYLES.label.small, 'text-muted-foreground')}>
           {sortedAndFilteredData.length} {sortedAndFilteredData.length === 1 ? 'record' : 'records'}
         </div>
       </div>
 
       {/* Table Header Row - Fixed */}
       {sortedAndFilteredData.length > 0 && (
-        <div className="border-b border-[#E8E6DF]/40 flex bg-gray-50/50">
+        <div className="border-b border-border/40 flex bg-muted/30">
           {selectable && (
             <div className="px-6 py-5 flex-shrink-0" style={{ width: '60px' }}>
               <input
                 type="checkbox"
                 checked={sortedAndFilteredData.length > 0 && selectedIds.length === sortedAndFilteredData.length}
                 onChange={handleSelectAll}
-                className="w-4 h-4 rounded border-gray-300 text-[#FF5500] focus:ring-[#FF5500] cursor-pointer"
+                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
               />
             </div>
           )}
@@ -204,13 +227,13 @@ export default function DataTable<T>({
               <div
                 key={i}
                 onClick={() => isSortable && handleSort(i)}
-                className={`
-                  px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]
-                  ${col.className?.includes('flex-') || col.className?.includes('w-') ? '' : 'flex-1'}
-                  ${col.className || ''}
-                  ${isSortable ? 'cursor-pointer hover:text-[#FF5500] transition-colors select-none' : ''}
-                  ${isSorted ? 'text-[#FF5500]' : ''}
-                `}
+                className={cn(
+                  'px-8 py-5 text-[11px] font-black uppercase tracking-[0.2em]',
+                  col.className?.includes('flex-') || col.className?.includes('w-') ? '' : 'flex-1',
+                  col.className || '',
+                  isSortable ? 'cursor-pointer hover:text-primary transition-colors select-none' : '',
+                  isSorted ? 'text-primary' : 'text-muted-foreground'
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span>{col.header}</span>
@@ -231,16 +254,16 @@ export default function DataTable<T>({
       {/* Virtual Scrolling Table Container */}
       <div
         ref={tableContainerRef}
-        className="flex-1 overflow-auto bg-white/40"
+        className="flex-1 overflow-auto bg-card/40"
         style={{ minHeight: '600px', maxHeight: 'calc(100vh - 300px)' }}
       >
         {sortedAndFilteredData.length === 0 ? (
           <div className="px-8 py-24 text-center">
             <div className="flex flex-col items-center gap-4">
-              <div className="text-gray-200">
+              <div className="text-muted-foreground/20">
                 {emptyIcon || <Search className="w-16 h-16" />}
               </div>
-              <p className="text-lg font-serif text-[#1c1c1c]">{emptyMessage}</p>
+              <p className={cn(TEXT_STYLES.heading.h2, 'text-foreground')}>{emptyMessage}</p>
             </div>
           </div>
         ) : (
@@ -270,12 +293,12 @@ export default function DataTable<T>({
                     // Also call custom onRowClick if provided
                     onRowClick?.(item);
                   }}
-                  className={`
-                    group transition-colors duration-300 absolute w-full flex border-b border-[#E8E6DF]/30
-                    hover:bg-[#F5F3ED]/40
-                    ${rowClickable || selectable ? 'cursor-pointer' : ''}
-                    ${isSelected ? 'bg-[#FF5500]/5' : ''}
-                  `}
+                  className={cn(
+                    'group transition-colors duration-300 absolute w-full flex border-b border-border/30',
+                    'hover:bg-muted/40',
+                    rowClickable || selectable ? 'cursor-pointer' : '',
+                    isSelected ? 'bg-primary/5' : ''
+                  )}
                   style={{
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
@@ -288,7 +311,7 @@ export default function DataTable<T>({
                         checked={isSelected}
                         onChange={() => handleSelectOne(itemId)}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 rounded border-gray-300 text-[#FF5500] focus:ring-[#FF5500] cursor-pointer"
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                       />
                     </div>
                   )}

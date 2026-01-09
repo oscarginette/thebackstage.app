@@ -5,6 +5,7 @@ import { FolderOpen, Plus, Trash2, Edit, Users } from 'lucide-react';
 import DataTable from './DataTable';
 import Modal, { ModalBody, ModalFooter } from '../ui/Modal';
 import Toast from '../ui/Toast';
+import { Button } from '@/components/ui/Button';
 import CreateListModal from './CreateListModal';
 import type { ContactListWithStats } from '@/domain/repositories/IContactListRepository';
 
@@ -89,9 +90,9 @@ export default function ContactListsManager() {
             <FolderOpen className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#1c1c1c]">{item.list.name}</div>
+            <div className="text-sm font-semibold text-foreground">{item.list.name}</div>
             {item.list.description && (
-              <div className="text-xs text-gray-500">{item.list.description}</div>
+              <div className="text-xs text-foreground/60">{item.list.description}</div>
             )}
           </div>
         </div>
@@ -102,9 +103,9 @@ export default function ContactListsManager() {
       header: 'Contacts',
       accessor: (item: ContactListWithStats) => (
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-gray-400" />
+          <Users className="w-4 h-4 text-foreground/60" />
           <span className="text-sm font-medium">{item.totalContacts}</span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-foreground/60">
             ({item.subscribedContacts} subscribed)
           </span>
         </div>
@@ -114,7 +115,7 @@ export default function ContactListsManager() {
     {
       header: 'Created',
       accessor: (item: ContactListWithStats) => (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-foreground/60">
           {new Date(item.list.createdAt).toLocaleDateString()}
         </div>
       ),
@@ -131,28 +132,31 @@ export default function ContactListsManager() {
         searchPlaceholder="Search lists..."
         searchFields={(item) => item.list.name}
         emptyMessage="No lists yet. Create your first list to organize your contacts."
-        emptyIcon={<FolderOpen className="w-12 h-12 text-gray-300" />}
+        emptyIcon={<FolderOpen className="w-12 h-12 text-foreground/20" />}
         selectable={true}
         getItemId={(item) => hashStringToNumber(item.list.id)}
         selectedIds={selectedHashes}
         onSelectionChange={setSelectedHashes}
         actions={
           <>
-            <button
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all border border-blue-200 text-xs font-bold active:scale-95"
+              variant="secondary"
+              size="sm"
+              className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
             >
               <Plus className="w-4 h-4" />
               New List
-            </button>
+            </Button>
             {selectedListIds.length > 0 && (
-              <button
+              <Button
                 onClick={() => setShowDeleteModal(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-200 text-xs font-bold active:scale-95"
+                variant="danger"
+                size="sm"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete ({selectedListIds.length})
-              </button>
+              </Button>
             )}
           </>
         }
@@ -178,26 +182,27 @@ export default function ContactListsManager() {
           closeOnBackdropClick={!deleting}
         >
           <ModalBody>
-            <p className="text-gray-700">
+            <p className="text-foreground/80">
               Are you sure you want to delete {selectedListIds.length} list(s)? This action cannot be
               undone.
             </p>
           </ModalBody>
           <ModalFooter>
-            <button
+            <Button
               onClick={() => setShowDeleteModal(false)}
               disabled={deleting}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              variant="secondary"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleDelete}
               disabled={deleting}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              variant="danger"
+              loading={deleting}
             >
               {deleting ? 'Deleting...' : 'Delete'}
-            </button>
+            </Button>
           </ModalFooter>
         </Modal>
       )}

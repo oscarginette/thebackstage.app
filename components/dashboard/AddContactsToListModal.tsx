@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Modal, { ModalBody, ModalFooter } from '../ui/Modal';
 import type { ContactListWithStats } from '@/domain/repositories/IContactListRepository';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/domain/types/design-tokens';
 
 interface AddContactsToListModalProps {
   contactIds: number[];
@@ -77,20 +79,20 @@ export default function AddContactsToListModal({
         <ModalBody>
           <div className="space-y-4">
             {loading ? (
-              <div className="text-sm text-gray-500">Loading lists...</div>
+              <div className="text-sm text-foreground/60">Loading lists...</div>
             ) : lists.length === 0 ? (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-foreground/60">
                 No lists available. Create a list first.
               </div>
             ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-widest text-foreground/60">
                   Select List
                 </label>
                 <select
                   value={selectedListId}
                   onChange={(e) => setSelectedListId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5500] focus:border-[#FF5500]"
+                  className="w-full h-10 px-4 rounded-xl border border-foreground/10 bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all text-sm font-medium text-foreground disabled:bg-foreground/5 disabled:text-foreground/40 disabled:cursor-not-allowed"
                   disabled={adding}
                 >
                   <option value="">-- Select a list --</option>
@@ -104,7 +106,7 @@ export default function AddContactsToListModal({
             )}
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg text-sm text-red-700 dark:text-red-400">
                 {error}
               </div>
             )}
@@ -112,21 +114,23 @@ export default function AddContactsToListModal({
         </ModalBody>
 
         <ModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={adding}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            variant="secondary"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={adding || !selectedListId}
-            className="px-4 py-2 bg-[#FF5500] text-white rounded-lg hover:bg-[#FF5500]/90 disabled:opacity-50"
+            loading={adding}
+            variant="primary"
+            className="bg-accent hover:bg-accent/90"
           >
             {adding ? 'Adding...' : 'Add to List'}
-          </button>
+          </Button>
         </ModalFooter>
       </form>
     </Modal>

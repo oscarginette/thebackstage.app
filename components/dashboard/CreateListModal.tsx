@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Modal, { ModalBody, ModalFooter } from '../ui/Modal';
 import { LIST_COLORS, LIST_COLOR_OPTIONS, ListColor } from '@/domain/types/list-colors';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/domain/types/design-tokens';
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -57,23 +60,18 @@ export default function CreateListModal({ onClose, onSuccess }: CreateListModalP
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                List Name *
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., VIP Fans, Newsletter Subscribers"
-                maxLength={100}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5500] focus:border-[#FF5500]"
-                disabled={creating}
-              />
-            </div>
+            <Input
+              label="List Name *"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., VIP Fans, Newsletter Subscribers"
+              maxLength={100}
+              disabled={creating}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground/60">
                 Description (optional)
               </label>
               <textarea
@@ -82,13 +80,13 @@ export default function CreateListModal({ onClose, onSuccess }: CreateListModalP
                 placeholder="Describe the purpose of this list"
                 rows={3}
                 maxLength={500}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF5500] focus:border-[#FF5500]"
+                className="w-full px-4 py-3 border border-foreground/10 rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/40 transition-all text-sm font-medium text-foreground placeholder:text-foreground/30 disabled:bg-foreground/5 disabled:text-foreground/40 disabled:cursor-not-allowed"
                 disabled={creating}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-widest text-foreground/60 mb-2">
                 Color
               </label>
               <div className="flex gap-3">
@@ -97,9 +95,10 @@ export default function CreateListModal({ onClose, onSuccess }: CreateListModalP
                     key={colorOption}
                     type="button"
                     onClick={() => setColor(colorOption)}
-                    className={`w-10 h-10 rounded-full transition-transform ${
-                      color === colorOption ? 'ring-4 ring-offset-2 ring-gray-300 scale-110' : 'hover:scale-105'
-                    }`}
+                    className={cn(
+                      'w-10 h-10 rounded-full transition-transform',
+                      color === colorOption ? 'ring-4 ring-offset-2 ring-foreground/20 scale-110' : 'hover:scale-105'
+                    )}
                     style={{ backgroundColor: colorOption }}
                     disabled={creating}
                   />
@@ -108,7 +107,7 @@ export default function CreateListModal({ onClose, onSuccess }: CreateListModalP
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg text-sm text-red-700 dark:text-red-400">
                 {error}
               </div>
             )}
@@ -116,21 +115,23 @@ export default function CreateListModal({ onClose, onSuccess }: CreateListModalP
         </ModalBody>
 
         <ModalFooter>
-          <button
+          <Button
             type="button"
             onClick={onClose}
             disabled={creating}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            variant="secondary"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={creating || !name.trim()}
-            className="px-4 py-2 bg-[#FF5500] text-white rounded-lg hover:bg-[#FF5500]/90 disabled:opacity-50"
+            loading={creating}
+            variant="primary"
+            className="bg-accent hover:bg-accent/90"
           >
             {creating ? 'Creating...' : 'Create List'}
-          </button>
+          </Button>
         </ModalFooter>
       </form>
     </Modal>

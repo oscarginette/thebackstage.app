@@ -27,6 +27,8 @@ import { useSession } from 'next-auth/react';
 import { PATHS } from '@/lib/paths';
 import { USER_ROLES } from '@/domain/types/user-roles';
 import { SUBSCRIPTION_PLANS } from '@/domain/types/subscriptions';
+import { Card, CardContent } from '@/components/ui/Card';
+import { LAYOUT_STYLES } from '@/domain/types/design-tokens';
 
 function DashboardContent() {
   const tNav = useTranslations('nav');
@@ -158,11 +160,11 @@ function DashboardContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FDFCF9] font-sans selection:bg-[#FF5500]/10 selection:text-[#FF5500] relative overflow-x-hidden">
+    <main className="min-h-screen bg-background font-sans selection:bg-accent/10 selection:text-accent relative overflow-x-hidden">
       
       {/* Dynamic Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#FF5500]/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-accent/5 blur-[120px] rounded-full animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full animate-pulse delay-700" />
       </div>
 
@@ -177,16 +179,16 @@ function DashboardContent() {
           <div className="flex flex-col items-end gap-2 min-w-[280px]">
             {session?.user && (
               <div className="text-right">
-                <div className="text-xs font-medium text-[#1c1c1c]">{session.user.email}</div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-wide">{session.user.role}</div>
+                <div className="text-xs font-medium text-foreground">{session.user.email}</div>
+                <div className="text-[10px] text-foreground/40 uppercase tracking-wide">{session.user.role}</div>
               </div>
             )}
             <Link
               href={PATHS.SETTINGS}
-              className="group flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/40 border border-[#E8E6DF]/60 hover:border-[#FF5500]/40 hover:bg-white/80 transition-all duration-500 backdrop-blur-md active:scale-95 shadow-sm"
+              className="group flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/40 dark:bg-white/5 border border-border/60 hover:border-accent/40 hover:bg-white/80 dark:hover:bg-white/10 transition-all duration-500 backdrop-blur-md active:scale-95 shadow-sm"
             >
-              <SettingsIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#FF5500] group-hover:rotate-90 transition-all duration-700" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-[#1c1c1c] transition-colors">
+              <SettingsIcon className="w-3.5 h-3.5 text-foreground/40 group-hover:text-accent group-hover:rotate-90 transition-all duration-700" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/50 group-hover:text-foreground transition-colors">
                 Settings
               </span>
             </Link>
@@ -223,19 +225,19 @@ function DashboardContent() {
                 
                 <div className="md:col-span-12 lg:col-span-12 flex flex-col gap-4">
                   <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xl font-serif text-[#1c1c1c] flex items-center gap-2.5">
-                       <div className="w-8 h-8 rounded-xl bg-[#FF5500]/10 flex items-center justify-center text-[#FF5500]">
+                    <h3 className="text-xl font-serif text-foreground flex items-center gap-2.5">
+                       <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
                           <Rocket className="w-4 h-4" />
                        </div>
                        Active Gates
                     </h3>
-                    <Link href={PATHS.DASHBOARD.DOWNLOAD_GATES.NEW} className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1c1c1c] text-white text-xs font-bold hover:bg-black transition-all active:scale-95">
+                    <Link href={PATHS.DASHBOARD.DOWNLOAD_GATES.NEW} className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-xs font-bold hover:bg-foreground/90 transition-all active:scale-95">
                       <Plus className="w-4 h-4" /> Create New
                     </Link>
                   </div>
-                  <div className="bg-white/40 backdrop-blur-2xl border border-[#E8E6DF]/50 rounded-3xl p-6 shadow-xl shadow-black/[0.01]">
+                  <Card padding="md">
                     <CompactGatesList gates={gates} loading={loadingGates} />
-                  </div>
+                  </Card>
                 </div>
 
                 <div className="md:col-span-12 lg:col-span-6 flex flex-col gap-4">
@@ -243,7 +245,7 @@ function DashboardContent() {
                     <ExecutionHistory history={history.slice(0, 5)} />
                     {history.length > 5 && (
                       <div className="mt-4 px-2">
-                        <button onClick={() => setActiveTab('engagement')} className="text-[10px] font-bold text-gray-400 hover:text-[#1c1c1c] transition-colors uppercase tracking-widest">
+                        <button onClick={() => setActiveTab('engagement')} className="text-[10px] font-bold text-foreground/40 hover:text-foreground transition-colors uppercase tracking-widest">
                           View full history →
                         </button>
                       </div>
@@ -266,44 +268,48 @@ function DashboardContent() {
           {/* Other Tabs */}
           {activeTab === 'growth' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/40 backdrop-blur-2xl p-8 rounded-3xl border border-[#E8E6DF]/60 shadow-lg">
-                  <div>
-                    <h2 className="text-2xl font-serif text-[#1c1c1c] mb-1">Growth Engine</h2>
-                    <p className="text-gray-500 text-sm">Create high-converting download gates to grow your audience.</p>
+               <Card padding="lg">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                      <h2 className="text-2xl font-serif text-foreground mb-1">Growth Engine</h2>
+                      <p className="text-foreground/50 text-sm">Create high-converting download gates to grow your audience.</p>
+                    </div>
+                    <Link
+                      href={PATHS.DASHBOARD.DOWNLOAD_GATES.NEW}
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white hover:bg-accent/90 transition-all shadow-lg shadow-accent/10 font-bold active:scale-95 text-sm"
+                    >
+                      <Plus className="w-4 h-4 border-2 border-white/30 rounded-md" />
+                      New Download Gate
+                    </Link>
                   </div>
-                  <Link
-                    href={PATHS.DASHBOARD.DOWNLOAD_GATES.NEW}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FF5500] text-white hover:bg-[#e64d00] transition-all shadow-lg shadow-[#FF5500]/10 font-bold active:scale-95 text-sm"
-                  >
-                    <Plus className="w-4 h-4 border-2 border-white/30 rounded-md" />
-                    New Download Gate
-                  </Link>
-               </div>
+               </Card>
                <DownloadGatesList />
             </div>
           )}
 
           {activeTab === 'engagement' && (
             <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/40 backdrop-blur-2xl p-8 rounded-3xl border border-[#E8E6DF]/60 shadow-lg">
-                  <div>
-                    <h2 className="text-2xl font-serif text-[#1c1c1c] mb-1">Engagement Center</h2>
-                    <p className="text-gray-500 text-sm">Nurture your fan community with personalized email campaigns.</p>
+               <Card padding="lg">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                      <h2 className="text-2xl font-serif text-foreground mb-1">Engagement Center</h2>
+                      <p className="text-foreground/50 text-sm">Nurture your fan community with personalized email campaigns.</p>
+                    </div>
+                    <button
+                      onClick={() => handleProtectedAction(() => setShowEmailEditor(true))}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all shadow-lg font-bold active:scale-95 text-sm ${
+                        !hasAccess
+                          ? 'bg-foreground/20 text-foreground/40 cursor-not-allowed shadow-black/5'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/10'
+                      }`}
+                      disabled={!hasAccess}
+                      title={!hasAccess ? 'Upgrade your plan to send emails' : ''}
+                    >
+                      <Mail className="w-4 h-4 border-2 border-white/30 rounded-md" />
+                      {!hasAccess ? 'Upgrade to Send Emails' : 'Send Custom Email'}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleProtectedAction(() => setShowEmailEditor(true))}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all shadow-lg font-bold active:scale-95 text-sm ${
-                      !hasAccess
-                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed shadow-gray-400/10'
-                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/10'
-                    }`}
-                    disabled={!hasAccess}
-                    title={!hasAccess ? 'Upgrade your plan to send emails' : ''}
-                  >
-                    <Mail className="w-4 h-4 border-2 border-white/30 rounded-md" />
-                    {!hasAccess ? 'Upgrade to Send Emails' : 'Send Custom Email'}
-                  </button>
-               </div>
+               </Card>
                
                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   <section className="lg:col-span-8 flex flex-col gap-6">
@@ -388,10 +394,10 @@ function DashboardContent() {
               {/* User Management */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                  <h3 className="text-2xl font-serif text-[#1c1c1c]">User Management</h3>
+                  <h3 className="text-2xl font-serif text-foreground">User Management</h3>
                   <button
                     onClick={fetchAdminUsers}
-                    className="px-4 py-2 bg-[#1c1c1c] text-white rounded-xl hover:bg-black transition-all active:scale-95 flex items-center gap-2 text-sm font-bold shadow-lg shadow-black/5"
+                    className="px-4 py-2 bg-foreground text-background rounded-xl hover:bg-foreground/90 transition-all active:scale-95 flex items-center gap-2 text-sm font-bold shadow-lg shadow-black/5"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -460,8 +466,8 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#FDFCF9] flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-[#E8E6DF] border-t-[#FF5500] animate-spin"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin"></div>
       </div>
     }>
       <DashboardContent />

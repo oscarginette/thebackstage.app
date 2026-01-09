@@ -5,6 +5,7 @@ import { DownloadGate } from '@/types/download-gates';
 import { BarChart2, Eye, Download, Users, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import DataTable from './DataTable';
+import { Button } from '@/components/ui/Button';
 import { useTranslations } from '@/lib/i18n/context';
 
 export default function DownloadGatesList() {
@@ -51,13 +52,13 @@ export default function DownloadGatesList() {
           {gate.artworkUrl ? (
             <img src={gate.artworkUrl} alt={gate.title} className="w-10 h-10 rounded-xl object-cover shadow-sm" />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-[#F5F3ED] flex items-center justify-center">
-              <BarChart2 className="w-5 h-5 text-[#CCC]" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <BarChart2 className="w-5 h-5 text-foreground/20" />
             </div>
           )}
           <div>
-            <div className="text-sm font-bold text-[#1c1c1c]">{gate.title}</div>
-            <div className="text-[10px] font-mono text-gray-400">/gate/{gate.slug}</div>
+            <div className="text-sm font-bold text-foreground">{gate.title}</div>
+            <div className="text-[10px] font-mono text-foreground/60">/gate/{gate.slug}</div>
           </div>
         </div>
       ),
@@ -69,13 +70,13 @@ export default function DownloadGatesList() {
       accessor: (gate: DownloadGate) => (
         <div className="flex items-center gap-4">
           <div className="flex flex-col text-center">
-            <span className="text-xs font-bold text-[#1c1c1c]">{gate.stats.views.toLocaleString()}</span>
-            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{t('views')}</span>
+            <span className="text-xs font-bold text-foreground">{gate.stats.views.toLocaleString()}</span>
+            <span className="text-[9px] text-foreground/60 font-bold uppercase tracking-widest">{t('views')}</span>
           </div>
-          <div className="w-px h-6 bg-[#E8E6DF]/50" />
+          <div className="w-px h-6 bg-border" />
           <div className="flex flex-col text-center">
-            <span className="text-xs font-bold text-[#1c1c1c]">{gate.stats.downloads.toLocaleString()}</span>
-            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{t('downloads')}</span>
+            <span className="text-xs font-bold text-foreground">{gate.stats.downloads.toLocaleString()}</span>
+            <span className="text-[9px] text-foreground/60 font-bold uppercase tracking-widest">{t('downloads')}</span>
           </div>
         </div>
       ),
@@ -90,8 +91,8 @@ export default function DownloadGatesList() {
             <Users className="w-4 h-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-black text-[#1c1c1c]">{gate.stats.submissions.toLocaleString()}</span>
-            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{t('capturedEmails')}</span>
+            <span className="text-sm font-black text-foreground">{gate.stats.submissions.toLocaleString()}</span>
+            <span className="text-[9px] text-foreground/60 font-bold uppercase tracking-widest">{t('capturedEmails')}</span>
           </div>
         </div>
       ),
@@ -103,11 +104,11 @@ export default function DownloadGatesList() {
       accessor: (gate: DownloadGate) => (
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs font-bold text-[#1c1c1c]">{gate.stats.conversionRate}%</span>
+            <span className="text-xs font-bold text-foreground">{gate.stats.conversionRate}%</span>
           </div>
-          <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#FF5500] rounded-full transition-all duration-1000"
+              className="h-full bg-primary rounded-full transition-all duration-1000"
               style={{ width: `${Math.min(gate.stats.conversionRate, 100)}%` }}
             />
           </div>
@@ -136,28 +137,29 @@ export default function DownloadGatesList() {
       className: 'w-48 flex-none text-right',
       accessor: (gate: DownloadGate) => (
         <div className="flex items-center justify-end gap-2">
-          <Link 
+          <Link
             href={`/gate/${gate.slug}`}
             target="_blank"
-            className="p-2 rounded-xl border border-[#E8E6DF]/60 bg-white hover:border-[#1c1c1c]/10 hover:shadow-md transition-all text-gray-400 hover:text-[#1c1c1c]"
+            className="p-2 rounded-xl border border-border bg-background hover:border-border/60 hover:shadow-md transition-all text-foreground/60 hover:text-foreground"
           >
             <ExternalLink className="w-4 h-4" />
           </Link>
-          <Link
-            href={`/dashboard/download-gates/${gate.id}`}
-            className="px-4 py-2 rounded-xl bg-[#1c1c1c] text-white text-[11px] font-bold hover:bg-black transition-all active:scale-95 shadow-lg"
-          >
-            {t('manage')}
+          <Link href={`/dashboard/download-gates/${gate.id}`}>
+            <Button variant="primary" size="xs">
+              {t('manage')}
+            </Button>
           </Link>
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               deleteGate(gate.id);
             }}
-            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+            variant="ghost"
+            size="sm"
+            className="text-foreground/60 hover:text-red-500 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       ),
     },
