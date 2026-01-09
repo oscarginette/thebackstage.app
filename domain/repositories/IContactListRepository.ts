@@ -105,4 +105,9 @@ export interface IContactListRepository {
    * Get all lists that contain a specific contact
    */
   getListsByContactId(contactId: number, userId: number): Promise<ContactList[]>;
+
+  /**
+   * Get all contacts in a list (full Contact objects)
+   */
+  getContactsByListId(listId: string, userId: number): Promise<import('../entities/Contact').Contact[]>;
 }

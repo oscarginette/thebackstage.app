@@ -13,6 +13,7 @@ import type {
   UpdateContactListInput,
 } from '@/domain/repositories/IContactListRepository';
 import { ContactList } from '@/domain/entities/ContactList';
+import { Contact } from '@/domain/entities/Contact';
 
 export class PostgresContactListRepository implements IContactListRepository {
   /**
@@ -255,5 +256,38 @@ export class PostgresContactListRepository implements IContactListRepository {
     `;
 
     return result.rows.map((row) => ContactList.fromDatabase(row));
+  }
+
+  /**
+   * Get all contacts in a list (full Contact objects)
+   */
+  async getContactsByListId(
+    listId: string,
+    userId: number
+  ): Promise<Contact[]> {
+    // Validate that the list belongs to the user
+    const list = await this.findById(listId, userId);
+    if (!list) {
+      throw new Error('List not found or access denied');
+    }
+
+    const result = await sql`
+      SELECT c.id, c.email, c.unsubscribe_token, c.subscribed, c.name, c.created_at
+      FROM contacts c
+      INNER JOIN contact_list_members clm ON c.id = clm.contact_id
+      WHERE clm.list_id = ${listId} AND c.user_id = ${userId}
+      ORDER BY clm.added_at DESC
+    `;
+
+    return result.rows.map((row) =>
+      Contact.create({
+        id: row.id,
+        email: row.email,
+        unsubscribeToken: row.unsubscribe_token,
+        subscribed: row.subscribed,
+        name: row.name,
+        createdAt: row.created_at,
+      })
+    );
   }
 }
