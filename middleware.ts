@@ -42,9 +42,15 @@ import {
  *
  * Flow:
  * 1. Check if user is authenticated (via NextAuth token)
- * 2. For public routes (/, /login): Redirect authenticated users to /dashboard
- * 3. For API routes: Apply rate limiting
- * 4. Add appropriate headers and continue
+ * 2. For protected routes (/dashboard, /settings): Redirect unauthenticated users to /login
+ * 3. For login page: Redirect authenticated users to /dashboard
+ * 4. For API routes: Apply rate limiting
+ * 5. Add appropriate headers and continue
+ *
+ * Security:
+ * - All /dashboard/* routes require authentication
+ * - All /settings/* routes require authentication
+ * - Unauthenticated access redirects to /login with callbackUrl
  *
  * Performance:
  * - Runs on Vercel Edge (< 50ms latency globally)
@@ -71,6 +77,17 @@ export async function middleware(request: NextRequest) {
   }
 
   const isAuthenticated = !!token;
+
+  // Protected routes that require authentication
+  const protectedRoutes = ['/dashboard', '/settings'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+
+  // Redirect unauthenticated users from protected routes to login
+  if (!isAuthenticated && isProtectedRoute) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
 
   // Redirect authenticated users away from auth pages (login only, not home)
   // Home page (/) should be accessible to everyone (it's the landing page)
@@ -113,11 +130,14 @@ export async function middleware(request: NextRequest) {
  *
  * Pattern breakdown:
  * - /login -> Login page (auth redirect for logged-in users)
+ * - /dashboard/:path* -> All dashboard routes (require authentication)
+ * - /settings/:path* -> All settings routes (require authentication)
  * - /api/:path* -> All API routes and subroutes (rate limiting)
  *
  * PUBLIC ROUTES (not matched, accessible to everyone):
  * - / -> Landing page (public)
  * - /pricing -> Pricing page (public)
+ * - /unsubscribe -> Email unsubscribe page (public)
  * - /_next/static/* -> Next.js static files (handled by CDN)
  * - /_next/image/* -> Next.js image optimization (handled by CDN)
  * - /favicon.ico -> Browser favicon requests
@@ -136,6 +156,14 @@ export const config = {
      */
     '/login',
     /*
+     * Match all dashboard routes (require authentication)
+     */
+    '/dashboard/:path*',
+    /*
+     * Match all settings routes (require authentication)
+     */
+    '/settings/:path*',
+    /*
      * Match all API routes for rate limiting:
      * - /api/auth/signup
      * - /api/emails/send
@@ -151,6 +179,10 @@ export const config = {
  *
  * Auth Redirects:
  * - Home page (/) is PUBLIC - accessible to everyone (landing/marketing)
+ * - /dashboard/* routes are PROTECTED - require authentication
+ * - /settings/* routes are PROTECTED - require authentication
+ * - Unauthenticated users accessing protected routes are redirected to /login
+ * - callbackUrl is preserved so users are redirected back after login
  * - Authenticated users visiting /login are redirected to /dashboard
  * - This prevents the confusing UX where a logged-in user sees the login form
  * - Logout functionality should redirect to / (which is now always accessible)
