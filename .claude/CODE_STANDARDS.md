@@ -427,5 +427,82 @@ Antes de hacer commit, verificar:
 
 ---
 
-*Última actualización: 2025-12-30*
-*Versión: 1.0.0*
+## 🎨 UI/UX Standards (CRITICAL)
+
+### Vertical Spacing Rules
+
+**MANDATORY**: ALL new UI components must follow these spacing patterns.
+
+**Reference**: See `.claude/DESIGN_SYSTEM.md` for complete patterns and examples.
+
+```tsx
+// ✅ Section Spacing (20px between major sections)
+<div className="space-y-5">
+  <SectionHeader />
+  <SectionContent />
+</div>
+
+// ✅ Compact Lists (12px between list items)
+<div className="space-y-3">
+  <ListItem />
+  <ListItem />
+</div>
+
+// ✅ Form Fields (8px within field group)
+<div className="space-y-2">
+  <Label />
+  <Input />
+  <HelperText />
+</div>
+```
+
+### Typography Hierarchy
+
+```tsx
+// Section Title (h2)
+<h2 className="text-base font-serif mb-1">Title</h2>
+
+// Subtitle
+<p className="text-xs text-foreground/50">Subtitle</p>
+
+// Option Label
+<span className="text-sm font-medium">Label</span>
+
+// Description
+<span className="text-[10px] text-foreground/40">Description</span>
+
+// Helper Text
+<p className="text-[10px] text-foreground/40">Helper</p>
+```
+
+### Component Sizing (Compact)
+
+```tsx
+// ✅ Compact Option (checkbox/toggle)
+<div className="py-2.5 px-3">  // NOT p-4, p-6
+
+// ✅ Alert/Banner
+<div className="px-3 py-2">    // NOT p-4
+
+// ✅ Card Container
+<section className="p-6">      // NOT p-8 unless large card
+```
+
+### Pre-Commit Checklist (UI Components)
+
+Before committing ANY UI component, verify:
+
+- [ ] **Section spacing**: `space-y-5` (20px)?
+- [ ] **Item spacing**: `space-y-3` (12px) for lists?
+- [ ] **Typography**: `text-base font-serif` for titles?
+- [ ] **Padding**: Compact (`py-2.5 px-3` for options)?
+- [ ] **Helper text**: `text-[10px] text-foreground/40`?
+- [ ] **Dark mode**: Using semantic CSS variables?
+- [ ] **No hard-coded colors**: Using `text-foreground`, `bg-background`, etc.?
+
+**IMPORTANT**: Read `.claude/DESIGN_SYSTEM.md` before creating ANY new UI component.
+
+---
+
+*Última actualización: 2026-01-10*
+*Versión: 1.1.0*
