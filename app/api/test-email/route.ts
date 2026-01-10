@@ -43,7 +43,7 @@ export async function POST() {
     const testTrack = {
       trackId: `test-${Date.now()}`,
       title: '🧪 Test Track - Email System Check',
-      url: 'https://soundcloud.com/geebeat',
+      url: 'https://soundcloud.com/thebackstage',
       coverImage:
         'https://i1.sndcdn.com/avatars-000000000000-000000-t500x500.jpg',
       publishedAt: new Date().toISOString(),

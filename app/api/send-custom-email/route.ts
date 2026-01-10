@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
  * - subject: string (required) - Email subject
  * - greeting: string (required) - Email greeting (e.g., "Hey mate,")
  * - message: string (required) - Main email message (supports markdown)
- * - signature: string (required) - Email signature (e.g., "Much love,\nGee Beat")
+ * - signature: string (required) - Email signature (e.g., "Much love,\nThe Backstage")
  * - coverImage: string (optional) - URL to cover image
  * - saveAsDraft: boolean (optional, default: false) - Save as draft instead of sending
  * - templateId: string (optional) - ID of template used (if based on template)

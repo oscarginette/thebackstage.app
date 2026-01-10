@@ -84,9 +84,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       userId,           // Numeric ID (e.g., "1318247880")
-      username,         // Username/permalink (e.g., "geebeatmusic")
+      username,         // Username/permalink (e.g., "thebackstagemusic")
       permalink: username, // Alias for clarity
-      profileUrl,       // Full URL (e.g., "https://soundcloud.com/geebeatmusic")
+      profileUrl,       // Full URL (e.g., "https://soundcloud.com/thebackstagemusic")
     });
 
   } catch (error: unknown) {
