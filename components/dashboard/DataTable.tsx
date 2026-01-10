@@ -295,7 +295,7 @@ export default function DataTable<T>({
       {/* Keyboard shortcut hint - Shows when items are selected */}
       {selectable && selectedIds.length > 0 && (
         <div className="px-6 md:px-8 py-3 bg-primary/5 border-b border-border/40 flex items-center justify-between text-sm">
-          <span className={cn(TEXT_STYLES.body.small, 'text-foreground')}>
+          <span className={cn(TEXT_STYLES.body.base, 'text-foreground')}>
             {selectedIds.length} {selectedIds.length === 1 ? 'item' : 'items'} selected
           </span>
           <span className="flex items-center gap-2 text-xs text-foreground/70">

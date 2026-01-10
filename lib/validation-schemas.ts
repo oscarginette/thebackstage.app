@@ -160,11 +160,13 @@ export type SubmitDownloadGateInput = z.infer<typeof SubmitDownloadGateSchema>;
 export const CreateEmailTemplateSchema = z.object({
   name: z.string().min(1, 'Template name is required').max(200, 'Name too long'),
   description: z.string().max(1000, 'Description too long').optional(),
-  subject: z.string().min(1, 'Subject is required').max(500, 'Subject too long'),
-  htmlContent: z.string().min(1, 'HTML content is required'),
-  jsonContent: z.record(z.string(), z.any()).optional(),
-  isPublic: z.boolean().default(false),
-  category: z.string().max(50, 'Category too long').optional(),
+  mjmlContent: z.record(z.string(), z.any()).refine(
+    (val) => val.tagName === 'mjml',
+    { message: 'MJML content must have root tagName "mjml"' }
+  ),
+  htmlSnapshot: z.string().min(1, 'HTML snapshot is required'),
+  isDefault: z.boolean().default(false),
+  parentTemplateId: z.string().optional(),
 });
 
 export type CreateEmailTemplateInput = z.infer<typeof CreateEmailTemplateSchema>;
@@ -175,12 +177,13 @@ export type CreateEmailTemplateInput = z.infer<typeof CreateEmailTemplateSchema>
  */
 export const UpdateEmailTemplateSchema = z.object({
   name: z.string().min(1, 'Template name is required').max(200, 'Name too long').optional(),
-  description: z.string().max(1000, 'Description too long').optional(),
-  subject: z.string().min(1, 'Subject is required').max(500, 'Subject too long').optional(),
-  htmlContent: z.string().min(1, 'HTML content is required').optional(),
-  jsonContent: z.record(z.string(), z.any()).optional(),
-  isPublic: z.boolean().optional(),
-  category: z.string().max(50, 'Category too long').optional(),
+  description: z.string().max(1000, 'Description too long').nullable().optional(),
+  mjmlContent: z.record(z.string(), z.any()).refine(
+    (val) => val.tagName === 'mjml',
+    { message: 'MJML content must have root tagName "mjml"' }
+  ).optional(),
+  htmlSnapshot: z.string().min(1, 'HTML snapshot is required').optional(),
+  isDefault: z.boolean().optional(),
 });
 
 export type UpdateEmailTemplateInput = z.infer<typeof UpdateEmailTemplateSchema>;
