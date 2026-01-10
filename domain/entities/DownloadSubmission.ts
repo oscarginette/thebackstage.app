@@ -18,6 +18,8 @@ export interface DownloadSubmissionProps {
   spotifyConnectedAt?: Date | null;
   spotifyFollowCompleted: boolean;
   spotifyFollowCompletedAt?: Date | null;
+  instagramClickTracked: boolean;
+  instagramClickTrackedAt?: Date | null;
   downloadToken?: string | null;
   downloadTokenGeneratedAt?: Date | null;
   downloadTokenExpiresAt?: Date | null;
@@ -60,6 +62,8 @@ export class DownloadSubmission {
   get spotifyConnectedAt(): Date | null | undefined { return this.props.spotifyConnectedAt; }
   get spotifyFollowCompleted(): boolean { return this.props.spotifyFollowCompleted; }
   get spotifyFollowCompletedAt(): Date | null | undefined { return this.props.spotifyFollowCompletedAt; }
+  get instagramClickTracked(): boolean { return this.props.instagramClickTracked; }
+  get instagramClickTrackedAt(): Date | null | undefined { return this.props.instagramClickTrackedAt; }
 
   get downloadToken(): string | null | undefined { return this.props.downloadToken; }
   get downloadTokenGeneratedAt(): Date | null | undefined { return this.props.downloadTokenGeneratedAt; }
@@ -88,6 +92,7 @@ export class DownloadSubmission {
       soundcloudFollowVerified: false,
       spotifyConnected: false,
       spotifyFollowCompleted: false,
+      instagramClickTracked: false,
       downloadCompleted: false,
       createdAt: now,
       updatedAt: now

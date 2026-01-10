@@ -11,6 +11,7 @@ export class UserSettings {
     public readonly soundcloudId: string | null,
     public readonly soundcloudPermalink: string | null,
     public readonly spotifyId: string | null,
+    public readonly instagramUrl: string | null,
     public readonly updatedAt: Date
   ) {}
 
@@ -29,6 +30,13 @@ export class UserSettings {
   }
 
   /**
+   * Check if user has valid Instagram URL configured
+   */
+  hasInstagramUrl(): boolean {
+    return !!this.instagramUrl && this.instagramUrl.trim().length > 0;
+  }
+
+  /**
    * Create a copy with updated fields
    */
   update(updates: Partial<{
@@ -36,6 +44,7 @@ export class UserSettings {
     soundcloudId: string | null;
     soundcloudPermalink: string | null;
     spotifyId: string | null;
+    instagramUrl: string | null;
   }>): UserSettings {
     return new UserSettings(
       this.userId,
@@ -43,6 +52,7 @@ export class UserSettings {
       updates.soundcloudId !== undefined ? updates.soundcloudId : this.soundcloudId,
       updates.soundcloudPermalink !== undefined ? updates.soundcloudPermalink : this.soundcloudPermalink,
       updates.spotifyId !== undefined ? updates.spotifyId : this.spotifyId,
+      updates.instagramUrl !== undefined ? updates.instagramUrl : this.instagramUrl,
       new Date()
     );
   }
@@ -57,8 +67,10 @@ export class UserSettings {
       soundcloudId: this.soundcloudId,
       soundcloudPermalink: this.soundcloudPermalink,
       spotifyId: this.spotifyId,
+      instagramUrl: this.instagramUrl,
       hasSoundCloudId: this.hasSoundCloudId(),
       hasSpotifyId: this.hasSpotifyId(),
+      hasInstagramUrl: this.hasInstagramUrl(),
       updatedAt: this.updatedAt.toISOString()
     };
   }

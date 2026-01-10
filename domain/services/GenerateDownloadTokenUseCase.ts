@@ -188,6 +188,14 @@ export class GenerateDownloadTokenUseCase {
       };
     }
 
+    // Check Instagram click if required
+    if (gate.require_instagram_follow && !submission.instagramClickTracked) {
+      return {
+        complete: false,
+        error: 'Instagram follow required',
+      };
+    }
+
     return { complete: true };
   }
 

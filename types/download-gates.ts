@@ -15,6 +15,8 @@ export interface DownloadGate {
   requireEmail: boolean;
   requireSoundcloudRepost: boolean;
   requireSoundcloudFollow: boolean;
+  requireInstagramFollow: boolean;
+  instagramProfileUrl: string | null;
   requireSpotifyConnect: boolean;
   active: boolean;
   maxDownloads: number | null;
@@ -67,6 +69,8 @@ export interface DownloadSubmission {
   emailVerified: boolean;
   soundcloudRepostVerified: boolean;
   soundcloudFollowVerified: boolean;
+  instagramClickTracked: boolean;
+  instagramClickTrackedAt: string | null;
   spotifyConnected: boolean;
   downloadCompleted: boolean;
   downloadCompletedAt: string | null;
@@ -87,6 +91,8 @@ export interface CreateGateFormData {
   fileType: string;
   requireSoundcloudRepost: boolean;
   requireSoundcloudFollow: boolean;
+  requireInstagramFollow: boolean;
+  instagramProfileUrl: string;
   requireSpotifyConnect: boolean;
   maxDownloads?: number;
   expiresAt?: string;

@@ -1,7 +1,7 @@
 /**
  * GetUserEmailSignatureUseCase
  *
- * Retrieves user's email signature with fallback to Gee Beat default.
+ * Retrieves user's email signature with fallback to The Backstage default.
  */
 
 import { IEmailSignatureRepository } from '@/domain/repositories/IEmailSignatureRepository';
@@ -13,7 +13,7 @@ export class GetUserEmailSignatureUseCase {
   async execute(userId: number): Promise<EmailSignature> {
     const signature = await this.signatureRepository.findByUserId(userId);
 
-    // Fallback to Gee Beat default if no custom signature
+    // Fallback to The Backstage default if no custom signature
     if (!signature) {
       return EmailSignature.createGeeBeatDefault();
     }

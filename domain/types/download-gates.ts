@@ -32,6 +32,8 @@ export interface CreateGateInput {
   requireSoundcloudRepost?: boolean;
   requireSoundcloudFollow?: boolean;
   requireSpotifyConnect?: boolean;
+  requireInstagramFollow?: boolean;
+  instagramProfileUrl?: string;
   active?: boolean;
   maxDownloads?: number;
   expiresAt?: Date;
@@ -67,6 +69,7 @@ export interface VerificationStatusUpdate {
   soundcloudRepostVerified?: boolean;
   soundcloudFollowVerified?: boolean;
   spotifyConnected?: boolean;
+  instagramClickTracked?: boolean;
 }
 
 /**

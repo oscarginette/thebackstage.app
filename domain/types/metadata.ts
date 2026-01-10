@@ -17,6 +17,19 @@
  * Used for import tracking, custom fields, and GDPR compliance.
  */
 export interface ContactMetadata {
+  /** Contact types (e.g., ['fan'], ['dj'], or ['fan', 'dj']) */
+  types?: string[];
+
+  /** DJ-specific metadata (only for DJ contacts) */
+  djMetadata?: {
+    emailSource: string;
+    genres?: string[];
+    platforms?: string[];
+    location?: string;
+    followersCount?: number;
+    notes?: string;
+  };
+
   /** Import source identifier (e.g., 'brevo', 'csv_import', 'manual') */
   source?: string;
 

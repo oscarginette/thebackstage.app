@@ -15,7 +15,7 @@ export interface EmailSignatureData {
   logoUrl: string | null; // User's logo URL (stored in Cloudinary)
   customText: string | null; // Optional signature text (e.g., "Thanks, John")
   socialLinks: SocialLink[]; // Array of social links
-  defaultToGeeBeat: boolean; // Fallback to Gee Beat branding if no custom signature
+  defaultToGeeBeat: boolean; // Fallback to The Backstage branding if no custom signature
 }
 
 export class EmailSignature {
@@ -88,12 +88,12 @@ export class EmailSignature {
         },
         {
           platform: 'instagram',
-          url: 'https://instagram.com/gee_beat',
+          url: 'https://instagram.com/thebackstage.app',
           label: 'Instagram',
         },
         {
           platform: 'bandcamp',
-          url: 'https://geebeat.bandcamp.com',
+          url: 'https://thebackstage.bandcamp.com',
           label: 'Bandcamp',
         },
       ],

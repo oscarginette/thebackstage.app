@@ -11,6 +11,7 @@ export interface UpdateUserSettingsInput {
   soundcloudId?: string | null;
   soundcloudPermalink?: string | null;
   spotifyId?: string | null;
+  instagramUrl?: string | null;
 }
 
 export interface IUserSettingsRepository {

@@ -13,4 +13,5 @@ export interface IDownloadGateRepository {
   getDownloadCount(gateId: string): Promise<number>;
   incrementViewCount(gateId: string): Promise<void>;
   isSlugAvailable(slug: string, excludeGateId?: string): Promise<boolean>;
+  findByIdPublic(gateId: string): Promise<DownloadGate | null>;
 }
