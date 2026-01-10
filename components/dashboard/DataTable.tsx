@@ -37,6 +37,8 @@ interface DataTableProps<T> {
   filterPredicates?: Record<string, (item: T, value: string | string[]) => boolean>;
   initialFilters?: ActiveFilters;
   onFilterChange?: (filters: ActiveFilters) => void;
+  // Auto-scroll props
+  autoScrollOnRowClick?: boolean;
 }
 
 export default function DataTable<T>({
@@ -58,13 +60,16 @@ export default function DataTable<T>({
   filterPredicates = {},
   initialFilters = {},
   onFilterChange,
+  autoScrollOnRowClick = false,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColumnIndex, setSortColumnIndex] = useState<number | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>(initialFilters);
   const [announcement, setAnnouncement] = useState('');
+  const [hasScrolled, setHasScrolled] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const tableWrapperRef = useRef<HTMLDivElement>(null);
 
   const handleSort = (columnIndex: number) => {
     const column = columns[columnIndex];
@@ -224,6 +229,18 @@ export default function DataTable<T>({
     );
   };
 
+  const handleAutoScroll = () => {
+    if (!autoScrollOnRowClick || hasScrolled) return;
+
+    if (tableWrapperRef.current) {
+      tableWrapperRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      setHasScrolled(true);
+    }
+  };
+
   const rowVirtualizer = useVirtualizer({
     count: sortedAndFilteredData.length,
     getScrollElement: () => tableContainerRef.current,
@@ -246,12 +263,15 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className={cn(
-      CARD_STYLES.base,
-      CARD_STYLES.background.subtle,
-      CARD_STYLES.border.default,
-      'w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/[0.02] dark:shadow-black/20 flex flex-col'
-    )}>
+    <div
+      ref={tableWrapperRef}
+      className={cn(
+        CARD_STYLES.base,
+        CARD_STYLES.background.subtle,
+        CARD_STYLES.border.default,
+        'w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/[0.02] dark:shadow-black/20 flex flex-col'
+      )}
+    >
       {/* Table Header / Toolbar */}
       <div className="p-6 md:p-8 border-b border-border/40 space-y-6 flex-shrink-0">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -384,6 +404,9 @@ export default function DataTable<T>({
                 <div
                   key={virtualRow.index}
                   onClick={(e) => {
+                    // Auto-scroll table into view on first click
+                    handleAutoScroll();
+
                     // If selectable, toggle selection when clicking anywhere on the row except buttons
                     if (selectable && getItemId) {
                       const target = e.target as HTMLElement;

@@ -282,6 +282,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
         getItemId={(c) => c.id}
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
+        autoScrollOnRowClick={true}
         filters={CONTACT_FILTERS}
         filterPredicates={filterPredicates}
         actions={

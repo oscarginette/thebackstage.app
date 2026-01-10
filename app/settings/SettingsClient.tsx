@@ -8,6 +8,7 @@ import { useTranslations } from "@/lib/i18n/context";
 import { signOut } from "next-auth/react";
 import BrevoIntegration from "./BrevoIntegration";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { NotificationPreferencesSection } from "./NotificationPreferencesSection";
 import { PATHS } from '@/lib/paths';
 
 interface SettingsClientProps {
@@ -202,6 +203,16 @@ export default function SettingsClient({
             </div>
 
             <ThemeSwitcher />
+          </motion.section>
+
+          {/* Section: Email Notifications - Full Width */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.175 }}
+            className="bg-white/90 dark:bg-[#0A0A0A] backdrop-blur-md border border-black/5 dark:border-white/10 rounded-2xl p-6 shadow-sm"
+          >
+            <NotificationPreferencesSection />
           </motion.section>
 
           {/* Section: Platform Connections - Full Width */}
