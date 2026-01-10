@@ -21,7 +21,7 @@ export class ResendEmailProvider implements IEmailProvider {
 
       // Build email payload
       const emailPayload: any = {
-        from: params.from || `Gee Beat <${env.SENDER_EMAIL}>`,
+        from: params.from || `The Backstage <${env.SENDER_EMAIL}>`,
         to: params.to,
         subject: params.subject,
         html: params.html,

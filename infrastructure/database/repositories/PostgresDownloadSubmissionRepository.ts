@@ -142,6 +142,8 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
       const soundcloudFollowVerifiedAt = updates.soundcloudFollowVerified ? now : undefined;
       const spotifyConnected = updates.spotifyConnected;
       const spotifyConnectedAt = updates.spotifyConnected ? now : undefined;
+      const instagramClickTracked = updates.instagramClickTracked;
+      const instagramClickTrackedAt = updates.instagramClickTracked ? now : undefined;
 
       // Use COALESCE to update only provided fields
       // Vercel Postgres template literal syntax
@@ -155,6 +157,8 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
           soundcloud_follow_verified_at = COALESCE(${soundcloudFollowVerifiedAt}, soundcloud_follow_verified_at),
           spotify_connected = COALESCE(${spotifyConnected}, spotify_connected),
           spotify_connected_at = COALESCE(${spotifyConnectedAt}, spotify_connected_at),
+          instagram_click_tracked = COALESCE(${instagramClickTracked}, instagram_click_tracked),
+          instagram_click_tracked_at = COALESCE(${instagramClickTrackedAt}, instagram_click_tracked_at),
           updated_at = ${now}
         WHERE id = ${id}
         RETURNING *
@@ -311,6 +315,8 @@ export class PostgresDownloadSubmissionRepository implements IDownloadSubmission
       spotifyConnectedAt: row.spotify_connected_at ? new Date(row.spotify_connected_at) : null,
       spotifyFollowCompleted: row.spotify_follow_completed ?? false,
       spotifyFollowCompletedAt: row.spotify_follow_completed_at ? new Date(row.spotify_follow_completed_at) : null,
+      instagramClickTracked: row.instagram_click_tracked ?? false,
+      instagramClickTrackedAt: row.instagram_click_tracked_at ? new Date(row.instagram_click_tracked_at) : null,
       downloadToken: row.download_token,
       downloadTokenGeneratedAt: row.download_token_generated_at ? new Date(row.download_token_generated_at) : null,
       downloadTokenExpiresAt: row.download_token_expires_at ? new Date(row.download_token_expires_at) : null,

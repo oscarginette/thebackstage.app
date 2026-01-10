@@ -14,6 +14,9 @@ import { PostgresSubscriptionRepository } from './PostgresSubscriptionRepository
 import { PostgresInvoiceRepository } from './PostgresInvoiceRepository';
 import { PostgresBrevoIntegrationRepository } from './PostgresBrevoIntegrationRepository';
 import { PostgresBrevoImportHistoryRepository } from './PostgresBrevoImportHistoryRepository';
+import { PostgresDemoRepository } from './PostgresDemoRepository';
+import { PostgresDemoSendRepository } from './PostgresDemoSendRepository';
+import { PostgresDemoSupportRepository } from './PostgresDemoSupportRepository';
 
 // Singleton instances
 export const trackRepository = new PostgresTrackRepository();
@@ -36,3 +39,8 @@ export const invoiceRepository = new PostgresInvoiceRepository();
 // Brevo integration repositories
 export const brevoIntegrationRepository = new PostgresBrevoIntegrationRepository();
 export const brevoImportHistoryRepository = new PostgresBrevoImportHistoryRepository();
+
+// Demo system repositories
+export const demoRepository = new PostgresDemoRepository();
+export const demoSendRepository = new PostgresDemoSendRepository();
+export const demoSupportRepository = new PostgresDemoSupportRepository();

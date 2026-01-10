@@ -19,6 +19,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
         soundcloud_id,
         soundcloud_permalink,
         spotify_id,
+        instagram_url,
         updated_at
       FROM users
       WHERE id = ${userId}
@@ -37,6 +38,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       row.soundcloud_id,
       row.soundcloud_permalink,
       row.spotify_id,
+      row.instagram_url,
       new Date(row.updated_at)
     );
   }
@@ -50,6 +52,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
     const soundcloudId = input.soundcloudId !== undefined ? input.soundcloudId : current.soundcloudId;
     const soundcloudPermalink = input.soundcloudPermalink !== undefined ? input.soundcloudPermalink : current.soundcloudPermalink;
     const spotifyId = input.spotifyId !== undefined ? input.spotifyId : current.spotifyId;
+    const instagramUrl = input.instagramUrl !== undefined ? input.instagramUrl : current.instagramUrl;
 
     // Update all fields explicitly using Vercel Postgres template literal syntax
     const result = await sql`
@@ -59,9 +62,10 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
         soundcloud_id = ${soundcloudId},
         soundcloud_permalink = ${soundcloudPermalink},
         spotify_id = ${spotifyId},
+        instagram_url = ${instagramUrl},
         updated_at = NOW()
       WHERE id = ${userId}
-      RETURNING id, name, soundcloud_id, soundcloud_permalink, spotify_id, updated_at
+      RETURNING id, name, soundcloud_id, soundcloud_permalink, spotify_id, instagram_url, updated_at
     `;
 
     if (result.rows.length === 0) {
@@ -76,6 +80,7 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       row.soundcloud_id,
       row.soundcloud_permalink,
       row.spotify_id,
+      row.instagram_url,
       new Date(row.updated_at)
     );
   }

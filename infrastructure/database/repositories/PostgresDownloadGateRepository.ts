@@ -45,6 +45,8 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
           require_soundcloud_repost,
           require_soundcloud_follow,
           require_spotify_connect,
+          require_instagram_follow,
+          instagram_profile_url,
           active,
           max_downloads,
           expires_at,
@@ -69,6 +71,8 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
           ${input.requireSoundcloudRepost ?? false},
           ${input.requireSoundcloudFollow ?? false},
           ${input.requireSpotifyConnect ?? false},
+          ${input.requireInstagramFollow ?? false},
+          ${input.instagramProfileUrl || null},
           ${input.active ?? true},
           ${input.maxDownloads ?? null},
           ${expiresAt},
@@ -156,6 +160,8 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
           require_soundcloud_repost = COALESCE(${input.requireSoundcloudRepost}, require_soundcloud_repost),
           require_soundcloud_follow = COALESCE(${input.requireSoundcloudFollow}, require_soundcloud_follow),
           require_spotify_connect = COALESCE(${input.requireSpotifyConnect}, require_spotify_connect),
+          require_instagram_follow = COALESCE(${input.requireInstagramFollow}, require_instagram_follow),
+          instagram_profile_url = COALESCE(${input.instagramProfileUrl}, instagram_profile_url),
           active = COALESCE(${input.active}, active),
           max_downloads = COALESCE(${input.maxDownloads}, max_downloads),
           expires_at = COALESCE(${input.expiresAt}, expires_at),
@@ -286,6 +292,29 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
   }
 
   /**
+   * Find gate by ID without userId validation
+   * Used for public operations (submissions, OAuth callbacks, click tracking)
+   * @param gateId - Gate UUID
+   * @returns Gate or null if not found
+   */
+  async findByIdPublic(gateId: string): Promise<DownloadGate | null> {
+    try {
+      const result = await sql`
+        SELECT * FROM download_gates
+        WHERE id = ${gateId}
+        LIMIT 1
+      `;
+
+      return result.rows.length > 0
+        ? this.mapToEntity(result.rows[0])
+        : null;
+    } catch (error) {
+      console.error('PostgresDownloadGateRepository.findByIdPublic error:', error);
+      return null;
+    }
+  }
+
+  /**
    * Map database row to DownloadGate entity
    * Converts snake_case to camelCase and handles null values
    */
@@ -309,6 +338,8 @@ export class PostgresDownloadGateRepository implements IDownloadGateRepository {
       requireSoundcloudRepost: row.require_soundcloud_repost,
       requireSoundcloudFollow: row.require_soundcloud_follow,
       requireSpotifyConnect: row.require_spotify_connect,
+      requireInstagramFollow: row.require_instagram_follow ?? false,
+      instagramProfileUrl: row.instagram_profile_url ?? null,
       active: row.active,
       maxDownloads: row.max_downloads ?? null,
       expiresAt: row.expires_at ? new Date(row.expires_at) : null,
