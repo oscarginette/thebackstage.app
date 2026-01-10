@@ -55,6 +55,7 @@ import { PostgresInvoiceRepository } from '@/infrastructure/database/repositorie
 import { PostgresBrevoIntegrationRepository } from '@/infrastructure/database/repositories/PostgresBrevoIntegrationRepository';
 import { PostgresBrevoImportHistoryRepository } from '@/infrastructure/database/repositories/PostgresBrevoImportHistoryRepository';
 import { PostgresSavedReleasesRepository } from '@/infrastructure/database/repositories/PostgresSavedReleasesRepository';
+import { PostgresUserNotificationPreferencesRepository } from '@/infrastructure/database/repositories/PostgresUserNotificationPreferencesRepository';
 
 // ============================================================================
 // Repository Interface Imports
@@ -89,6 +90,7 @@ import type { IInvoiceRepository } from '@/domain/repositories/IInvoiceRepositor
 import type { IBrevoIntegrationRepository } from '@/domain/repositories/IBrevoIntegrationRepository';
 import type { IBrevoImportHistoryRepository } from '@/domain/repositories/IBrevoImportHistoryRepository';
 import type { ISavedReleasesRepository } from '@/domain/repositories/ISavedReleasesRepository';
+import type { IUserNotificationPreferencesRepository } from '@/domain/repositories/IUserNotificationPreferencesRepository';
 
 // ============================================================================
 // Provider Imports
@@ -192,6 +194,8 @@ import { GetBrevoImportHistoryUseCase } from '@/domain/services/GetBrevoImportHi
 import { GetAllUsersUseCase } from '@/domain/services/admin/GetAllUsersUseCase';
 import { ToggleUserActiveUseCase } from '@/domain/services/admin/ToggleUserActiveUseCase';
 import { UpdateUserQuotaUseCase } from '@/domain/services/admin/UpdateUserQuotaUseCase';
+import { GetUserNotificationPreferencesUseCase } from '@/domain/services/GetUserNotificationPreferencesUseCase';
+import { UpdateUserNotificationPreferencesUseCase } from '@/domain/services/UpdateUserNotificationPreferencesUseCase';
 
 // ============================================================================
 // Infrastructure Imports
@@ -335,6 +339,10 @@ export class RepositoryFactory {
 
   static createSavedReleasesRepository(): ISavedReleasesRepository {
     return new PostgresSavedReleasesRepository();
+  }
+
+  static createUserNotificationPreferencesRepository(): IUserNotificationPreferencesRepository {
+    return new PostgresUserNotificationPreferencesRepository();
   }
 
   static createMusicPlatformRepository(platform: 'soundcloud' | 'spotify'): IMusicPlatformRepository {
@@ -1080,6 +1088,22 @@ export class UseCaseFactory {
   static createUpdateUserQuotaUseCase(): UpdateUserQuotaUseCase {
     return new UpdateUserQuotaUseCase(
       RepositoryFactory.createUserRepository()
+    );
+  }
+
+  // ============================================================================
+  // Notification Preferences Use Cases
+  // ============================================================================
+
+  static createGetUserNotificationPreferencesUseCase(): GetUserNotificationPreferencesUseCase {
+    return new GetUserNotificationPreferencesUseCase(
+      RepositoryFactory.createUserNotificationPreferencesRepository()
+    );
+  }
+
+  static createUpdateUserNotificationPreferencesUseCase(): UpdateUserNotificationPreferencesUseCase {
+    return new UpdateUserNotificationPreferencesUseCase(
+      RepositoryFactory.createUserNotificationPreferencesRepository()
     );
   }
 }
