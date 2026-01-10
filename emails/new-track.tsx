@@ -43,7 +43,7 @@ export default function NewTrackEmail({
   // Default content
   const greeting = customContent?.greeting || 'Hey mate,';
   const message = customContent?.message || `This is my new track **${trackName}** and it's now on Soundcloud!`;
-  const signatureLines = (customContent?.signature || 'Much love,\nGee Beat').split('\n');
+  const signatureLines = (customContent?.signature || 'Much love,\nThe Backstage').split('\n');
 
   // Parse message for bold text (**text**)
   const parseMessage = (text: string) => {

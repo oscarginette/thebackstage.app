@@ -49,7 +49,7 @@ export default function CustomEmail({
   return (
     <Html>
       <Head />
-      <Preview>{greeting || 'Email from Gee Beat'}</Preview>
+      <Preview>{greeting || 'Email from The Backstage'}</Preview>
       <Body style={main}>
         <Container style={container}>
           {/* Content - Only show if greeting or message exist */}

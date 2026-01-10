@@ -275,7 +275,7 @@ body:
                       text-valign: top
                       width: 100%
                       valign: top
-                  content: '<p>Much love,<br><br>Gee Beat</p>'
+                  content: '<p>Much love,<br><br>The Backstage</p>'
           dist: '12'
           gutter: 0px
   layout:
