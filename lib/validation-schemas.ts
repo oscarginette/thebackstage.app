@@ -106,6 +106,8 @@ export const CreateDownloadGateSchema = z.object({
   collectName: z.boolean().default(false),
   requireSoundcloudRepost: z.boolean().default(false),
   requireSoundcloudFollow: z.boolean().default(false),
+  requireInstagramFollow: z.boolean().default(false),
+  instagramProfileUrl: z.string().url('Invalid Instagram URL').optional(),
   requireSpotifyConnect: z.boolean().default(false),
   soundcloudTrackId: z.string().optional(),
   customMessage: z.string().max(1000, 'Custom message too long').optional(),
@@ -129,6 +131,8 @@ export const UpdateDownloadGateSchema = z.object({
   collectName: z.boolean().optional(),
   requireSoundcloudRepost: z.boolean().optional(),
   requireSoundcloudFollow: z.boolean().optional(),
+  requireInstagramFollow: z.boolean().optional(),
+  instagramProfileUrl: z.string().url('Invalid Instagram URL').optional(),
   requireSpotifyConnect: z.boolean().optional(),
   soundcloudTrackId: z.string().optional(),
   customMessage: z.string().max(1000, 'Custom message too long').optional(),
@@ -221,6 +225,7 @@ export const UpdateUserSettingsSchema = z.object({
   soundcloudUrl: z.string().max(500, 'SoundCloud URL too long').nullable().optional(),
   spotifyId: z.string().max(100, 'Spotify ID too long').nullable().optional(),
   spotifyUrl: z.string().max(500, 'Spotify URL too long').nullable().optional(),
+  instagramUrl: z.string().url('Invalid Instagram URL').max(500, 'Instagram URL too long').nullable().optional(),
 });
 
 export type UpdateUserSettingsInput = z.infer<typeof UpdateUserSettingsSchema>;
@@ -267,6 +272,89 @@ export const ConnectBrevoSchema = z.object({
 });
 
 export type ConnectBrevoInput = z.infer<typeof ConnectBrevoSchema>;
+
+// ============================================================================
+// Demos
+// ============================================================================
+
+/**
+ * Schema for POST /api/demos
+ * Creates a new demo
+ */
+export const CreateDemoSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+  artistName: z.string().min(1, 'Artist name is required').max(200, 'Artist name too long'),
+  fileUrl: z.string().url('Invalid file URL'),
+  genre: z.string().max(100, 'Genre too long').optional(),
+  bpm: z.number().int().min(1).max(999).optional(),
+  key: z.string().max(10, 'Key too long').optional(),
+  releaseDate: z.string().optional(),
+  label: z.string().max(200, 'Label too long').optional(),
+  notes: z.string().optional(),
+});
+
+export type CreateDemoInput = z.infer<typeof CreateDemoSchema>;
+
+/**
+ * Schema for PATCH /api/demos/[demoId]
+ * Updates an existing demo
+ */
+export const UpdateDemoSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long').optional(),
+  artistName: z.string().min(1, 'Artist name is required').max(200, 'Artist name too long').optional(),
+  fileUrl: z.string().url('Invalid file URL').optional(),
+  genre: z.string().max(100, 'Genre too long').optional(),
+  bpm: z.number().int().min(1).max(999).optional(),
+  key: z.string().max(10, 'Key too long').optional(),
+  releaseDate: z.string().optional(),
+  label: z.string().max(200, 'Label too long').optional(),
+  notes: z.string().optional(),
+  active: z.boolean().optional(),
+});
+
+export type UpdateDemoInput = z.infer<typeof UpdateDemoSchema>;
+
+/**
+ * Schema for POST /api/demos/[demoId]/send
+ * Sends demo to DJ contacts
+ */
+export const SendDemoSchema = z.object({
+  contactIds: z.array(z.number().int().positive('Invalid contact ID')).min(1, 'At least one contact is required'),
+  emailSubject: z.string().min(1, 'Email subject is required').max(500, 'Subject too long'),
+  emailBodyHtml: z.string().min(1, 'Email body is required'),
+  personalNote: z.string().max(1000, 'Personal note too long').optional(),
+});
+
+export type SendDemoInput = z.infer<typeof SendDemoSchema>;
+
+/**
+ * Schema for POST /api/demos/[demoId]/supports
+ * Records DJ support for a demo
+ */
+export const RecordDemoSupportSchema = z.object({
+  contactId: z.number().int().positive('Invalid contact ID'),
+  supportType: z.enum(['radio', 'dj_set', 'playlist', 'social_media', 'podcast', 'other'], {
+    message: 'Invalid support type',
+  }),
+  platform: z.string().max(100, 'Platform too long').optional(),
+  eventName: z.string().max(200, 'Event name too long').optional(),
+  playedAt: z.string().datetime('Invalid datetime format').optional(),
+  proofUrl: z.string().url('Invalid proof URL').optional(),
+  notes: z.string().optional(),
+});
+
+export type RecordDemoSupportInput = z.infer<typeof RecordDemoSupportSchema>;
+
+/**
+ * Schema for POST /api/demo-sends/[sendId]/track
+ * Tracks demo email events (open/click)
+ */
+export const TrackDemoEventSchema = z.object({
+  event: z.enum(['open', 'click'], { message: 'Invalid event type' }),
+  timestamp: z.string().datetime('Invalid timestamp format').optional(),
+});
+
+export type TrackDemoEventInput = z.infer<typeof TrackDemoEventSchema>;
 
 // ============================================================================
 // Webhooks

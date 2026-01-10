@@ -249,7 +249,7 @@ export default function SettingsClient({
                   value={soundcloudUrl}
                   onChange={(e) => setSoundcloudUrl(e.target.value)}
                   className="w-full h-10 px-4 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#111] focus:outline-none focus:ring-2 focus:ring-[#FF5500]/20 focus:border-[#FF5500]/40 focus:bg-white dark:focus:bg-[#161616] transition-all text-sm font-medium placeholder:text-foreground/30 text-foreground"
-                  placeholder="https://soundcloud.com/geebeatmusic"
+                  placeholder="https://soundcloud.com/thebackstagemusic"
                 />
                 <p className="text-[10px] text-foreground/40 ml-1">
                   Paste your SoundCloud profile URL

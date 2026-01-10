@@ -76,9 +76,9 @@ export function NotificationPreferencesSection() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">Email Notifications</h2>
-        <p className="text-sm text-muted-foreground">Loading preferences...</p>
+      <div className="space-y-2">
+        <h2 className="text-base font-serif text-foreground">Email Notifications</h2>
+        <p className="text-xs text-foreground/50">Loading preferences...</p>
       </div>
     );
   }
@@ -88,79 +88,75 @@ export function NotificationPreferencesSection() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-foreground">Email Notifications</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Control when your subscribers receive emails about new tracks
+        <h2 className="text-base font-serif mb-1 text-foreground">Email Notifications</h2>
+        <p className="text-foreground/50 text-xs">
+          Control when subscribers receive emails about new tracks
         </p>
       </div>
 
+      {/* Error/Success Messages - Compact */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+          <p className="text-xs text-red-800 dark:text-red-200">{error}</p>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <p className="text-sm text-green-800 dark:text-green-200">{successMessage}</p>
+        <div className="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+          <p className="text-xs text-green-800 dark:text-green-200">{successMessage}</p>
         </div>
       )}
 
-      <div className="space-y-4">
+      {/* Notification Options - Compact List */}
+      <div className="space-y-3">
         {/* SoundCloud Auto-Send */}
-        <div className="flex items-start justify-between p-4 border border-border rounded-lg bg-card">
-          <div className="flex-1">
-            <label
-              htmlFor="autoSendSoundcloud"
-              className="text-sm font-medium text-foreground cursor-pointer"
-            >
-              SoundCloud New Tracks
-            </label>
-            <p className="text-sm text-muted-foreground mt-1">
-              Automatically email subscribers when you release new tracks on SoundCloud
-            </p>
-          </div>
-          <div className="ml-4">
-            <input
-              type="checkbox"
-              id="autoSendSoundcloud"
-              checked={preferences.autoSendSoundcloud}
-              onChange={(e) => updatePreference('autoSendSoundcloud', e.target.checked)}
-              disabled={saving}
-              className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-          </div>
+        <div className="flex items-center justify-between py-2.5 px-3 border border-black/5 dark:border-white/10 rounded-xl bg-white/50 dark:bg-[#0A0A0A]/50 hover:bg-white/80 dark:hover:bg-[#0A0A0A]/80 transition-colors">
+          <label
+            htmlFor="autoSendSoundcloud"
+            className="flex-1 cursor-pointer"
+          >
+            <span className="text-sm font-medium text-foreground block">SoundCloud New Tracks</span>
+            <span className="text-[10px] text-foreground/40 block mt-0.5">
+              Auto-email subscribers on new releases
+            </span>
+          </label>
+          <input
+            type="checkbox"
+            id="autoSendSoundcloud"
+            checked={preferences.autoSendSoundcloud}
+            onChange={(e) => updatePreference('autoSendSoundcloud', e.target.checked)}
+            disabled={saving}
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ml-3 flex-shrink-0"
+          />
         </div>
 
         {/* Spotify Auto-Send */}
-        <div className="flex items-start justify-between p-4 border border-border rounded-lg bg-card">
-          <div className="flex-1">
-            <label
-              htmlFor="autoSendSpotify"
-              className="text-sm font-medium text-foreground cursor-pointer"
-            >
-              Spotify New Releases
-            </label>
-            <p className="text-sm text-muted-foreground mt-1">
-              Automatically email subscribers when you release new music on Spotify
-            </p>
-          </div>
-          <div className="ml-4">
-            <input
-              type="checkbox"
-              id="autoSendSpotify"
-              checked={preferences.autoSendSpotify}
-              onChange={(e) => updatePreference('autoSendSpotify', e.target.checked)}
-              disabled={saving}
-              className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-          </div>
+        <div className="flex items-center justify-between py-2.5 px-3 border border-black/5 dark:border-white/10 rounded-xl bg-white/50 dark:bg-[#0A0A0A]/50 hover:bg-white/80 dark:hover:bg-[#0A0A0A]/80 transition-colors">
+          <label
+            htmlFor="autoSendSpotify"
+            className="flex-1 cursor-pointer"
+          >
+            <span className="text-sm font-medium text-foreground block">Spotify New Releases</span>
+            <span className="text-[10px] text-foreground/40 block mt-0.5">
+              Auto-email subscribers on new releases
+            </span>
+          </label>
+          <input
+            type="checkbox"
+            id="autoSendSpotify"
+            checked={preferences.autoSendSpotify}
+            onChange={(e) => updatePreference('autoSendSpotify', e.target.checked)}
+            disabled={saving}
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ml-3 flex-shrink-0"
+          />
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      {/* Helper Note - Compact */}
+      <p className="text-[10px] text-foreground/40">
         Note: You can still manually send track announcements from the dashboard regardless of these settings.
       </p>
     </div>

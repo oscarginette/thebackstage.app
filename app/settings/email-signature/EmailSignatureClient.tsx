@@ -165,7 +165,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
   };
 
   const handleResetToDefault = async () => {
-    if (!confirm('Are you sure you want to reset to the default Gee Beat signature?')) {
+    if (!confirm('Are you sure you want to reset to the default The Backstage signature?')) {
       return;
     }
 
@@ -178,7 +178,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
       });
 
       if (res.ok) {
-        await loadSignature(); // Reload signature (will get Gee Beat default)
+        await loadSignature(); // Reload signature (will get The Backstage default)
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       } else {
@@ -391,7 +391,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
               className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 border border-red-600/20 rounded-md hover:bg-red-500/10 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              Reset to Gee Beat Default
+              Reset to The Backstage Default
             </button>
           </div>
         </div>
