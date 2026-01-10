@@ -33,7 +33,16 @@ import { SpotifyProfile } from '@/domain/types/download-gates';
 
 // Singleton instances (needed for OAuth flow and encryption)
 const spotifyClient = new SpotifyClient();
-const tokenEncryption = new TokenEncryption();
+
+// Lazy initialization: TokenEncryption only instantiated when needed (runtime)
+// This prevents build-time errors when TOKEN_ENCRYPTION_KEY is not set
+let tokenEncryption: TokenEncryption | null = null;
+function getTokenEncryption(): TokenEncryption {
+  if (!tokenEncryption) {
+    tokenEncryption = new TokenEncryption();
+  }
+  return tokenEncryption;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -238,7 +247,7 @@ export async function GET(request: Request) {
                   artistSpotifyId: artistUser.spotifyId,
                 });
 
-                const createAutoSaveSubscriptionUseCase = UseCaseFactory.createCreateAutoSaveSubscriptionUseCase(tokenEncryption);
+                const createAutoSaveSubscriptionUseCase = UseCaseFactory.createCreateAutoSaveSubscriptionUseCase(getTokenEncryption());
 
                 const subscriptionResult = await createAutoSaveSubscriptionUseCase.execute({
                   submissionId: oauthState.submissionId,
