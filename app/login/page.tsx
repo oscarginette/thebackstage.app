@@ -42,8 +42,10 @@ export default function LoginPage() {
           return;
         }
 
+        // Success - redirect to dashboard
         router.push(callbackUrl);
         router.refresh();
+        // Note: Don't reset loading state here - component will unmount after redirect
       } else {
         // Signup with API
         const response = await fetch('/api/auth/signup', {
@@ -65,21 +67,31 @@ export default function LoginPage() {
         }
 
         // Auto-login after signup
-        const loginResult = await signIn('credentials', {
-          email,
-          password,
-          redirect: false,
-        });
+        try {
+          const loginResult = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+          });
 
-        if (loginResult?.error) {
+          if (loginResult?.error) {
+            console.warn('Auto-login failed after signup:', loginResult.error);
+            setError('Account created! Please login.');
+            setIsLogin(true);
+            setIsLoading(false);
+            return;
+          }
+
+          // Success - redirect to dashboard
+          router.push(callbackUrl);
+          router.refresh();
+          // Note: Don't reset loading state here - component will unmount after redirect
+        } catch (loginError) {
+          console.error('Auto-login error after signup:', loginError);
           setError('Account created! Please login.');
           setIsLogin(true);
           setIsLoading(false);
-          return;
         }
-
-        router.push(callbackUrl);
-        router.refresh();
       }
     } catch (err) {
       console.error('Auth error:', err);
