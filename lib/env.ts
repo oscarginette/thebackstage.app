@@ -10,6 +10,12 @@
 
 import { z } from 'zod';
 
+// Helper: Convert empty strings to undefined for truly optional fields
+const optionalString = () => z.preprocess(
+  (val) => (val === '' ? undefined : val),
+  z.string().optional()
+);
+
 const envSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -18,50 +24,62 @@ const envSchema = z.object({
   POSTGRES_URL: z.string().url('Invalid POSTGRES_URL - must be a valid PostgreSQL URL'),
 
   // Database (Optional - Vercel-specific)
-  POSTGRES_PRISMA_URL: z.string().url().optional(),
-  POSTGRES_URL_NO_SSL: z.string().url().optional(),
-  POSTGRES_URL_NON_POOLING: z.string().url().optional(),
+  POSTGRES_PRISMA_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
+  POSTGRES_URL_NO_SSL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
+  POSTGRES_URL_NON_POOLING: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
   POSTGRES_USER: z.string().optional(),
   POSTGRES_HOST: z.string().optional(),
   POSTGRES_PASSWORD: z.string().optional(),
   POSTGRES_DATABASE: z.string().optional(),
 
   // NextAuth (Required for authentication at runtime)
-  NEXTAUTH_URL: z.string().url('Invalid NEXTAUTH_URL - must be a valid URL').optional(),
-  NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters for security').optional(),
+  NEXTAUTH_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url('Invalid NEXTAUTH_URL - must be a valid URL').optional()),
+  NEXTAUTH_SECRET: z.preprocess((val) => (val === '' ? undefined : val), z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters for security').optional()),
   // Legacy: Accept AUTH_SECRET for backward compatibility (NextAuth v5)
-  AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters for security').optional(),
+  AUTH_SECRET: z.preprocess((val) => (val === '' ? undefined : val), z.string().min(32, 'AUTH_SECRET must be at least 32 characters for security').optional()),
 
   // Email Provider (Resend - Required for email functionality)
-  RESEND_API_KEY: z.string().startsWith('re_', 'Invalid Resend API key format - must start with re_').optional(),
-  SENDER_EMAIL: z.string().email('Invalid SENDER_EMAIL - must be a valid email address').or(z.literal('')).optional(),
+  RESEND_API_KEY: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().startsWith('re_', 'Invalid Resend API key format - must start with re_').optional()
+  ),
+  SENDER_EMAIL: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().email('Invalid SENDER_EMAIL - must be a valid email address').optional()
+  ),
 
   // Email Recipients (JSON array)
   RECIPIENT_EMAILS: z.string().optional(),
 
   // Admin Configuration
-  ADMIN_EMAIL: z.string().email().optional(),
+  ADMIN_EMAIL: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().email().optional()
+  ),
   ADMIN_SECRET: z.string().optional(),
 
   // Download Gates
-  DOWNLOAD_TOKEN_SECRET: z.string().min(32, 'DOWNLOAD_TOKEN_SECRET must be at least 32 characters').optional(),
+  DOWNLOAD_TOKEN_SECRET: z.preprocess((val) => (val === '' ? undefined : val), z.string().min(32, 'DOWNLOAD_TOKEN_SECRET must be at least 32 characters').optional()),
 
   // Token Encryption (for storing OAuth tokens)
-  TOKEN_ENCRYPTION_KEY: z.string().length(64, 'TOKEN_ENCRYPTION_KEY must be exactly 64 hexadecimal characters (32 bytes)').or(z.literal('')).optional(),
+  TOKEN_ENCRYPTION_KEY: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().length(64, 'TOKEN_ENCRYPTION_KEY must be exactly 64 hexadecimal characters (32 bytes)').optional()
+  ),
 
   // Cron Jobs
-  CRON_SECRET: z.string().min(32, 'CRON_SECRET must be at least 32 characters').optional(),
+  CRON_SECRET: z.preprocess((val) => (val === '' ? undefined : val), z.string().min(32, 'CRON_SECRET must be at least 32 characters').optional()),
 
   // SoundCloud Configuration
   SOUNDCLOUD_USER_ID: z.string().optional(),
   SOUNDCLOUD_CLIENT_ID: z.string().optional(),
   SOUNDCLOUD_CLIENT_SECRET: z.string().optional(),
-  SOUNDCLOUD_REDIRECT_URI: z.string().url().optional(),
+  SOUNDCLOUD_REDIRECT_URI: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
 
   // Spotify Configuration
   SPOTIFY_CLIENT_ID: z.string().optional(),
   SPOTIFY_CLIENT_SECRET: z.string().optional(),
-  SPOTIFY_REDIRECT_URI: z.string().url().optional(),
+  SPOTIFY_REDIRECT_URI: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
   SPOTIFY_ARTIST_ID: z.string().optional(),
 
   // Cloudinary (Image Storage)
@@ -80,13 +98,13 @@ const envSchema = z.object({
   USE_MAILGUN: z.string().default('false').transform(val => val === 'true'),
 
   // Stripe (Payment Processing)
-  STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'Invalid Stripe secret key - must start with sk_').optional(),
-  STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_', 'Invalid Stripe publishable key - must start with pk_').optional(),
+  STRIPE_SECRET_KEY: z.preprocess((val) => (val === '' ? undefined : val), z.string().startsWith('sk_', 'Invalid Stripe secret key - must start with sk_').optional()),
+  STRIPE_PUBLISHABLE_KEY: z.preprocess((val) => (val === '' ? undefined : val), z.string().startsWith('pk_', 'Invalid Stripe publishable key - must start with pk_').optional()),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   // Application URLs
-  NEXT_PUBLIC_APP_URL: z.string().url('Invalid NEXT_PUBLIC_APP_URL - must be a valid URL').optional(),
-  BASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_APP_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url('Invalid NEXT_PUBLIC_APP_URL - must be a valid URL').optional()),
+  BASE_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
 
   // Feature Flags (transformed to boolean)
   ENABLE_SOUNDCLOUD_OAUTH: z.string().transform(val => val === 'true').optional(),
@@ -96,7 +114,7 @@ const envSchema = z.object({
   ENABLE_EMAIL_TRACKING: z.string().transform(val => val === 'true').optional(),
 
   // Upstash Redis (Rate Limiting)
-  UPSTASH_REDIS_REST_URL: z.string().url('Invalid UPSTASH_REDIS_REST_URL - must be a valid URL').optional(),
+  UPSTASH_REDIS_REST_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url('Invalid UPSTASH_REDIS_REST_URL - must be a valid URL').optional()),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
   // Legacy/Deprecated (for backward compatibility)
