@@ -177,21 +177,30 @@ export default function SignupPage() {
       }
 
       // Auto-login after successful signup
-      const signInResult = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
+      try {
+        const signInResult = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
 
-      if (signInResult?.error) {
-        // Account created but login failed - redirect to login page
+        if (signInResult?.error) {
+          // Account created but login failed - redirect to login page
+          console.warn('Auto-login failed after signup:', signInResult.error);
+          setIsLoading(false);
+          router.push(buildUrl(PATHS.LOGIN, { message: 'Account created successfully! Please sign in.' }));
+          return;
+        }
+
+        // Success - redirect to dashboard
+        router.push(PATHS.DASHBOARD.ROOT);
+        router.refresh();
+      } catch (signInError) {
+        // Auto-login failed catastrophically
+        console.error('Auto-login error after signup:', signInError);
+        setIsLoading(false);
         router.push(buildUrl(PATHS.LOGIN, { message: 'Account created successfully! Please sign in.' }));
-        return;
       }
-
-      // Success - redirect to dashboard
-      router.push(PATHS.DASHBOARD.ROOT);
-      router.refresh();
     } catch (err) {
       console.error('Signup error:', err);
       setError('An unexpected error occurred. Please try again.');
