@@ -18,6 +18,10 @@ export class PostgresSavedReleasesRepository implements ISavedReleasesRepository
    */
   async create(input: CreateSavedReleaseInput): Promise<void> {
     try {
+      // Convert track IDs array to PostgreSQL array - use JSON for safe insertion
+      const trackIds = input.spotifyTrackIds || [];
+      const trackIdsJson = JSON.stringify(trackIds);
+
       await sql`
         INSERT INTO spotify_saved_releases (
           subscription_id,
@@ -33,9 +37,9 @@ export class PostgresSavedReleasesRepository implements ISavedReleasesRepository
           ${input.subscriptionId}::uuid,
           ${input.releaseType},
           ${input.spotifyAlbumId},
-          ${input.spotifyTrackIds || []},
+          ${trackIdsJson}::jsonb::text[],
           ${input.albumName},
-          ${input.releaseDate},
+          ${input.releaseDate.toISOString()},
           ${input.saveStatus || 'success'},
           ${input.errorMessage || null}
         )
@@ -103,7 +107,7 @@ export class PostgresSavedReleasesRepository implements ISavedReleasesRepository
         LIMIT 1
       `;
 
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error('PostgresSavedReleasesRepository.isAlreadySaved error:', error);
       throw new Error(

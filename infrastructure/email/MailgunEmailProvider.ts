@@ -95,7 +95,6 @@ export class MailgunEmailProvider implements IEmailProvider {
       return {
         success: true,
         id: response.id,
-        messageId: response.id,
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error

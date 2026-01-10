@@ -44,7 +44,7 @@ export class PostgresUserNotificationPreferencesRepository
       autoSendSpotify?: boolean;
     }
   ): Promise<UserNotificationPreferences> {
-    const now = new Date();
+    const now = new Date().toISOString();
 
     // Use INSERT ... ON CONFLICT for upsert
     const result = await sql`

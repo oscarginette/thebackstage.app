@@ -30,8 +30,13 @@ export class CloudinaryImageStorage {
     file: Buffer | string,
     userId: number
   ): Promise<UploadLogoResult> {
+    // Convert Buffer to base64 data URI for Cloudinary
+    const fileToUpload: string = file instanceof Buffer
+      ? `data:image/png;base64,${file.toString('base64')}`
+      : (file as string);
+
     const result = await cloudinary.uploader.upload(
-      file instanceof Buffer ? `data:image/png;base64,${file.toString('base64')}` : file,
+      fileToUpload,
       {
         folder: `email-signatures/${userId}`,
         transformation: {

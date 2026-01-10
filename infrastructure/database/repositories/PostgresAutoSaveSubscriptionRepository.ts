@@ -111,7 +111,7 @@ export class PostgresAutoSaveSubscriptionRepository
         SET
           access_token_encrypted = ${tokens.accessTokenEncrypted},
           refresh_token_encrypted = ${tokens.refreshTokenEncrypted},
-          token_expires_at = ${tokens.tokenExpiresAt},
+          token_expires_at = ${tokens.tokenExpiresAt.toISOString()},
           updated_at = NOW()
         WHERE id = ${id}::uuid
         RETURNING id
@@ -139,8 +139,8 @@ export class PostgresAutoSaveSubscriptionRepository
       const result = await sql`
         UPDATE spotify_auto_save_subscriptions
         SET
-          last_check_at = ${timestamp},
-          next_check_at = ${nextCheck},
+          last_check_at = ${timestamp.toISOString()},
+          next_check_at = ${nextCheck.toISOString()},
           updated_at = NOW()
         WHERE id = ${id}::uuid
         RETURNING id

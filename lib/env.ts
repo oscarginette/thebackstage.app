@@ -77,7 +77,7 @@ const envSchema = z.object({
   MAILGUN_DOMAIN: z.string().optional(),
   MAILGUN_API_URL: z.string().url().default('https://api.mailgun.net'),
   MAILGUN_WEBHOOK_SIGNING_KEY: z.string().optional(),
-  USE_MAILGUN: z.string().transform(val => val === 'true').default('false'),
+  USE_MAILGUN: z.string().default('false').transform(val => val === 'true'),
 
   // Stripe (Payment Processing)
   STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'Invalid Stripe secret key - must start with sk_').optional(),
