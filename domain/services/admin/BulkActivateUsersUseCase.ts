@@ -9,7 +9,7 @@
  */
 
 import { IUserRepository } from '@/domain/repositories/IUserRepository';
-import { UnauthorizedError } from './GetAllUsersUseCase';
+import { UnauthorizedError } from '@/lib/errors';
 import { UpdateSubscriptionInput } from '@/domain/types/subscriptions';
 
 export interface BulkActivateUsersInput {

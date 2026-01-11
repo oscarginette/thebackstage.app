@@ -10,20 +10,7 @@
  */
 
 import { IEmailCampaignRepository } from '@/domain/repositories/IEmailCampaignRepository';
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
-
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
+import { ValidationError, NotFoundError } from '@/lib/errors';
 
 /**
  * Use case for deleting email campaigns

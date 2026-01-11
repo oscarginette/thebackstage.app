@@ -10,6 +10,7 @@
 
 import { IDownloadGateRepository } from '@/domain/repositories/IDownloadGateRepository';
 import { PixelConfig } from '@/domain/entities/PixelConfig';
+import { NotFoundError, ValidationError } from '@/lib/errors';
 
 export interface UpdatePixelConfigInput {
   userId: number;
@@ -40,20 +41,6 @@ export interface UpdatePixelConfigInput {
 export interface UpdatePixelConfigResult {
   success: boolean;
   message: string;
-}
-
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
 }
 
 /**

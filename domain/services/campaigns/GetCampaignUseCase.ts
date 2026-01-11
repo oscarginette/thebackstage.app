@@ -12,13 +12,7 @@ import {
   IEmailCampaignRepository,
   EmailCampaign
 } from '@/domain/repositories/IEmailCampaignRepository';
-
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
+import { NotFoundError } from '@/lib/errors';
 
 /**
  * Use case for retrieving a single email campaign

@@ -9,6 +9,7 @@
  */
 
 import { IUserRepository } from '@/domain/repositories/IUserRepository';
+import { UnauthorizedError } from '@/lib/errors';
 
 export interface UserWithQuota {
   id: number;
@@ -27,13 +28,6 @@ export interface UserWithQuota {
     remaining: number;
     lastReset: Date;
   } | null;
-}
-
-export class UnauthorizedError extends Error {
-  constructor(message: string = 'Unauthorized') {
-    super(message);
-    this.name = 'UnauthorizedError';
-  }
 }
 
 export class GetAllUsersUseCase {

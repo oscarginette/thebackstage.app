@@ -9,7 +9,7 @@
  */
 
 import { IUserRepository } from '@/domain/repositories/IUserRepository';
-import { UnauthorizedError } from './GetAllUsersUseCase';
+import { UnauthorizedError } from '@/lib/errors';
 
 export interface UpdateUserQuotaInput {
   adminUserId: number;

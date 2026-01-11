@@ -1,14 +1,15 @@
 /**
- * NotFoundError
+ * NotFoundError (Domain Layer Re-export)
  *
- * Thrown when a requested resource cannot be found.
- * Maps to HTTP 404 status code.
+ * Re-exports NotFoundError from centralized error system.
+ * Maintains Clean Architecture: Domain layer doesn't depend on infrastructure.
+ *
+ * Usage in domain layer:
+ *   import { NotFoundError } from '@/domain/errors/NotFoundError';
+ *   throw new NotFoundError('Campaign not found');
+ *
+ * For new code, prefer importing directly from '@/lib/errors':
+ *   import { NotFoundError } from '@/lib/errors';
  */
 
-export class NotFoundError extends Error {
-  constructor(message = 'Resource not found') {
-    super(message);
-    this.name = 'NotFoundError';
-    Object.setPrototypeOf(this, NotFoundError.prototype);
-  }
-}
+export { NotFoundError } from '@/lib/errors';

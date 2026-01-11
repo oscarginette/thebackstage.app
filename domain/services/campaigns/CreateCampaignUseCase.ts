@@ -14,13 +14,7 @@ import {
   EmailCampaign,
   CreateCampaignInput
 } from '@/domain/repositories/IEmailCampaignRepository';
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
+import { ValidationError } from '@/lib/errors';
 
 export interface CreateCampaignResult {
   campaign: EmailCampaign;

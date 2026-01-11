@@ -8,13 +8,7 @@
  */
 
 import { IContactRepository } from '../repositories/IContactRepository';
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
+import { ValidationError } from '@/lib/errors';
 
 export interface DeleteContactsInput {
   ids: number[];

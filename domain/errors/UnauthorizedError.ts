@@ -1,15 +1,15 @@
 /**
- * UnauthorizedError
+ * UnauthorizedError (Domain Layer Re-export)
  *
- * Thrown when a user is not authenticated (not logged in).
- * Maps to HTTP 401 Unauthorized.
+ * Re-exports UnauthorizedError from centralized error system.
+ * Maintains Clean Architecture: Domain layer doesn't depend on infrastructure.
  *
- * Clean Architecture: Domain layer error with no external dependencies.
+ * Usage in domain layer:
+ *   import { UnauthorizedError } from '@/domain/errors/UnauthorizedError';
+ *   throw new UnauthorizedError('Authentication required');
+ *
+ * For new code, prefer importing directly from '@/lib/errors':
+ *   import { UnauthorizedError } from '@/lib/errors';
  */
 
-export class UnauthorizedError extends Error {
-  constructor(message: string = 'Authentication required') {
-    super(message);
-    this.name = 'UnauthorizedError';
-  }
-}
+export { UnauthorizedError } from '@/lib/errors';
