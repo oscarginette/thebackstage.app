@@ -6,18 +6,23 @@
  * Clean Architecture: API route only orchestrates, business logic in use case.
  */
 
+import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
 import { withErrorHandler, generateRequestId } from '@/lib/error-handler';
-import { successResponse } from '@/lib/api-response';
+import { successResponse, errorResponse } from '@/lib/api-response';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = withErrorHandler(async (request: Request) => {
   const requestId = generateRequestId();
 
-  // TODO: Get userId from session/auth middleware
-  // For now, using placeholder - replace with actual auth
-  const userId = 1; // Replace with: const { userId } = await getSession(request);
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    return errorResponse('Unauthorized', 'UNAUTHORIZED', 401, undefined, requestId);
+  }
+
+  const userId = parseInt(session.user.id);
 
   // Get use case from factory (DI)
   const checkQuotaUseCase = UseCaseFactory.createCheckQuotaUseCase();

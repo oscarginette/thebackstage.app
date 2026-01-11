@@ -231,7 +231,9 @@ export default function EmailContentEditor({
   const validation = {
     isValid: true,
     saveButtonTooltip: '',
-    errors: []
+    errors: [],
+    fieldHasError: (_field: string) => false,
+    getFieldErrorMessages: (_field: string) => []
   };
 
   // List filter state
