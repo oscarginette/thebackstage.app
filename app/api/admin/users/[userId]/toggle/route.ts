@@ -9,12 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
-import { UnauthorizedError } from '@/domain/services/admin/GetAllUsersUseCase';
 import { USER_ROLES } from '@/domain/types/user-roles';
-
-interface ToggleActiveRequest {
-  active: boolean;
-}
+import { ToggleUserStatusSchema } from '@/lib/validation-schemas';
 
 export async function POST(
   request: NextRequest,
@@ -52,16 +48,21 @@ export async function POST(
       );
     }
 
-    // Parse request body
-    const body: ToggleActiveRequest = await request.json();
+    // Parse and validate request body
+    const body = await request.json();
 
-    // Validate active field
-    if (typeof body.active !== 'boolean') {
+    const validation = ToggleUserStatusSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'active must be a boolean value' },
+        {
+          error: 'Validation failed',
+          details: validation.error.format(),
+        },
         { status: 400 }
       );
     }
+
+    const validatedData = validation.data;
 
     // Execute use case
     const useCase = UseCaseFactory.createToggleUserActiveUseCase();
@@ -69,7 +70,7 @@ export async function POST(
     const result = await useCase.execute({
       adminUserId: parseInt(session.user.id),
       targetUserId,
-      active: body.active,
+      active: validatedData.active,
     });
 
     return NextResponse.json(
@@ -84,13 +85,6 @@ export async function POST(
     console.error('Toggle user active API error:', error);
 
     // Handle specific error types
-    if (error instanceof UnauthorizedError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 403 }
-      );
-    }
-
     if (error instanceof Error) {
       // Handle "User not found" errors
       if (error.message.includes('not found')) {

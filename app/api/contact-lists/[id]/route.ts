@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
+import { UpdateContactListSchema } from '@/lib/validation-schemas';
 
 /**
  * PATCH /api/contact-lists/[id]
@@ -26,15 +27,34 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Validate list ID format
+    if (!id || typeof id !== 'string' || id.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Invalid list ID' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
+
+    // Validate request body
+    const validation = UpdateContactListSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validation.data;
 
     const useCase = UseCaseFactory.createUpdateContactListUseCase();
     const list = await useCase.execute({
       userId: parseInt(session.user.id),
       listId: id,
-      name: body.name,
-      description: body.description,
-      color: body.color,
+      name: validatedData.name,
+      description: validatedData.description,
+      color: validatedData.color,
     });
 
     return NextResponse.json({ list });

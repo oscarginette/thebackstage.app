@@ -15,20 +15,23 @@ import {
   productRepository,
 } from '@/infrastructure/database/repositories';
 import { isAppError } from '@/lib/errors';
+import { CreateSubscriptionSchema } from '@/lib/validation-schemas';
 
 export async function POST(request: NextRequest) {
   try {
     // Step 1: Parse request body
     const body = await request.json();
-    const { priceId, trialDays, metadata } = body;
 
-    // Step 2: Validate required fields
-    if (!priceId) {
+    // Step 2: Validate request body
+    const validation = CreateSubscriptionSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'priceId is required' },
+        { error: 'Validation failed', details: validation.error.format() },
         { status: 400 }
       );
     }
+
+    const validatedData = validation.data;
 
     // Step 3: Initialize use case
     const useCase = new CreateSubscriptionUseCase(
@@ -40,10 +43,10 @@ export async function POST(request: NextRequest) {
     // Step 4: Execute use case (simplified - no auth for demo)
     const result = await useCase.execute({
       userId: 1, // TODO: Get from session
-      priceId,
-      trialDays: trialDays ?? 0,
+      priceId: validatedData.priceId,
+      trialDays: validatedData.trialDays ?? 0,
       metadata: {
-        ...metadata,
+        ...validatedData.metadata,
         created_via: 'api',
       },
     });

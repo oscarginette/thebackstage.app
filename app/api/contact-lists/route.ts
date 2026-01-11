@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
+import { CreateContactListSchema } from '@/lib/validation-schemas';
 
 /**
  * GET /api/contact-lists
@@ -48,12 +49,23 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    // Validate request body
+    const validation = CreateContactListSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validation.data;
+
     const useCase = UseCaseFactory.createCreateContactListUseCase();
     const list = await useCase.execute({
       userId: parseInt(session.user.id),
-      name: body.name,
-      description: body.description,
-      color: body.color,
+      name: validatedData.name,
+      description: validatedData.description ?? undefined,
+      color: validatedData.color ?? '#3B82F6',
     });
 
     return NextResponse.json({ list }, { status: 201 });

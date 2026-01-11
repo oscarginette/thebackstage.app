@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import { UseCaseFactory } from '@/lib/di-container';
+import { PromoteUserSchema } from '@/lib/validation-schemas';
 
 /**
  * POST /api/admin/promote-user
@@ -27,6 +28,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    // Validate request body
+    const validation = PromoteUserSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: 'Validation failed', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validation.data;
+
     // Get expected secret from environment
     const expectedSecret = env.ADMIN_SECRET || 'dev-secret-123';
 
@@ -35,8 +47,8 @@ export async function POST(request: NextRequest) {
 
     // Execute use case
     const result = await useCase.execute({
-      email: body.email,
-      secret: body.secret,
+      email: validatedData.email,
+      secret: validatedData.secret,
     });
 
     // Handle result

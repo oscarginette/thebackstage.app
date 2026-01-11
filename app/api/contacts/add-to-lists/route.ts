@@ -9,6 +9,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
+import { AddContactsToMultipleListsSchema } from '@/lib/validation-schemas';
 
 /**
  * POST /api/contacts/add-to-lists
@@ -28,27 +29,23 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    // Validate input
-    if (!Array.isArray(body.contactIds) || body.contactIds.length === 0) {
+    // Validate request body
+    const validation = AddContactsToMultipleListsSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'contactIds must be a non-empty array' },
+        { error: 'Validation failed', details: validation.error.format() },
         { status: 400 }
       );
     }
 
-    if (!Array.isArray(body.listIds) || body.listIds.length === 0) {
-      return NextResponse.json(
-        { error: 'listIds must be a non-empty array' },
-        { status: 400 }
-      );
-    }
+    const validatedData = validation.data;
 
     const useCase = UseCaseFactory.createAddContactsToMultipleListsUseCase();
 
     const result = await useCase.execute({
       userId: parseInt(session.user.id),
-      listIds: body.listIds,
-      contactIds: body.contactIds,
+      listIds: validatedData.listIds,
+      contactIds: validatedData.contactIds,
     });
 
     return NextResponse.json(result);

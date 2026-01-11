@@ -12,6 +12,7 @@ import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
 import { ValidationError } from '@/domain/errors/ValidationError';
 import { ForbiddenError } from '@/domain/errors/ForbiddenError';
+import { DeleteUsersSchema } from '@/lib/validation-schemas';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,9 +26,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Parse request body
+    // 2. Parse and validate request body
     const body = await request.json();
-    const { ids } = body;
+
+    const validation = DeleteUsersSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Validation failed',
+          details: validation.error.format(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const { ids } = validation.data;
 
     // 3. Execute use case
     const useCase = UseCaseFactory.createDeleteUsersUseCase();

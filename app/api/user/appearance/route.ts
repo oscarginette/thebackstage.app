@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
-import { Theme, THEMES } from '@/domain/types/appearance';
+import { Theme } from '@/domain/types/appearance';
+import { UpdateUserAppearanceSchema } from '@/lib/validation-schemas';
 
 /**
  * PATCH /api/user/appearance
@@ -33,17 +34,18 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Parse request
+    // Parse and validate request
     const body = await request.json();
-    const { theme } = body;
 
-    // Validate theme (presentation layer validation)
-    if (!theme || !Object.values(THEMES).includes(theme as Theme)) {
+    const validation = UpdateUserAppearanceSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid theme. Must be: light, dark, or system' },
+        { error: 'Validation failed', details: validation.error.format() },
         { status: 400 }
       );
     }
+
+    const { theme } = validation.data;
 
     // Execute Use Case (business logic)
     const updateAppearanceUseCase = UseCaseFactory.createUpdateUserAppearanceUseCase();

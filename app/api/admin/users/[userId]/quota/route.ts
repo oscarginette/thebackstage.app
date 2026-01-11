@@ -9,12 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
-import { UnauthorizedError } from '@/domain/services/admin/GetAllUsersUseCase';
 import { USER_ROLES } from '@/domain/types/user-roles';
-
-interface UpdateQuotaRequest {
-  monthlyQuota: number;
-}
+import { UpdateUserQuotaSchema } from '@/lib/validation-schemas';
 
 async function handleQuotaUpdate(
   request: NextRequest,
@@ -52,20 +48,21 @@ async function handleQuotaUpdate(
       );
     }
 
-    // Parse request body
-    const body: UpdateQuotaRequest = await request.json();
+    // Parse and validate request body
+    const body = await request.json();
 
-    // Validate monthlyQuota
-    if (
-      body.monthlyQuota === undefined ||
-      typeof body.monthlyQuota !== 'number' ||
-      body.monthlyQuota < 0
-    ) {
+    const validation = UpdateUserQuotaSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'monthlyQuota must be a non-negative number' },
+        {
+          error: 'Validation failed',
+          details: validation.error.format(),
+        },
         { status: 400 }
       );
     }
+
+    const validatedData = validation.data;
 
     // Execute use case
     const useCase = UseCaseFactory.createUpdateUserQuotaUseCase();
@@ -73,7 +70,7 @@ async function handleQuotaUpdate(
     const result = await useCase.execute({
       adminUserId: parseInt(session.user.id),
       targetUserId,
-      monthlyQuota: body.monthlyQuota,
+      monthlyQuota: validatedData.monthlyQuota,
     });
 
     return NextResponse.json(
@@ -88,13 +85,6 @@ async function handleQuotaUpdate(
     console.error('Update user quota API error:', error);
 
     // Handle specific error types
-    if (error instanceof UnauthorizedError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 403 }
-      );
-    }
-
     if (error instanceof Error) {
       // Handle "User not found" errors
       if (error.message.includes('not found')) {

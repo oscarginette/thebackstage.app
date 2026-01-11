@@ -10,14 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
 import { USER_ROLES } from '@/domain/types/user-roles';
-import { SUBSCRIPTION_PLANS, SubscriptionPlanName } from '@/domain/types/subscriptions';
-
-interface BulkActivateRequest {
-  userIds: number[];
-  plan: SubscriptionPlanName;
-  billingCycle?: 'monthly' | 'annual';
-  durationMonths: number;
-}
+import { SubscriptionPlanName } from '@/domain/types/subscriptions';
+import { BulkActivateUsersSchema } from '@/lib/validation-schemas';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,46 +33,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body: BulkActivateRequest = await request.json();
+    // Parse and validate request body
+    const body = await request.json();
 
-    // Validate input
-    if (!body.userIds || !Array.isArray(body.userIds) || body.userIds.length === 0) {
+    const validation = BulkActivateUsersSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'userIds array is required and must not be empty' },
+        {
+          error: 'Validation failed',
+          details: validation.error.format(),
+        },
         { status: 400 }
       );
     }
 
-    const validPlans = [
-      SUBSCRIPTION_PLANS.FREE,
-      SUBSCRIPTION_PLANS.PRO,
-      SUBSCRIPTION_PLANS.BUSINESS,
-      SUBSCRIPTION_PLANS.UNLIMITED,
-    ];
-
-    if (!body.plan || !validPlans.includes(body.plan)) {
-      return NextResponse.json(
-        { error: `Invalid plan. Must be one of: ${validPlans.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    if (!body.durationMonths || body.durationMonths < 1 || body.durationMonths > 12) {
-      return NextResponse.json(
-        { error: 'durationMonths must be between 1 and 12' },
-        { status: 400 }
-      );
-    }
+    const validatedData = validation.data;
 
     // Execute use case
     const useCase = UseCaseFactory.createBulkActivateUsersUseCase();
 
     const result = await useCase.execute({
       changedBy: parseInt(session.user.id),
-      userIds: body.userIds,
-      planName: body.plan,
-      durationMonths: body.durationMonths,
+      userIds: validatedData.userIds,
+      planName: validatedData.plan as SubscriptionPlanName,
+      durationMonths: validatedData.durationMonths,
     });
 
     return NextResponse.json(

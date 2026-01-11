@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
+import { UpdateNotificationPreferencesSchema } from '@/lib/validation-schemas';
 
 /**
  * GET /api/user/notification-preferences
@@ -46,14 +47,24 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json();
+
+    const validation = UpdateNotificationPreferencesSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const validatedData = validation.data;
 
     // Update preferences
     const useCase = UseCaseFactory.createUpdateUserNotificationPreferencesUseCase();
     const preferences = await useCase.execute(Number(session.user.id), {
-      autoSendSoundcloud: body.autoSendSoundcloud,
-      autoSendSpotify: body.autoSendSpotify,
+      autoSendSoundcloud: validatedData.autoSendSoundcloud,
+      autoSendSpotify: validatedData.autoSendSpotify,
     });
 
     return NextResponse.json(preferences.toJSON());

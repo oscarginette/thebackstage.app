@@ -230,6 +230,27 @@ export const UpdateUserSettingsSchema = z.object({
 
 export type UpdateUserSettingsInput = z.infer<typeof UpdateUserSettingsSchema>;
 
+/**
+ * Schema for PATCH /api/user/appearance
+ * Updates user's theme preference
+ */
+export const UpdateUserAppearanceSchema = z.object({
+  theme: z.enum(['light', 'dark', 'system'], { message: 'Invalid theme (must be light, dark, or system)' }),
+});
+
+export type UpdateUserAppearanceInput = z.infer<typeof UpdateUserAppearanceSchema>;
+
+/**
+ * Schema for PATCH /api/user/notification-preferences
+ * Updates user's notification preferences
+ */
+export const UpdateNotificationPreferencesSchema = z.object({
+  autoSendSoundcloud: z.boolean({ message: 'autoSendSoundcloud must be a boolean' }).optional(),
+  autoSendSpotify: z.boolean({ message: 'autoSendSpotify must be a boolean' }).optional(),
+});
+
+export type UpdateNotificationPreferencesInput = z.infer<typeof UpdateNotificationPreferencesSchema>;
+
 // ============================================================================
 // Email Signatures
 // ============================================================================
@@ -377,6 +398,155 @@ export const ResendWebhookSchema = z.object({
 });
 
 export type ResendWebhookInput = z.infer<typeof ResendWebhookSchema>;
+
+// ============================================================================
+// Contact Lists
+// ============================================================================
+
+/**
+ * Schema for POST /api/contact-lists
+ * Creates a new contact list
+ */
+export const CreateContactListSchema = z.object({
+  name: z.string().min(1, 'List name is required').max(100, 'Name too long'),
+  description: z.string().max(500, 'Description too long').nullable().optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format (must be #RRGGBB)').optional(),
+});
+
+export type CreateContactListInput = z.infer<typeof CreateContactListSchema>;
+
+/**
+ * Schema for PATCH /api/contact-lists/[id]
+ * Updates an existing contact list
+ */
+export const UpdateContactListSchema = z.object({
+  name: z.string().min(1, 'List name is required').max(100, 'Name too long').optional(),
+  description: z.string().max(500, 'Description too long').nullable().optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format (must be #RRGGBB)').optional(),
+});
+
+export type UpdateContactListInput = z.infer<typeof UpdateContactListSchema>;
+
+/**
+ * Schema for POST /api/contact-lists/[id]/add-contacts
+ * Add contacts to a list
+ */
+export const AddContactsToListSchema = z.object({
+  contactIds: z.array(z.number().int().positive('Invalid contact ID')).min(1, 'At least one contact is required').max(1000, 'Too many contacts (max 1000)'),
+});
+
+export type AddContactsToListInput = z.infer<typeof AddContactsToListSchema>;
+
+/**
+ * Schema for POST /api/contact-lists/[id]/remove-contacts
+ * Remove contacts from a list
+ */
+export const RemoveContactsFromListSchema = z.object({
+  contactIds: z.array(z.number().int().positive('Invalid contact ID')).min(1, 'At least one contact is required').max(1000, 'Too many contacts (max 1000)'),
+});
+
+export type RemoveContactsFromListInput = z.infer<typeof RemoveContactsFromListSchema>;
+
+/**
+ * Schema for POST /api/contacts/add-to-lists
+ * Add contacts to multiple lists
+ */
+export const AddContactsToMultipleListsSchema = z.object({
+  contactIds: z.array(z.number().int().positive('Invalid contact ID')).min(1, 'At least one contact is required').max(1000, 'Too many contacts (max 1000)'),
+  listIds: z.array(z.string().min(1, 'Invalid list ID')).min(1, 'At least one list is required').max(50, 'Too many lists (max 50)'),
+});
+
+export type AddContactsToMultipleListsInput = z.infer<typeof AddContactsToMultipleListsSchema>;
+
+// ============================================================================
+// Admin - User Management
+// ============================================================================
+
+/**
+ * Schema for POST /api/admin/promote-user
+ * Promotes a user to admin role
+ */
+export const PromoteUserSchema = z.object({
+  email: z.string().email('Invalid email address').max(255, 'Email too long'),
+  secret: z.string().min(1, 'Secret is required'),
+});
+
+export type PromoteUserInput = z.infer<typeof PromoteUserSchema>;
+
+/**
+ * Schema for POST /api/admin/users/delete
+ * Deletes multiple users
+ */
+export const DeleteUsersSchema = z.object({
+  ids: z.array(z.number().int().positive('Invalid user ID')).min(1, 'At least one user ID is required').max(100, 'Too many users to delete at once (max 100)'),
+});
+
+export type DeleteUsersInput = z.infer<typeof DeleteUsersSchema>;
+
+/**
+ * Schema for PATCH /api/admin/users/[userId]/quota
+ * Updates user's monthly email quota
+ */
+export const UpdateUserQuotaSchema = z.object({
+  monthlyQuota: z.number().int().min(0, 'Quota cannot be negative').max(1000000, 'Quota too high'),
+});
+
+export type UpdateUserQuotaInput = z.infer<typeof UpdateUserQuotaSchema>;
+
+/**
+ * Schema for POST /api/admin/users/[userId]/toggle
+ * Toggles user active status
+ */
+export const ToggleUserStatusSchema = z.object({
+  active: z.boolean({ message: 'Active status must be a boolean' }),
+});
+
+export type ToggleUserStatusInput = z.infer<typeof ToggleUserStatusSchema>;
+
+/**
+ * Schema for POST /api/admin/users/bulk-activate
+ * Bulk activate users
+ */
+export const BulkActivateUsersSchema = z.object({
+  userIds: z.array(z.number().int().positive('Invalid user ID')).min(1, 'At least one user ID is required').max(100, 'Too many users (max 100)'),
+  plan: z.enum(['free', 'pro', 'business', 'unlimited'], { message: 'Invalid subscription plan' }),
+  billingCycle: z.enum(['monthly', 'annual'], { message: 'Invalid billing cycle' }).optional(),
+  durationMonths: z.number().int().min(1, 'Duration must be at least 1 month').max(12, 'Duration cannot exceed 12 months'),
+});
+
+export type BulkActivateUsersInput = z.infer<typeof BulkActivateUsersSchema>;
+
+// ============================================================================
+// Subscriptions
+// ============================================================================
+
+/**
+ * Schema for POST /api/subscriptions
+ * Creates a new subscription
+ */
+export const CreateSubscriptionSchema = z.object({
+  priceId: z.string().min(1, 'Price ID is required').max(255, 'Price ID too long'),
+  trialDays: z.number().int().min(0, 'Trial days cannot be negative').max(365, 'Trial period too long').optional().default(0),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
+export type CreateSubscriptionInput = z.infer<typeof CreateSubscriptionSchema>;
+
+// ============================================================================
+// Campaign Query Parameters
+// ============================================================================
+
+/**
+ * Schema for GET /api/campaigns query parameters
+ */
+export const GetCampaignsQuerySchema = z.object({
+  status: z.enum(['draft', 'sent'], { message: 'Invalid status (must be draft or sent)' }).nullable().optional(),
+  trackId: z.string().max(255, 'Track ID too long').nullable().optional(),
+  templateId: z.string().max(255, 'Template ID too long').nullable().optional(),
+  scheduledOnly: z.enum(['true', 'false'], { message: 'Invalid boolean value' }).nullable().optional(),
+});
+
+export type GetCampaignsQueryInput = z.infer<typeof GetCampaignsQuerySchema>;
 
 // ============================================================================
 // Validation Helper Functions
