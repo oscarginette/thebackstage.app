@@ -1,25 +1,21 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { sql } from '@/lib/db';
-import { UseCaseFactory } from '@/lib/di-container';
-import { ColumnMapping } from '@/domain/value-objects/ColumnMapping';
-
-export const maxDuration = 60;
-
 /**
  * POST /api/integrations/brevo/import/execute
  *
  * Executes the full Brevo import after user confirmed preview.
  * Reuses ImportContactsUseCase for consistency with file imports.
  *
- * Flow:
- * 1. Authenticate user
- * 2. Create brevo_import_history record (status: 'running')
- * 3. Fetch ALL contacts via FetchBrevoContactsUseCase (previewOnly: false)
- * 4. Reuse ImportContactsUseCase for validation + import
- * 5. Update brevo_import_history with results
- * 6. Update brevo_integrations.last_sync_at
+ * Clean Architecture: API route only orchestrates, business logic in use cases.
  */
+
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { UseCaseFactory } from '@/lib/di-container';
+import { ColumnMapping } from '@/domain/value-objects/ColumnMapping';
+import { PostgresBrevoIntegrationRepository } from '@/infrastructure/database/repositories/PostgresBrevoIntegrationRepository';
+import { PostgresBrevoImportHistoryRepository } from '@/infrastructure/database/repositories/PostgresBrevoImportHistoryRepository';
+
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const startTime = Date.now();
   let brevoImportHistoryId: number | null = null;
@@ -36,45 +32,30 @@ export async function POST(request: Request) {
 
     const userId = parseInt(session.user.id);
 
-    // 2. Get user's Brevo integration
-    const integrationResult = await sql`
-      SELECT id, api_key_encrypted, is_active, account_email
-      FROM brevo_integrations
-      WHERE user_id = ${userId} AND is_active = true
-    `;
+    // 2. Get user's Brevo integration via repository
+    const brevoIntegrationRepository = new PostgresBrevoIntegrationRepository();
+    const integration = await brevoIntegrationRepository.findByUserId(userId);
 
-    if (integrationResult.rowCount === 0) {
+    if (!integration) {
       return NextResponse.json(
         { error: 'Brevo integration not found. Please connect your Brevo account first.' },
         { status: 404 }
       );
     }
 
-    const integration = integrationResult.rows[0];
-
     // 3. Decrypt API key
-    const apiKey = Buffer.from(integration.api_key_encrypted, 'base64').toString('utf-8');
+    const apiKey = Buffer.from(integration.apiKeyEncrypted, 'base64').toString('utf-8');
 
-    // 4. Create brevo_import_history record
-    const brevoHistoryResult = await sql`
-      INSERT INTO brevo_import_history (
-        user_id,
-        integration_id,
-        status,
-        preview_used,
-        started_at
-      )
-      VALUES (
-        ${userId},
-        ${integration.id},
-        'running',
-        true,
-        CURRENT_TIMESTAMP
-      )
-      RETURNING id
-    `;
+    // 4. Create brevo_import_history record via repository
+    const brevoImportHistoryRepository = new PostgresBrevoImportHistoryRepository();
+    const importHistory = await brevoImportHistoryRepository.create({
+      userId,
+      integrationId: integration.id,
+      status: 'running',
+      previewUsed: true,
+    });
 
-    brevoImportHistoryId = brevoHistoryResult.rows[0].id;
+    brevoImportHistoryId = importHistory.id;
 
     console.log(`[User ${userId}] Starting Brevo import (with preview)...`);
 
@@ -96,7 +77,7 @@ export async function POST(request: Request) {
       userId,
       contacts: fetchResult.contacts,
       fileMetadata: {
-        filename: `Brevo Import (${integration.account_email})`,
+        filename: `Brevo Import (${integration.accountEmail})`,
         fileType: 'brevo',
         totalRows: fetchResult.contacts.length
       },
@@ -105,31 +86,21 @@ export async function POST(request: Request) {
 
     console.log(`[User ${userId}] Import complete: ${importResult.contactsInserted} inserted, ${importResult.contactsUpdated} updated`);
 
-    // 7. Update brevo_import_history with results
+    // 7. Update brevo_import_history with results via repository
     const duration = Date.now() - startTime;
-    await sql`
-      UPDATE brevo_import_history
-      SET
-        status = 'completed',
-        contacts_fetched = ${fetchResult.contacts.length},
-        contacts_inserted = ${importResult.contactsInserted},
-        contacts_updated = ${importResult.contactsUpdated},
-        contacts_skipped = ${importResult.contactsSkipped},
-        lists_processed = ${fetchResult.listsProcessed.length},
-        completed_at = CURRENT_TIMESTAMP,
-        duration_ms = ${duration},
-        errors_detail = ${importResult.errors ? JSON.stringify(importResult.errors) : null}
-      WHERE id = ${brevoImportHistoryId}
-    `;
+    await brevoImportHistoryRepository.updateWithResults(brevoImportHistoryId, {
+      contactsFetched: fetchResult.contacts.length,
+      contactsInserted: importResult.contactsInserted,
+      contactsUpdated: importResult.contactsUpdated,
+      contactsSkipped: importResult.contactsSkipped,
+      listsProcessed: fetchResult.listsProcessed.length,
+      status: 'completed',
+      durationMs: duration,
+      errorsDetail: importResult.errors?.map(e => typeof e === 'string' ? e : e.error) || [],
+    });
 
-    // 8. Update brevo_integrations.last_sync_at
-    await sql`
-      UPDATE brevo_integrations
-      SET
-        last_sync_at = CURRENT_TIMESTAMP,
-        last_error = NULL
-      WHERE id = ${integration.id}
-    `;
+    // 8. Update brevo_integrations.last_sync_at via repository
+    await brevoIntegrationRepository.updateLastSync(integration.id);
 
     return NextResponse.json({
       success: true,
@@ -147,18 +118,20 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error('Brevo import execute error:', error);
 
-    // Update brevo_import_history to failed status
+    // Update brevo_import_history to failed status via repository
     if (brevoImportHistoryId) {
       try {
-        await sql`
-          UPDATE brevo_import_history
-          SET
-            status = 'failed',
-            completed_at = CURRENT_TIMESTAMP,
-            duration_ms = ${Date.now() - startTime},
-            errors_detail = ${JSON.stringify([{ error: error instanceof Error ? error.message : "Unknown error" }])}
-          WHERE id = ${brevoImportHistoryId}
-        `;
+        const brevoImportHistoryRepository = new PostgresBrevoImportHistoryRepository();
+        await brevoImportHistoryRepository.updateWithResults(brevoImportHistoryId, {
+          contactsFetched: 0,
+          contactsInserted: 0,
+          contactsUpdated: 0,
+          contactsSkipped: 0,
+          listsProcessed: 0,
+          status: 'failed',
+          durationMs: Date.now() - startTime,
+          errorsDetail: [error instanceof Error ? error.message : "Unknown error"],
+        });
       } catch (updateError) {
         console.error('Failed to update brevo_import_history:', updateError);
       }

@@ -24,7 +24,24 @@ export interface BrevoContact {
   attributes: Record<string, any>;
 }
 
+export interface BrevoAccountInfo {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+}
+
 export interface IBrevoAPIClient {
+  /**
+   * Get account information from Brevo API
+   * Used to validate API key and fetch account details
+   *
+   * @param apiKey - Brevo API key to validate
+   * @returns Account information
+   * @throws Error if API key is invalid (401) or API call fails
+   */
+  getAccountInfo(apiKey: string): Promise<BrevoAccountInfo>;
+
   /**
    * Fetch all available contact lists from Brevo account
    * @returns Array of Brevo lists with metadata

@@ -14,15 +14,47 @@ import * as brevo from '@getbrevo/brevo';
 import {
   IBrevoAPIClient,
   BrevoList,
-  BrevoContact
+  BrevoContact,
+  BrevoAccountInfo
 } from '@/domain/repositories/IBrevoAPIClient';
 
 export class BrevoAPIClient implements IBrevoAPIClient {
   private contactsApi: brevo.ContactsApi;
+  private accountApi: brevo.AccountApi;
+  private apiKey: string;
 
   constructor(apiKey: string) {
+    this.apiKey = apiKey;
+
     this.contactsApi = new brevo.ContactsApi();
     this.contactsApi.setApiKey(brevo.ContactsApiApiKeys.apiKey, apiKey);
+
+    this.accountApi = new brevo.AccountApi();
+    this.accountApi.setApiKey(brevo.AccountApiApiKeys.apiKey, apiKey);
+  }
+
+  /**
+   * Get account information from Brevo API
+   * Used to validate API key and fetch account details
+   */
+  async getAccountInfo(apiKey: string): Promise<BrevoAccountInfo> {
+    try {
+      // Create a temporary account API instance with the provided key
+      const tempAccountApi = new brevo.AccountApi();
+      tempAccountApi.setApiKey(brevo.AccountApiApiKeys.apiKey, apiKey);
+
+      const response = await tempAccountApi.getAccount();
+      const account = response.body;
+
+      return {
+        email: account.email,
+        firstName: account.firstName,
+        lastName: account.lastName,
+        companyName: account.companyName,
+      };
+    } catch (error: unknown) {
+      throw this.handleBrevoError(error, 'Failed to fetch account info');
+    }
   }
 
   /**

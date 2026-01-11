@@ -1,13 +1,17 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { sql } from '@/lib/db';
-
 /**
  * DELETE /api/integrations/brevo/disconnect
  *
  * Disconnects user's Brevo integration by deactivating it.
  * Keeps historical data for audit purposes.
+ *
+ * Clean Architecture: API route only orchestrates, business logic in use case.
  */
+
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { DisconnectBrevoIntegrationUseCase } from '@/domain/services/DisconnectBrevoIntegrationUseCase';
+import { PostgresBrevoIntegrationRepository } from '@/infrastructure/database/repositories/PostgresBrevoIntegrationRepository';
+
 export async function DELETE() {
   try {
     // 1. Authenticate user
@@ -21,31 +25,26 @@ export async function DELETE() {
 
     const userId = parseInt(session.user.id);
 
-    // 2. Deactivate integration (soft delete - keep history)
-    const result = await sql`
-      UPDATE brevo_integrations
-      SET
-        is_active = false,
-        api_key_encrypted = NULL,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE user_id = ${userId}
-      RETURNING id
-    `;
+    // 2. Initialize use case with repository
+    const brevoIntegrationRepository = new PostgresBrevoIntegrationRepository();
+    const useCase = new DisconnectBrevoIntegrationUseCase(brevoIntegrationRepository);
 
-    if (result.rowCount === 0) {
-      return NextResponse.json(
-        { error: 'No Brevo integration found' },
-        { status: 404 }
-      );
-    }
+    // 3. Execute use case
+    const result = await useCase.execute({ userId });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Brevo integration disconnected successfully'
-    });
+    // 4. Return result
+    return NextResponse.json(result);
 
   } catch (error: unknown) {
     console.error('Error disconnecting Brevo:', error);
+
+    // Handle not found error
+    if (error instanceof Error && error.message.includes('not found')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(
       { error: 'Failed to disconnect Brevo account', details: error instanceof Error ? error.message : "Unknown error" },

@@ -1,26 +1,21 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { sql } from '@/lib/db';
-import { FetchBrevoContactsUseCase } from '@/domain/services/FetchBrevoContactsUseCase';
-import { BrevoAPIClient } from '@/infrastructure/brevo/BrevoAPIClient';
-import { ImportPreview, DetectedColumn } from '@/domain/entities/ImportPreview';
-
-export const maxDuration = 60;
-
 /**
  * POST /api/integrations/brevo/preview
  *
  * Fetches contacts from Brevo and returns a preview (first 500 contacts).
  * Reuses the same ImportPreview format as CSV/JSON imports for UI consistency.
  *
- * Flow:
- * 1. Authenticate user
- * 2. Fetch Brevo integration + decrypt API key
- * 3. Create BrevoAPIClient
- * 4. Execute FetchBrevoContactsUseCase (previewOnly: true)
- * 5. Transform to ImportPreview format
- * 6. Return preview
+ * Clean Architecture: API route only orchestrates, business logic in use case.
  */
+
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { FetchBrevoContactsUseCase } from '@/domain/services/FetchBrevoContactsUseCase';
+import { BrevoAPIClient } from '@/infrastructure/brevo/BrevoAPIClient';
+import { PostgresBrevoIntegrationRepository } from '@/infrastructure/database/repositories/PostgresBrevoIntegrationRepository';
+import { ImportPreview, DetectedColumn } from '@/domain/entities/ImportPreview';
+
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     // 1. Authenticate user
@@ -34,24 +29,19 @@ export async function POST(request: Request) {
 
     const userId = parseInt(session.user.id);
 
-    // 2. Get user's Brevo integration
-    const integrationResult = await sql`
-      SELECT id, api_key_encrypted, is_active, account_email
-      FROM brevo_integrations
-      WHERE user_id = ${userId} AND is_active = true
-    `;
+    // 2. Get user's Brevo integration via repository
+    const brevoIntegrationRepository = new PostgresBrevoIntegrationRepository();
+    const integration = await brevoIntegrationRepository.findByUserId(userId);
 
-    if (integrationResult.rowCount === 0) {
+    if (!integration) {
       return NextResponse.json(
         { error: 'Brevo integration not found. Please connect your Brevo account first.' },
         { status: 404 }
       );
     }
 
-    const integration = integrationResult.rows[0];
-
     // 3. Decrypt API key (reverse base64 - use proper decryption in production)
-    const apiKey = Buffer.from(integration.api_key_encrypted, 'base64').toString('utf-8');
+    const apiKey = Buffer.from(integration.apiKeyEncrypted, 'base64').toString('utf-8');
 
     // 4. Create Brevo client and Use Case
     const brevoClient = new BrevoAPIClient(apiKey);
@@ -73,7 +63,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       preview: {
-        filename: `Brevo Import (${integration.account_email})`,
+        filename: `Brevo Import (${integration.accountEmail})`,
         fileType: 'brevo',
         totalRows: preview.totalRows,
         totalRowsAvailable: fetchResult.totalContactsAvailable, // Total in Brevo account
