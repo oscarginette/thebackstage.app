@@ -22,18 +22,27 @@
  * Test rate limiting locally with curl:
  *
  * ```bash
- * # Test auth endpoint (5 req/15min):
- * for i in {1..6}; do
+ * # Test public endpoint (10 req/1min):
+ * for i in {1..12}; do
  *   curl -X POST http://localhost:3002/api/auth/signup \
  *     -H "Content-Type: application/json" \
- *     -d '{"email":"test@example.com"}' \
+ *     -d "{\"email\":\"test$i@example.com\",\"password\":\"password123\"}" \
  *     -v 2>&1 | grep -E "HTTP|X-RateLimit"
  *   sleep 1
  * done
  *
- * # Test general endpoint (60 req/1min):
- * for i in {1..61}; do
+ * # Test webhook endpoint (1000 req/1min):
+ * for i in {1..1001}; do
+ *   curl -X POST http://localhost:3002/api/webhooks/resend \
+ *     -H "Content-Type: application/json" \
+ *     -d '{"type":"email.sent","data":{}}' \
+ *     -v 2>&1 | grep -E "HTTP|X-RateLimit"
+ * done
+ *
+ * # Test authenticated endpoint (100 req/1min - requires auth cookie):
+ * for i in {1..101}; do
  *   curl http://localhost:3002/api/contacts \
+ *     -H "Cookie: authjs.session-token=YOUR_SESSION_TOKEN" \
  *     -v 2>&1 | grep -E "HTTP|X-RateLimit"
  * done
  * ```
@@ -49,32 +58,44 @@ import type { NextRequest } from 'next/server';
 
 // Rate limit configurations per endpoint type
 export const RATE_LIMITS = {
-  // Authentication endpoints: Strict limit to prevent brute force
-  auth: {
-    requests: 5,
-    window: '15 m', // 15 minutes
-    description: 'Authentication routes (signup, login, password reset)',
+  // Public endpoints (login, signup): Prevent brute force attacks
+  // By IP address to prevent credential stuffing
+  public: {
+    requests: 10,
+    window: '1 m', // 1 minute
+    description: 'Public endpoints (signup, login) - per IP',
   },
 
-  // Email sending: Prevent spam and abuse
+  // Authenticated endpoints: General API protection
+  // By user ID to prevent abuse from authenticated users
+  authenticated: {
+    requests: 100,
+    window: '1 m', // 1 minute
+    description: 'Authenticated API endpoints - per user',
+  },
+
+  // Email sending: Stricter limit to prevent spam
+  // By user ID to prevent email abuse
   email: {
     requests: 10,
     window: '1 m', // 1 minute
     description: 'Email sending endpoints (per authenticated user)',
   },
 
-  // Webhooks: Higher limit for legitimate webhook providers
+  // Webhooks: Very high limit for legitimate webhook providers
+  // By endpoint to allow high-volume webhook traffic
   webhook: {
-    requests: 100,
+    requests: 1000,
     window: '1 m', // 1 minute
-    description: 'Webhook endpoints (Resend, Stripe, etc.)',
+    description: 'Webhook endpoints (Resend, Stripe, Mailgun, etc.)',
   },
 
-  // Default: General API protection
-  default: {
-    requests: 60,
-    window: '1 m', // 1 minute
-    description: 'Default rate limit for all other API routes',
+  // Admin endpoints: Very high limit or no limit
+  // By user ID to allow admin operations without restriction
+  admin: {
+    requests: 10000,
+    window: '1 m', // 1 minute (effectively no limit)
+    description: 'Admin endpoints - minimal restrictions',
   },
 } as const;
 
@@ -118,14 +139,24 @@ function createRateLimiters() {
   }
 
   return {
-    auth: new Ratelimit({
+    public: new Ratelimit({
       redis,
       limiter: Ratelimit.slidingWindow(
-        RATE_LIMITS.auth.requests,
-        RATE_LIMITS.auth.window
+        RATE_LIMITS.public.requests,
+        RATE_LIMITS.public.window
       ),
-      prefix: 'ratelimit:auth',
+      prefix: 'ratelimit:public',
       analytics: true, // Enable Upstash analytics
+    }),
+
+    authenticated: new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(
+        RATE_LIMITS.authenticated.requests,
+        RATE_LIMITS.authenticated.window
+      ),
+      prefix: 'ratelimit:authenticated',
+      analytics: true,
     }),
 
     email: new Ratelimit({
@@ -148,13 +179,13 @@ function createRateLimiters() {
       analytics: true,
     }),
 
-    default: new Ratelimit({
+    admin: new Ratelimit({
       redis,
       limiter: Ratelimit.slidingWindow(
-        RATE_LIMITS.default.requests,
-        RATE_LIMITS.default.window
+        RATE_LIMITS.admin.requests,
+        RATE_LIMITS.admin.window
       ),
-      prefix: 'ratelimit:default',
+      prefix: 'ratelimit:admin',
       analytics: true,
     }),
   };
@@ -199,30 +230,59 @@ export function getClientIdentifier(
 }
 
 /**
- * Determines rate limiter type based on request path
+ * Determines rate limiter type based on request path and authentication status
  *
  * Pattern matching for endpoint categorization:
- * - /api/auth/* -> auth limiter (strict)
- * - /api/emails/send -> email limiter (per user)
- * - /api/webhooks/* -> webhook limiter (permissive)
- * - Everything else -> default limiter
+ * - /api/admin/* -> admin limiter (very high/no limit)
+ * - /api/webhooks/* -> webhook limiter (high limit for providers)
+ * - /api/send-custom-email, /api/send-track -> email limiter (strict, per user)
+ * - /api/auth/signup, /api/auth/login -> public limiter (moderate, per IP)
+ * - Everything else authenticated -> authenticated limiter (per user)
+ * - Everything else unauthenticated -> public limiter (per IP)
+ *
+ * @param pathname - Request pathname
+ * @param isAuthenticated - Whether user is authenticated
+ * @returns Rate limiter type to use
  */
 export function getRateLimiterType(
-  pathname: string
+  pathname: string,
+  isAuthenticated: boolean
 ): keyof typeof RATE_LIMITS {
-  if (pathname.startsWith('/api/auth/')) {
-    return 'auth';
+  // Admin endpoints: Minimal restrictions for admin operations
+  if (pathname.startsWith('/api/admin/')) {
+    return 'admin';
   }
 
-  if (pathname === '/api/emails/send' || pathname === '/api/send-track') {
-    return 'email';
-  }
-
+  // Webhook endpoints: High limit for legitimate webhook providers
   if (pathname.startsWith('/api/webhooks/') || pathname.startsWith('/api/webhook/')) {
     return 'webhook';
   }
 
-  return 'default';
+  // Email sending endpoints: Strict limit to prevent spam/abuse
+  if (
+    pathname === '/api/send-custom-email' ||
+    pathname === '/api/send-track' ||
+    pathname === '/api/campaigns'
+  ) {
+    return 'email';
+  }
+
+  // Public auth endpoints: Moderate limit to prevent brute force (per IP)
+  if (
+    pathname === '/api/auth/signup' ||
+    pathname.startsWith('/api/auth/signin') ||
+    pathname.startsWith('/api/auth/callback')
+  ) {
+    return 'public';
+  }
+
+  // Authenticated endpoints: General limit per user
+  if (isAuthenticated) {
+    return 'authenticated';
+  }
+
+  // Unauthenticated endpoints: Moderate limit per IP
+  return 'public';
 }
 
 /**
@@ -283,7 +343,8 @@ export async function checkRateLimit(
   }
 
   const pathname = request.nextUrl.pathname;
-  const limiterType = getRateLimiterType(pathname);
+  const isAuthenticated = !!userId;
+  const limiterType = getRateLimiterType(pathname, isAuthenticated);
   const identifier = getClientIdentifier(request, userId);
 
   const limiter = rateLimiters[limiterType];
