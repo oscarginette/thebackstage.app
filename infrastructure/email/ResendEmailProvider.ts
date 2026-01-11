@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { IEmailProvider, EmailParams, EmailResult } from './IEmailProvider';
+import { IEmailProvider, EmailParams, EmailResult } from '@/domain/providers/IEmailProvider';
 import { env } from '@/lib/env';
 
 export class ResendEmailProvider implements IEmailProvider {

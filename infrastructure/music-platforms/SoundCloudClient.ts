@@ -1,5 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
-import { IMusicPlatformClient } from './IMusicPlatformClient';
+import { IMusicPlatformClient } from '@/domain/providers/IMusicPlatformClient';
 
 interface RSSFeed {
   rss: {

@@ -4,18 +4,22 @@
  * Generates RFC 4180-compliant CSV from contact data.
  * Handles metadata flattening and special character escaping.
  *
+ * Clean Architecture: Infrastructure layer implementation.
+ * SOLID: Implements ICsvGenerator interface (Dependency Inversion).
+ *
  * Security:
  * - Prevents CSV injection via proper escaping
  * - No formula execution (=, +, -, @)
  */
 
+import { ICsvGenerator } from '@/domain/providers/ICsvGenerator';
 import { Contact } from '@/domain/repositories/IContactRepository';
 import {
   ContactExportColumn,
   CONTACT_EXPORT_COLUMNS,
 } from '@/domain/types/csv-export';
 
-export class CsvGenerator {
+export class CsvGenerator implements ICsvGenerator {
   generate(contacts: Contact[], columns: ContactExportColumn[]): string {
     const headers = this.generateHeaders(columns);
     const rows = contacts.map((contact) => this.generateRow(contact, columns));

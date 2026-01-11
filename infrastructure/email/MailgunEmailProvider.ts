@@ -16,7 +16,7 @@
 
 import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
-import { IEmailProvider, EmailParams, EmailResult } from './IEmailProvider';
+import { IEmailProvider, EmailParams, EmailResult } from '@/domain/providers/IEmailProvider';
 
 export class MailgunEmailProvider implements IEmailProvider {
   private mg: any;

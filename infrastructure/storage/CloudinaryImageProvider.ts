@@ -15,7 +15,7 @@ import {
   UploadImageInput,
   UploadImageOutput,
   DeleteImageInput
-} from './IImageStorageProvider';
+} from '@/domain/providers/IImageStorageProvider';
 import { getRequiredEnv } from '@/lib/env';
 
 export class ValidationError extends Error {

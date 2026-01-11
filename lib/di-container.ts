@@ -93,11 +93,12 @@ import type { ISavedReleasesRepository } from '@/domain/repositories/ISavedRelea
 import type { IUserNotificationPreferencesRepository } from '@/domain/repositories/IUserNotificationPreferencesRepository';
 
 // ============================================================================
-// Provider Imports
+// Provider Imports (Domain Interfaces)
 // ============================================================================
 import { resendEmailProvider } from '@/infrastructure/email';
-import type { IEmailProvider } from '@/infrastructure/email/IEmailProvider';
-import type { IImageStorageProvider } from '@/infrastructure/storage/IImageStorageProvider';
+import type { IEmailProvider } from '@/domain/providers/IEmailProvider';
+import type { IImageStorageProvider } from '@/domain/providers/IImageStorageProvider';
+import type { ICsvGenerator } from '@/domain/providers/ICsvGenerator';
 import { SoundCloudClient } from '@/lib/soundcloud-client';
 import { SpotifyClient } from '@/lib/spotify-client';
 import { CsvGenerator } from '@/infrastructure/csv/CsvGenerator';
