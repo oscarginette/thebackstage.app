@@ -211,9 +211,15 @@ export class PostgresContactListRepository implements IContactListRepository {
   async removeContacts(listId: string, contactIds: number[]): Promise<number> {
     if (contactIds.length === 0) return 0;
 
+    // Use parameterized query with JSON array (safe from SQL injection)
+    // PostgreSQL's jsonb_array_elements_text extracts array values
+    const contactIdsJson = JSON.stringify(contactIds);
     const result = await sql`
       DELETE FROM contact_list_members
-      WHERE list_id = ${listId} AND contact_id = ANY(ARRAY[${contactIds.join(',')}]::integer[])
+      WHERE list_id = ${listId}
+        AND contact_id::text IN (
+          SELECT jsonb_array_elements_text(${contactIdsJson}::jsonb)
+        )
     `;
 
     return result.rowCount || 0;

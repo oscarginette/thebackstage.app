@@ -400,14 +400,13 @@ export class PostgresContactRepository implements IContactRepository {
 
     // Case 2: Contacts in specific lists (UNION)
     if (filterCriteria.mode === LIST_FILTER_MODES.SPECIFIC_LISTS) {
-      const listIdsArray = filterCriteria.listIds.map(id => `'${id}'`).join(',');
       const result = await sql`
         SELECT DISTINCT c.id, c.email, c.name, c.unsubscribe_token, c.subscribed, c.created_at
         FROM contacts c
         INNER JOIN contact_list_members clm ON c.id = clm.contact_id
         WHERE c.user_id = ${userId}
           AND c.subscribed = true
-          AND clm.list_id = ANY(ARRAY[${listIdsArray}]::uuid[])
+          AND clm.list_id = ANY(${filterCriteria.listIds})
         ORDER BY c.created_at DESC
       `;
 
@@ -423,7 +422,6 @@ export class PostgresContactRepository implements IContactRepository {
 
     // Case 3: Contacts EXCLUDING specific lists
     if (filterCriteria.mode === LIST_FILTER_MODES.EXCLUDE_LISTS) {
-      const listIdsArray = filterCriteria.listIds.map(id => `'${id}'`).join(',');
       const result = await sql`
         SELECT c.id, c.email, c.name, c.unsubscribe_token, c.subscribed, c.created_at
         FROM contacts c
@@ -433,7 +431,7 @@ export class PostgresContactRepository implements IContactRepository {
             SELECT 1
             FROM contact_list_members clm
             WHERE clm.contact_id = c.id
-              AND clm.list_id = ANY(ARRAY[${listIdsArray}]::uuid[])
+              AND clm.list_id = ANY(${filterCriteria.listIds})
           )
         ORDER BY c.created_at DESC
       `;
