@@ -6,10 +6,14 @@
  *
  * Flow:
  * 1. Fetch domain by ID
- * 2. Validate domain can be verified (status check)
- * 3. Call Mailgun verification API (checks DNS records)
- * 4. Update domain status (verified/failed)
- * 5. Return verification result
+ * 2. Verify ownership (security check)
+ * 3. Validate domain can be verified (status check)
+ * 4. Check Mailgun domain name exists
+ * 5. Call Mailgun verification API (checks DNS records)
+ * 6. Determine new status
+ * 7. Build error message
+ * 8. Update domain status in database
+ * 9. Return verification result
  *
  * Verification Logic:
  * - Mailgun checks SPF, DKIM, DMARC records via DNS lookup
@@ -33,9 +37,11 @@
 import { ISendingDomainRepository } from '../repositories/ISendingDomainRepository';
 import { IMailgunClient } from '../providers/IMailgunClient';
 import { SendingDomain, DomainStatus, DOMAIN_STATUS } from '../entities/SendingDomain';
+import { AccessDeniedError } from '@/lib/errors';
 
 export interface VerifySendingDomainInput {
   domainId: number;
+  userId: number;
 }
 
 export interface VerifySendingDomainResult {
@@ -84,13 +90,23 @@ export class VerifySendingDomainUseCase {
         };
       }
 
+      // 2. Verify ownership (SECURITY: Prevent unauthorized domain verification)
+      if (domain.userId !== input.userId) {
+        console.warn('[VerifySendingDomain] Ownership check failed:', {
+          domainId: input.domainId,
+          domainUserId: domain.userId,
+          requestUserId: input.userId,
+        });
+        throw new AccessDeniedError('You do not have permission to verify this domain');
+      }
+
       console.log('[VerifySendingDomain] Verifying domain:', {
         id: domain.id,
         domain: domain.domain,
         currentStatus: domain.status,
       });
 
-      // 2. Check if can verify (status must be pending or dns_configured)
+      // 3. Check if can verify (status must be pending or dns_configured)
       if (!domain.canVerify()) {
         console.log('[VerifySendingDomain] Domain cannot be verified:', {
           currentStatus: domain.status,
@@ -103,7 +119,7 @@ export class VerifySendingDomainUseCase {
         };
       }
 
-      // 3. Check if Mailgun domain name exists
+      // 4. Check if Mailgun domain name exists
       if (!domain.mailgunDomainName) {
         console.error('[VerifySendingDomain] Missing Mailgun domain name:', domain.id);
         return {
@@ -115,7 +131,7 @@ export class VerifySendingDomainUseCase {
 
       console.log('[VerifySendingDomain] Calling Mailgun verification API:', domain.mailgunDomainName);
 
-      // 4. Verify with Mailgun (checks DNS records)
+      // 5. Verify with Mailgun (checks DNS records)
       const verificationResult = await this.mailgunClient.verifyDomain(
         domain.mailgunDomainName
       );
@@ -128,12 +144,12 @@ export class VerifySendingDomainUseCase {
         error: verificationResult.error,
       });
 
-      // 5. Determine new status based on verification result
+      // 6. Determine new status based on verification result
       const newStatus = verificationResult.verified
         ? DOMAIN_STATUS.VERIFIED
         : DOMAIN_STATUS.FAILED;
 
-      // 6. Build error message for failed verification
+      // 7. Build error message for failed verification
       const errorMessage = this.buildErrorMessage(verificationResult);
 
       console.log('[VerifySendingDomain] Updating domain status:', {
@@ -142,7 +158,7 @@ export class VerifySendingDomainUseCase {
         errorMessage,
       });
 
-      // 7. Update status in database
+      // 8. Update status in database
       const updatedDomain = await this.sendingDomainRepository.updateVerificationStatus(
         domain.id,
         {
@@ -151,7 +167,7 @@ export class VerifySendingDomainUseCase {
         }
       );
 
-      // 8. Return result
+      // 9. Return result
       return {
         success: verificationResult.verified,
         status: newStatus,

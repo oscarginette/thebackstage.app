@@ -206,9 +206,12 @@ export default function LoginPage() {
                   {t("password")}
                 </label>
                 {isLogin && (
-                  <button type="button" className="text-xs font-semibold text-accent hover:text-accent/80 transition-colors">
+                  <Link
+                    href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`}
+                    className="text-xs font-semibold text-accent hover:text-accent/80 transition-colors"
+                  >
                     {t("forgotPassword")}
-                  </button>
+                  </Link>
                 )}
               </div>
               <input

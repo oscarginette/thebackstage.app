@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { UseCaseFactory } from '@/lib/di-container';
+import { AccessDeniedError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,7 +76,10 @@ export async function POST(
 
     // Execute Use Case (business logic)
     const useCase = UseCaseFactory.createVerifySendingDomainUseCase();
-    const result = await useCase.execute({ domainId });
+    const result = await useCase.execute({
+      domainId,
+      userId: parseInt(session.user.id, 10),
+    });
 
     // Return result regardless of verification success
     // (client should check 'success' field)
@@ -87,6 +91,14 @@ export async function POST(
     });
   } catch (error) {
     console.error('[POST /api/sending-domains/[id]/verify] Error:', error);
+
+    // Handle ownership/permission errors (403 Forbidden)
+    if (error instanceof AccessDeniedError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      );
+    }
 
     if (error instanceof Error) {
       return NextResponse.json(
