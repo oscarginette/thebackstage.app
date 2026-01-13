@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Upload, X, Plus, Save, Trash2, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Upload, X, Plus, Trash2, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PATHS } from '@/lib/paths';
+import { SettingsPageHeader } from '@/components/settings/SettingsPageHeader';
+import { SettingsSection } from '@/components/settings/SettingsSection';
+import { SettingsFormActions } from '@/components/settings/SettingsFormActions';
+import { Button } from '@/components/ui/Button';
+import { TEXT_STYLES } from '@/domain/types/design-tokens';
 
 interface SocialLink {
   platform: string;
@@ -66,14 +69,12 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
       setError('Invalid file type. Only PNG, JPEG, WebP, and SVG are allowed.');
       return;
     }
 
-    // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       setError('File too large. Maximum size is 2MB.');
       return;
@@ -178,7 +179,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
       });
 
       if (res.ok) {
-        await loadSignature(); // Reload signature (will get The Backstage default)
+        await loadSignature();
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       } else {
@@ -195,207 +196,194 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center h-full">
         <div className="text-foreground">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link
-            href={PATHS.SETTINGS}
-            className="flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Settings
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors"
-            >
-              <Eye className="w-4 h-4" />
-              {showPreview ? 'Hide' : 'Preview'}
-            </button>
-
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Success Message */}
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg"
-          >
-            Signature saved successfully!
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="space-y-6">
+      <SettingsPageHeader
+        title="Email Signature"
+        description="Customize your email signature with your logo and social links"
+      />
 
       {/* Error Message */}
       {error && (
-        <div className="max-w-4xl mx-auto px-6 mt-6">
-          <div className="bg-red-500/10 border border-red-500/20 text-red-600 px-4 py-3 rounded-md flex items-center justify-between">
-            <span>{error}</span>
-            <button onClick={() => setError(null)}>
-              <X className="w-4 h-4" />
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-500/20 rounded-xl px-4 py-3 flex items-center justify-between">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <button onClick={() => setError(null)} className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
+                <X className="w-4 h-4" />
             </button>
-          </div>
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="space-y-8">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold">Email Signature</h1>
-            <p className="text-foreground/60 mt-2">
-              Customize your email signature with your logo and social links
-            </p>
-          </div>
+      {/* Preview Button - Outside form */}
+      <div className="flex justify-end">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setShowPreview(!showPreview)}
+        >
+          <Eye className="w-4 h-4" />
+          {showPreview ? 'Hide Preview' : 'Preview'}
+        </Button>
+      </div>
 
-          {/* Logo Upload */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Logo</h2>
-            {signature.logoUrl ? (
-              <div className="relative inline-block">
-                <img
-                  src={signature.logoUrl}
-                  alt="Signature logo"
-                  className="h-20 w-auto border border-border rounded-md"
-                />
-                <button
-                  onClick={handleRemoveLogo}
-                  className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 text-foreground/40 mb-2" />
-                  <p className="text-sm text-foreground/60">
-                    {isUploading ? 'Uploading...' : 'Click to upload logo'}
-                  </p>
-                  <p className="text-xs text-foreground/40 mt-1">
-                    PNG, JPEG, WebP or SVG (Max 2MB)
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                  onChange={handleLogoUpload}
-                  disabled={isUploading}
-                />
-              </label>
-            )}
-          </div>
-
-          {/* Custom Text */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Custom Text (Optional)</h2>
-            <textarea
-              value={signature.customText || ''}
-              onChange={(e) => setSignature(prev => ({ ...prev, customText: e.target.value }))}
-              placeholder="Thanks,&#10;Your Name"
-              className="w-full px-4 py-3 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-              rows={3}
-              maxLength={500}
-            />
-            <p className="text-sm text-foreground/60">
-              {signature.customText?.length || 0}/500 characters
-            </p>
-          </div>
-
-          {/* Social Links */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Social Links</h2>
-              <button
-                onClick={handleAddLink}
-                disabled={signature.socialLinks.length >= 6}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                <Plus className="w-4 h-4" />
-                Add Link
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {signature.socialLinks.map((link, index) => (
-                <div key={index} className="flex gap-3">
-                  <input
-                    type="text"
-                    placeholder="Platform (e.g., Instagram)"
-                    value={link.platform}
-                    onChange={(e) => handleUpdateLink(index, 'platform', e.target.value)}
-                    className="flex-1 px-4 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    maxLength={50}
-                  />
-                  <input
-                    type="url"
-                    placeholder="URL (https://...)"
-                    value={link.url}
-                    onChange={(e) => handleUpdateLink(index, 'url', e.target.value)}
-                    className="flex-1 px-4 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Label (e.g., @username)"
-                    value={link.label}
-                    onChange={(e) => handleUpdateLink(index, 'label', e.target.value)}
-                    className="flex-1 px-4 py-2 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    maxLength={50}
+      <form
+        onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+        }}
+        className="space-y-6"
+      >
+        {/* Signature Content - Single Section */}
+        <SettingsSection>
+          <div className="space-y-6">
+            {/* Logo Upload */}
+            <div className="space-y-2">
+              <label className={TEXT_STYLES.label.default}>Logo</label>
+              <p className={TEXT_STYLES.body.subtle}>PNG, JPEG, WebP or SVG (max 2MB)</p>
+              {signature.logoUrl ? (
+                <div className="relative inline-block">
+                  <img
+                    src={signature.logoUrl}
+                    alt="Signature logo"
+                    className="h-20 w-auto border border-border rounded-md"
                   />
                   <button
-                    onClick={() => handleRemoveLink(index)}
-                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-              ))}
-
-              {signature.socialLinks.length === 0 && (
-                <div className="text-center py-8 text-foreground/40 text-sm">
-                  No social links yet. Click "Add Link" to get started.
-                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 text-foreground/40 mb-2" />
+                    <p className="text-sm text-foreground/60">
+                      {isUploading ? 'Uploading...' : 'Click to upload logo'}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    onChange={handleLogoUpload}
+                    disabled={isUploading}
+                  />
+                </label>
               )}
             </div>
-          </div>
 
-          {/* Reset Button */}
-          <div className="pt-6 border-t border-border">
-            <button
-              onClick={handleResetToDefault}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 border border-red-600/20 rounded-md hover:bg-red-500/10 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Reset to The Backstage Default
-            </button>
+            {/* Custom Text */}
+            <div className="space-y-2">
+              <label className={TEXT_STYLES.label.default}>Custom Text</label>
+              <p className={TEXT_STYLES.body.subtle}>Optional closing text (e.g., 'Best regards, Your Name')</p>
+              <textarea
+                value={signature.customText || ''}
+                onChange={(e) => setSignature(prev => ({ ...prev, customText: e.target.value }))}
+                placeholder="Thanks,&#10;Your Name"
+                className="w-full px-4 py-3 border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                rows={3}
+                maxLength={500}
+              />
+              <p className={TEXT_STYLES.body.muted}>
+                {signature.customText?.length || 0}/500 characters
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className={TEXT_STYLES.label.default}>Social Links</label>
+                  <p className={TEXT_STYLES.body.subtle}>Add up to 6 social media links</p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleAddLink}
+                  disabled={signature.socialLinks.length >= 6}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Link
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {signature.socialLinks.map((link, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Platform"
+                      value={link.platform}
+                      onChange={(e) => handleUpdateLink(index, 'platform', e.target.value)}
+                      className="w-32 px-3 py-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      maxLength={50}
+                    />
+                    <input
+                      type="url"
+                      placeholder="URL"
+                      value={link.url}
+                      onChange={(e) => handleUpdateLink(index, 'url', e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Label"
+                      value={link.label}
+                      onChange={(e) => handleUpdateLink(index, 'label', e.target.value)}
+                      className="w-32 px-3 py-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      maxLength={50}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLink(index)}
+                      className="p-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+
+                {signature.socialLinks.length === 0 && (
+                  <div className="text-center py-6 border border-dashed border-border rounded-xl">
+                    <p className={TEXT_STYLES.body.subtle}>
+                      No social links yet. Click "Add Link" to get started.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </SettingsSection>
+
+        {/* Reset Section */}
+        <SettingsSection>
+            <div className="pt-2 border-t border-border">
+              <Button
+                  variant="danger"
+                  size="sm"
+                  type="button"
+                  onClick={handleResetToDefault}
+              >
+                  <Trash2 className="w-4 h-4" />
+                  Reset to The Backstage Default
+              </Button>
+            </div>
+        </SettingsSection>
+
+        {/* Form Actions - Outside cards like Profile */}
+        <SettingsFormActions
+          isSaving={isSaving}
+          showSuccess={showSuccess}
+          type="submit"
+        />
+      </form>
 
       {/* Preview Modal */}
       <AnimatePresence>
@@ -425,9 +413,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
                   </button>
                 </div>
 
-                {/* Preview */}
                 <div className="border border-border rounded-lg p-8 bg-white text-black">
-                  {/* Custom Text */}
                   {signature.customText && (
                     <div className="text-center mb-6">
                       {signature.customText.split('\n').map((line, i) => (
@@ -438,7 +424,6 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
                     </div>
                   )}
 
-                  {/* Logo */}
                   {signature.logoUrl && (
                     <div className="text-center mb-4">
                       <img
@@ -449,7 +434,6 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
                     </div>
                   )}
 
-                  {/* Social Links */}
                   {signature.socialLinks.length > 0 && (
                     <div className="text-center text-sm text-gray-600">
                       {signature.socialLinks.map((link, index) => (

@@ -129,25 +129,41 @@ export const THEME_TOGGLE_STYLES = {
 /**
  * Typography Styles
  * Text styles for headings, body, labels
+ *
+ * IMPORTANT: Always use these constants for text styling.
+ * This ensures consistent typography across the entire app.
  */
 export const TEXT_STYLES = {
   // Headings
   heading: {
-    h1: 'text-4xl md:text-5xl font-serif tracking-tight leading-[0.9]',
-    h2: 'text-lg font-serif',
-    h3: 'text-base font-serif',
+    // Page titles (e.g., Settings pages)
+    h1: 'text-2xl font-serif text-foreground',
+
+    // Section titles (e.g., within SettingsSection)
+    h2: 'text-base font-serif text-foreground',
+
+    // Sub-section titles
+    h3: 'text-sm font-serif text-foreground',
   },
 
   // Body text
   body: {
+    // Regular body text
     base: 'text-sm text-foreground',
-    subtle: 'text-xs text-foreground/50',
+
+    // Subtle/secondary text (descriptions, helper text)
+    subtle: 'text-xs text-foreground/60',
+
+    // Very small text (character counts, hints)
     muted: 'text-[10px] text-foreground/40',
   },
 
   // Labels
   label: {
+    // Default form labels
     default: 'text-sm font-medium text-foreground',
+
+    // Small uppercase labels (Settings pages)
     small: 'text-[9px] font-black uppercase tracking-[0.15em] text-foreground/40',
   },
 } as const;
