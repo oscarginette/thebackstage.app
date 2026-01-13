@@ -144,11 +144,14 @@ export type UpdateDownloadGateInput = z.infer<typeof UpdateDownloadGateSchema>;
 /**
  * Schema for POST /api/gate/[slug]/submit
  * Submits email for download gate (public endpoint)
+ * Multi-brand consent: The Backstage + Gee Beat
  */
 export const SubmitDownloadGateSchema = z.object({
   email: z.string().email('Invalid email address'),
   firstName: z.string().max(100, 'First name too long').optional(),
-  consentMarketing: z.boolean({ message: 'Marketing consent is required' }),
+  consentBackstage: z.boolean({ message: 'Backstage consent must be explicitly provided' }),
+  consentGeeBeat: z.boolean({ message: 'Gee Beat consent must be explicitly provided' }),
+  source: z.enum(['the_backstage', 'gee_beat'], { message: 'Source must be the_backstage or gee_beat' }),
 });
 
 export type SubmitDownloadGateInput = z.infer<typeof SubmitDownloadGateSchema>;

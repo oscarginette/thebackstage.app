@@ -629,10 +629,12 @@ export class UseCaseFactory {
   }
 
   static createProcessDownloadUseCase(): ProcessDownloadUseCase {
+    const { PixelTrackingService } = require('@/infrastructure/pixel/PixelTrackingService');
     return new ProcessDownloadUseCase(
       RepositoryFactory.createDownloadSubmissionRepository(),
       RepositoryFactory.createDownloadGateRepository(),
-      RepositoryFactory.createDownloadAnalyticsRepository()
+      RepositoryFactory.createDownloadAnalyticsRepository(),
+      new PixelTrackingService()
     );
   }
 
@@ -654,9 +656,11 @@ export class UseCaseFactory {
   }
 
   static createTrackGateAnalyticsUseCase(): TrackGateAnalyticsUseCase {
+    const { PixelTrackingService } = require('@/infrastructure/pixel/PixelTrackingService');
     return new TrackGateAnalyticsUseCase(
       RepositoryFactory.createDownloadAnalyticsRepository(),
-      RepositoryFactory.createDownloadGateRepository()
+      RepositoryFactory.createDownloadGateRepository(),
+      new PixelTrackingService()
     );
   }
 

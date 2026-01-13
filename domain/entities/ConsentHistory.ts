@@ -33,7 +33,8 @@ export type ConsentSource =
   | 'admin_action'
   | 'webhook_bounce'
   | 'hypedit_signup'
-  | 'manual_import';
+  | 'manual_import'
+  | 'download_gate';
 
 /**
  * Consent Source Constants
@@ -46,6 +47,7 @@ export const CONSENT_SOURCES = {
   WEBHOOK_BOUNCE: 'webhook_bounce' as const,
   HYPEDIT_SIGNUP: 'hypedit_signup' as const,
   MANUAL_IMPORT: 'manual_import' as const,
+  DOWNLOAD_GATE: 'download_gate' as const,
 } as const;
 
 // Re-export for backward compatibility
@@ -84,7 +86,8 @@ export class ConsentHistory {
       'admin_action',
       'webhook_bounce',
       'hypedit_signup',
-      'manual_import'
+      'manual_import',
+      'download_gate'
     ];
 
     if (!validSources.includes(source)) {

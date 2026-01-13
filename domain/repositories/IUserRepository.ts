@@ -148,4 +148,43 @@ export interface IUserRepository {
    * @returns Array of users with soundcloud_id and active status
    */
   findUsersWithSoundCloudConfigured(): Promise<User[]>;
+
+  /**
+   * Generate and save password reset token
+   * SECURITY: Token is crypto-secure (32 bytes), hashed with SHA-256 before storage, expires in 1 hour
+   * @param email - User email (case-insensitive)
+   * @returns Plaintext reset token (64-char hex) to send via email, or null if user not found
+   * @throws Error if database update fails
+   * @note Only hashed token is stored in database - if DB is compromised, attackers cannot use tokens
+   */
+  createPasswordResetToken(email: string): Promise<string | null>;
+
+  /**
+   * Find user by password reset token
+   * SECURITY: Hashes incoming token before DB comparison, returns null if token expired or invalid
+   * @param token - Plaintext 64-char hex reset token (from email link)
+   * @returns User entity or null if not found/expired
+   * @note Token is hashed with SHA-256 before database lookup for security
+   */
+  findByPasswordResetToken(token: string): Promise<User | null>;
+
+  /**
+   * Update user password and invalidate reset token
+   * SECURITY: Hashes password with bcrypt, clears token (single-use)
+   * @param userId - User identifier
+   * @param newPasswordHash - bcrypt hash of new password
+   * @throws Error if user not found or update fails
+   */
+  updatePasswordAndInvalidateToken(
+    userId: number,
+    newPasswordHash: string
+  ): Promise<void>;
+
+  /**
+   * Invalidate password reset token (without changing password)
+   * Used when user requests new token or for cleanup
+   * @param userId - User identifier
+   * @throws Error if user not found or update fails
+   */
+  invalidatePasswordResetToken(userId: number): Promise<void>;
 }

@@ -725,4 +725,178 @@ export class PostgresUserRepository implements IUserRepository {
       );
     }
   }
+
+  /**
+   * Create password reset token for user
+   * SECURITY: Generates crypto-secure token, 1-hour expiration, hashes before storage
+   */
+  async createPasswordResetToken(email: string): Promise<string | null> {
+    try {
+      const { PASSWORD_RESET_TOKEN_EXPIRY_MS } = await import('@/domain/types/password-reset');
+      const { PasswordResetToken } = await import('@/domain/value-objects/PasswordResetToken');
+
+      // Generate crypto-secure token and hash it
+      const { plaintextToken, hashedToken } = PasswordResetToken.generate();
+
+      // Calculate expiration (1 hour from now)
+      const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_EXPIRY_MS);
+
+      // Update user with HASHED token (case-insensitive email lookup)
+      const result = await sql`
+        UPDATE users
+        SET
+          reset_password_token = ${hashedToken},
+          reset_password_token_expires_at = ${expiresAt},
+          updated_at = NOW()
+        WHERE LOWER(email) = LOWER(${email.trim()})
+        RETURNING id
+      `;
+
+      // SECURITY: Don't reveal if email exists (return null silently)
+      if (result.rowCount === 0) {
+        return null;
+      }
+
+      // Return plaintext token to send via email
+      return plaintextToken;
+    } catch (error) {
+      console.error('PostgresUserRepository.createPasswordResetToken error:', error);
+      throw new Error(
+        `Failed to create password reset token: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Find user by password reset token
+   * SECURITY: Hashes incoming token before comparison, returns null if token expired or invalid
+   */
+  async findByPasswordResetToken(token: string): Promise<User | null> {
+    try {
+      const { PasswordResetToken } = await import('@/domain/value-objects/PasswordResetToken');
+
+      // Hash the incoming token before querying database
+      const hashedToken = PasswordResetToken.hash(token);
+
+      const result = await sql`
+        SELECT
+          id,
+          email,
+          password_hash,
+          name,
+          role,
+          active,
+          created_at,
+          updated_at,
+          subscription_plan,
+          subscription_started_at,
+          subscription_expires_at,
+          monthly_quota,
+          emails_sent_this_month,
+          quota_reset_at
+        FROM users
+        WHERE reset_password_token = ${hashedToken}
+          AND reset_password_token_expires_at > NOW()
+          AND active = true
+        LIMIT 1
+      `;
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const row = result.rows[0];
+      return User.fromDatabase(
+        row.id,
+        row.email,
+        row.password_hash,
+        row.role,
+        row.active,
+        new Date(row.created_at),
+        new Date(row.updated_at),
+        row.subscription_plan ?? 'free',
+        row.monthly_quota ?? 1000,
+        row.emails_sent_this_month ?? 0,
+        row.quota_reset_at ? new Date(row.quota_reset_at) : new Date(),
+        row.name,
+        row.subscription_started_at
+          ? new Date(row.subscription_started_at)
+          : undefined,
+        row.subscription_expires_at
+          ? new Date(row.subscription_expires_at)
+          : undefined
+      );
+    } catch (error) {
+      console.error(
+        'PostgresUserRepository.findByPasswordResetToken error:',
+        error
+      );
+      throw new Error(
+        `Failed to find user by reset token: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Update password and invalidate reset token
+   * SECURITY: Atomic operation, token is single-use
+   */
+  async updatePasswordAndInvalidateToken(
+    userId: number,
+    newPasswordHash: string
+  ): Promise<void> {
+    try {
+      const result = await sql`
+        UPDATE users
+        SET
+          password_hash = ${newPasswordHash},
+          reset_password_token = NULL,
+          reset_password_token_expires_at = NULL,
+          updated_at = NOW()
+        WHERE id = ${userId}
+        RETURNING id
+      `;
+
+      if (result.rowCount === 0) {
+        throw new Error(`User not found: ${userId}`);
+      }
+    } catch (error) {
+      console.error(
+        'PostgresUserRepository.updatePasswordAndInvalidateToken error:',
+        error
+      );
+      throw new Error(
+        `Failed to update password: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Invalidate password reset token (cleanup)
+   */
+  async invalidatePasswordResetToken(userId: number): Promise<void> {
+    try {
+      const result = await sql`
+        UPDATE users
+        SET
+          reset_password_token = NULL,
+          reset_password_token_expires_at = NULL,
+          updated_at = NOW()
+        WHERE id = ${userId}
+        RETURNING id
+      `;
+
+      if (result.rowCount === 0) {
+        throw new Error(`User not found: ${userId}`);
+      }
+    } catch (error) {
+      console.error(
+        'PostgresUserRepository.invalidatePasswordResetToken error:',
+        error
+      );
+      throw new Error(
+        `Failed to invalidate token: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
 }
