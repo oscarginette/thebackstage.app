@@ -26,7 +26,7 @@ import { SettingsSection } from './SettingsSection';
 import { SettingsFormActions } from './SettingsFormActions';
 import { Input } from '@/components/ui/Input';
 import { ThemeSwitcher } from '@/app/settings/ThemeSwitcher';
-import { TEXT_STYLES } from '@/domain/types/design-tokens';
+import { TEXT_STYLES, LAYOUT_STYLES } from '@/domain/types/design-tokens';
 
 interface ProfileSettingsProps {
   initialName: string;
@@ -65,7 +65,7 @@ export function ProfileSettings({ initialName, email }: ProfileSettingsProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={LAYOUT_STYLES.spacing.section}>
       {/* Unified Page Header */}
       <SettingsPageHeader
         title="Profile & Appearance"
@@ -73,7 +73,7 @@ export function ProfileSettings({ initialName, email }: ProfileSettingsProps) {
       />
 
       {/* Form */}
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} className={LAYOUT_STYLES.spacing.section}>
         {/* Profile Information Section */}
         <SettingsSection
           title="Profile Information"

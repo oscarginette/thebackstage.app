@@ -7,7 +7,7 @@ import { SettingsPageHeader } from '@/components/settings/SettingsPageHeader';
 import { SettingsSection } from '@/components/settings/SettingsSection';
 import { SettingsFormActions } from '@/components/settings/SettingsFormActions';
 import { Button } from '@/components/ui/Button';
-import { TEXT_STYLES } from '@/domain/types/design-tokens';
+import { TEXT_STYLES, LAYOUT_STYLES } from '@/domain/types/design-tokens';
 
 interface SocialLink {
   platform: string;
@@ -203,7 +203,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
   }
 
   return (
-    <div className="space-y-6">
+    <div className={LAYOUT_STYLES.spacing.section}>
       <SettingsPageHeader
         title="Email Signature"
         description="Customize your email signature with your logo and social links"
@@ -236,7 +236,7 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
             e.preventDefault();
             handleSave();
         }}
-        className="space-y-6"
+        className={LAYOUT_STYLES.spacing.section}
       >
         {/* Signature Content - Single Section */}
         <SettingsSection>

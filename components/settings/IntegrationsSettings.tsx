@@ -26,7 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsSection } from './SettingsSection';
 import { SettingsFormActions } from './SettingsFormActions';
 import { Input } from '@/components/ui/Input';
-import { TEXT_STYLES } from '@/domain/types/design-tokens';
+import { TEXT_STYLES, LAYOUT_STYLES } from '@/domain/types/design-tokens';
 
 interface IntegrationsSettingsProps {
   initialSoundcloudId: string;
@@ -105,7 +105,7 @@ export function IntegrationsSettings({
           Volver al Dashboard
         </Link>
       )}
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} className={LAYOUT_STYLES.spacing.section}>
         <SettingsSection
         title={t("platforms")}
         description={t("platformsSubtitle")}

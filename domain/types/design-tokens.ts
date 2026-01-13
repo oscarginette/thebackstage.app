@@ -190,21 +190,21 @@ export const LAYOUT_STYLES = {
   // Spacing (vertical rhythm)
   spacing: {
     // Section spacing (between major sections)
-    section: 'space-y-5',      // Default: 1.25rem (20px)
-    sectionCompact: 'space-y-4', // Compact: 1rem (16px) - for no-scroll layouts
+    section: 'space-y-6',      // Default: 1.5rem (24px) - breathing room
+    sectionCompact: 'space-y-4', // Compact: 1rem (16px) - for denser layouts
 
     // Stack spacing (between related items)
-    stack: 'space-y-2',        // Default: 0.5rem (8px)
-    stackTight: 'space-y-1',   // Tight: 0.25rem (4px)
+    stack: 'space-y-3',        // Default: 0.75rem (12px)
+    stackTight: 'space-y-2',   // Tight: 0.5rem (8px)
 
     // Inline spacing
-    inline: 'flex gap-2',
-    inlineCompact: 'flex gap-1.5',
+    inline: 'flex gap-3',
+    inlineCompact: 'flex gap-2',
   },
 
-  // Sidebar dimensions (Golden Ratio: 1:1.618)
+  // Sidebar dimensions (Balanced proportion)
   sidebar: {
-    width: 'w-[200px]',        // 200px sidebar for ~1:6 ratio with main content
+    width: 'w-[220px]',        // 220px sidebar for balanced proportion
     widthSettings: 'w-64',     // 256px for settings (16rem)
   },
 

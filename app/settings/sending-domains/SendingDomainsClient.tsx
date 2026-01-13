@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsPageHeader } from '@/components/settings/SettingsPageHeader';
 import { Button } from '@/components/ui/Button';
+import { LAYOUT_STYLES } from '@/domain/types/design-tokens';
 import AddDomainModal from './AddDomainModal';
 import DomainCard from './DomainCard';
 import type { SendingDomain } from '@/domain/entities/SendingDomain';
@@ -49,7 +50,7 @@ export default function SendingDomainsClient({ initialDomains }: SendingDomainsC
   };
 
   return (
-    <div className="space-y-6">
+    <div className={LAYOUT_STYLES.spacing.section}>
       {/* Header Section */}
       <SettingsPageHeader
         title="Senders, Domains & Dedicated IPs"

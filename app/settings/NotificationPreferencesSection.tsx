@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { SettingsFormActions } from '@/components/settings/SettingsFormActions';
-import { TEXT_STYLES } from '@/domain/types/design-tokens';
+import { TEXT_STYLES, LAYOUT_STYLES } from '@/domain/types/design-tokens';
 
 interface NotificationPreferences {
   autoSendSoundcloud: boolean;
@@ -92,7 +92,7 @@ export function NotificationPreferencesSection() {
   }
 
   return (
-    <form onSubmit={handleSave} className="space-y-6">
+    <form onSubmit={handleSave} className={LAYOUT_STYLES.spacing.section}>
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-500/20 rounded-xl px-4 py-3">
