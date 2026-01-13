@@ -19,6 +19,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/context';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,6 +40,8 @@ export function IntegrationsSettings({
   initialSpotifyId
 }: IntegrationsSettingsProps) {
   const t = useTranslations('settings');
+  const searchParams = useSearchParams();
+  const soundcloudInputRef = useRef<HTMLInputElement>(null);
 
   // Display permalink if available, otherwise construct URL from numeric ID
   const initialSoundcloudUrl = initialSoundcloudPermalink
@@ -51,6 +54,19 @@ export function IntegrationsSettings({
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSoundCloudHelp, setShowSoundCloudHelp] = useState(false);
   const [showSpotifyHelp, setShowSpotifyHelp] = useState(false);
+
+  // Auto-focus SoundCloud input when coming from dashboard
+  useEffect(() => {
+    const focusParam = searchParams?.get('focus');
+    if (focusParam === 'soundcloud' && soundcloudInputRef.current) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        soundcloudInputRef.current?.focus();
+      }, 100);
+    }
+  }, [searchParams]);
+
+  const returnTo = searchParams?.get('returnTo');
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +95,18 @@ export function IntegrationsSettings({
   };
 
   return (
-    <form onSubmit={handleSave} className="space-y-6">
-      <SettingsSection
+    <>
+      {returnTo && (
+        <Link
+          href={returnTo}
+          className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground transition-colors mb-6"
+        >
+          <ChevronDown className="w-4 h-4 rotate-90" />
+          Volver al Dashboard
+        </Link>
+      )}
+      <form onSubmit={handleSave} className="space-y-6">
+        <SettingsSection
         title={t("platforms")}
         description={t("platformsSubtitle")}
       >
@@ -102,6 +128,7 @@ export function IntegrationsSettings({
               </button>
             </div>
             <Input
+              ref={soundcloudInputRef}
               type="text"
               value={soundcloudUrl}
               onChange={(e) => setSoundcloudUrl(e.target.value)}
@@ -191,5 +218,6 @@ export function IntegrationsSettings({
         type="submit"
       />
     </form>
+    </>
   );
 }

@@ -62,7 +62,7 @@ export default function TrackList({
               Para ver tus tracks y enviar campañas automáticas, necesitas configurar tu SoundCloud ID en Settings.
             </p>
             <Link
-              href={`${PATHS.SETTINGS}/integrations?focus=soundcloud`}
+              href={`${PATHS.SETTINGS}/integrations?focus=soundcloud&returnTo=/dashboard?tab=engagement`}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-full text-sm font-bold hover:bg-accent/90 transition-all shadow-lg shadow-accent/20 active:scale-95"
             >
               <Settings className="w-4 h-4" />
