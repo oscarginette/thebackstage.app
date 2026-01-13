@@ -17,7 +17,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from '@/lib/i18n/context';
 import { ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -104,7 +105,7 @@ export function IntegrationsSettings({
               type="text"
               value={soundcloudUrl}
               onChange={(e) => setSoundcloudUrl(e.target.value)}
-              placeholder="https://soundcloud.com/thebackstagemusic"
+              placeholder="https://soundcloud.com/thebackstage"
               helperText="Paste your SoundCloud profile URL"
               focusVariant="soundcloud"
             />

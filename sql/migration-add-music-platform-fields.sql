@@ -7,7 +7,7 @@
 -- Add SoundCloud Fields
 -- =====================================================
 -- soundcloud_id: Numeric user ID (e.g., 1318247880)
--- soundcloud_permalink: Username/permalink (e.g., thebackstagemusic)
+-- soundcloud_permalink: Username/permalink (e.g., thebackstage)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS soundcloud_id VARCHAR(100);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS soundcloud_permalink VARCHAR(255);
 
@@ -27,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_users_spotify_id ON users(spotify_id);
 -- Add Comments for Documentation
 -- =====================================================
 COMMENT ON COLUMN users.soundcloud_id IS 'SoundCloud numeric user ID (extracted from profile)';
-COMMENT ON COLUMN users.soundcloud_permalink IS 'SoundCloud username/permalink (e.g., thebackstagemusic)';
+COMMENT ON COLUMN users.soundcloud_permalink IS 'SoundCloud username/permalink (e.g., thebackstage)';
 COMMENT ON COLUMN users.spotify_id IS 'Spotify artist ID from profile URL';
 
 -- =====================================================

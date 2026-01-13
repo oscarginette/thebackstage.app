@@ -315,6 +315,20 @@ export default function EmailSignatureClient({ userId }: EmailSignatureClientPro
               </div>
 
               <div className="space-y-2">
+                {signature.socialLinks.length > 0 && (
+                  <div className="flex gap-2 mb-1">
+                    <div className="w-32">
+                      <label className="text-xs text-foreground/60 font-medium">Platform</label>
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-foreground/60 font-medium">URL</label>
+                    </div>
+                    <div className="w-32">
+                      <label className="text-xs text-foreground/60 font-medium">Display Text</label>
+                    </div>
+                    <div className="w-8"></div>
+                  </div>
+                )}
                 {signature.socialLinks.map((link, index) => (
                   <div key={index} className="flex gap-2">
                     <input

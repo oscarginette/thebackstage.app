@@ -78,7 +78,7 @@ export const PATCH = withErrorHandler(async (request: Request) => {
       if (extractRes.ok) {
         const extractData = await extractRes.json();
         soundcloudId = extractData.userId;        // Numeric ID (e.g., "1318247880")
-        soundcloudPermalink = extractData.permalink; // Username (e.g., "thebackstagemusic")
+        soundcloudPermalink = extractData.permalink; // Username (e.g., "thebackstage")
       } else {
         // If extraction fails, treat it as invalid
         soundcloudId = undefined;
