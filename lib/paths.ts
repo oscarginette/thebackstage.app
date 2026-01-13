@@ -25,6 +25,8 @@ export const PATHS = {
 
   // Auth & Settings
   SETTINGS: '/settings',
+  SETTINGS_EMAIL_SIGNATURE: '/settings/email-signature',
+  SETTINGS_SENDING_DOMAINS: '/settings/sending-domains',
   UNSUBSCRIBE: '/unsubscribe',
 
   // Dashboard
