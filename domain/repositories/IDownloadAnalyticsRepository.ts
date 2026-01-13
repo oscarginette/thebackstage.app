@@ -25,8 +25,9 @@ export interface IDownloadAnalyticsRepository {
    * Track an analytics event
    * Events: view, submit, download, oauth_start, oauth_complete
    * @param input - Analytics event data
+   * @returns Event ID (UUID) for deduplication in pixel tracking
    */
-  track(input: CreateAnalyticsInput): Promise<void>;
+  track(input: CreateAnalyticsInput): Promise<string>;
 
   /**
    * Get aggregated statistics for a gate

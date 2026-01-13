@@ -17,9 +17,9 @@ import {
 } from '@/domain/types/download-gates';
 
 export class PostgresDownloadAnalyticsRepository implements IDownloadAnalyticsRepository {
-  async track(input: CreateAnalyticsInput): Promise<void> {
+  async track(input: CreateAnalyticsInput): Promise<string> {
     try {
-      await sql`
+      const result = await sql`
         INSERT INTO download_gate_analytics (
           gate_id,
           event_type,
@@ -43,7 +43,10 @@ export class PostgresDownloadAnalyticsRepository implements IDownloadAnalyticsRe
           ${input.userAgent ?? null},
           ${input.country ?? null}
         )
+        RETURNING id
       `;
+
+      return result.rows[0].id;
     } catch (error) {
       console.error('PostgresDownloadAnalyticsRepository.track error:', error);
       throw new Error(`Failed to track analytics event: ${error instanceof Error ? error.message : 'Unknown error'}`);

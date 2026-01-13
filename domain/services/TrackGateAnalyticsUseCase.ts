@@ -70,7 +70,7 @@ export class TrackGateAnalyticsUseCase {
       }
 
       // 3. Track analytics event
-      await this.analyticsRepository.track(input);
+      const analyticsEventId = await this.analyticsRepository.track(input);
 
       // 4. Increment view count for view events
       if (input.eventType === 'view') {
@@ -78,9 +78,8 @@ export class TrackGateAnalyticsUseCase {
       }
 
       // 5. Fire pixel tracking (fire-and-forget, non-blocking)
-      // Note: Pixel tracking doesn't need analytics event ID
-      if (input.eventType === 'view' && this.pixelTrackingService) {
-        this.trackPixelEvent(input).catch(error => {
+      if (input.eventType === 'view' && this.pixelTrackingService && analyticsEventId) {
+        this.trackPixelEvent(input, analyticsEventId).catch(error => {
           console.error('[PixelTracking] Failed (non-critical):', error);
         });
       }
@@ -132,7 +131,8 @@ export class TrackGateAnalyticsUseCase {
    * @param analyticsEventId - Analytics event ID for deduplication
    */
   private async trackPixelEvent(
-    input: TrackGateAnalyticsInput
+    input: TrackGateAnalyticsInput,
+    analyticsEventId: string
   ): Promise<void> {
     try {
       // Fetch gate to get slug and pixel config
@@ -151,6 +151,7 @@ export class TrackGateAnalyticsUseCase {
         gateSlug: gate.slug,
         pixelConfig: gate.pixelConfig,
         event: PIXEL_EVENTS.PAGE_VIEW,
+        analyticsEventId,
         userAgent: input.userAgent,
         ipAddress: input.ipAddress,
       });

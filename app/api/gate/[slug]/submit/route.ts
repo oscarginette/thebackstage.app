@@ -7,14 +7,20 @@
 
 import { NextResponse } from 'next/server';
 import { UseCaseFactory } from '@/lib/di-container';
-import { serializeSubmission } from '@/lib/serialization';
 import { SubmitDownloadGateSchema } from '@/lib/validation-schemas';
+import {
+  GateNotFoundError,
+  GateInactiveError,
+  GateExpiredError,
+  DuplicateSubmissionError,
+} from '@/domain/errors/DownloadGateErrors';
+import { ValidationError } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/gate/[slug]/submit
- * Submit email and create download submission
+ * Submit email and create download submission with multi-brand consent
  */
 export async function POST(
   request: Request,
@@ -34,61 +40,69 @@ export async function POST(
       );
     }
 
-    const { email, firstName, consentMarketing } = validation.data;
+    const { email, firstName, consentBackstage, consentGeeBeat, source } = validation.data;
 
     // Extract IP and user agent for GDPR compliance
-    const ipAddress = request.headers.get('x-forwarded-for') || undefined;
-    const userAgent = request.headers.get('user-agent') || undefined;
+    const ipAddress = request.headers.get('x-forwarded-for') || null;
+    const userAgent = request.headers.get('user-agent') || null;
 
     // Initialize use case
-    const submitEmailUseCase = UseCaseFactory.createSubmitEmailUseCase();
+    const processDownloadGateUseCase = UseCaseFactory.createProcessDownloadGateUseCase();
 
     // Execute
-    // Note: userId is derived from the gate owner, not passed here
-    const result = await submitEmailUseCase.execute({
+    const result = await processDownloadGateUseCase.execute({
       gateSlug: slug,
       email,
       firstName,
-      consentMarketing,
+      consentBackstage,
+      consentGeeBeat,
+      source,
       ipAddress,
       userAgent,
     });
 
-    if (!result.success) {
-      if (result.error?.includes('not found')) {
-        return NextResponse.json(
-          { error: result.error },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: result.error },
-        { status: 400 }
-      );
-    }
-
-    // Serialize submission
-    const serializedSubmission = serializeSubmission(result.submission!);
-
     return NextResponse.json(
-      { submission: serializedSubmission },
+      {
+        success: result.success,
+        submissionId: result.submissionId,
+        requiresVerification: result.requiresVerification,
+        verificationsSent: result.verificationsSent,
+      },
       { status: 201 }
     );
   } catch (error) {
     console.error('POST /api/gate/[slug]/submit error:', error);
 
-    if (error instanceof Error) {
-      const errorMessage = error.message;
-
-      if (errorMessage.includes('Invalid') || errorMessage.includes('required')) {
-        return NextResponse.json(
-          { error: errorMessage },
-          { status: 400 }
-        );
-      }
+    // Domain error handling
+    if (error instanceof GateNotFoundError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 404 }
+      );
     }
 
+    if (error instanceof GateInactiveError || error instanceof GateExpiredError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      );
+    }
+
+    if (error instanceof DuplicateSubmissionError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 409 }
+      );
+    }
+
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
+    // Unexpected errors
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
