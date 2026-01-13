@@ -56,6 +56,7 @@ import { PostgresBrevoIntegrationRepository } from '@/infrastructure/database/re
 import { PostgresBrevoImportHistoryRepository } from '@/infrastructure/database/repositories/PostgresBrevoImportHistoryRepository';
 import { PostgresSavedReleasesRepository } from '@/infrastructure/database/repositories/PostgresSavedReleasesRepository';
 import { PostgresUserNotificationPreferencesRepository } from '@/infrastructure/database/repositories/PostgresUserNotificationPreferencesRepository';
+import { PostgresSendingDomainRepository } from '@/infrastructure/database/repositories/PostgresSendingDomainRepository';
 
 // ============================================================================
 // Repository Interface Imports
@@ -91,6 +92,7 @@ import type { IBrevoIntegrationRepository } from '@/domain/repositories/IBrevoIn
 import type { IBrevoImportHistoryRepository } from '@/domain/repositories/IBrevoImportHistoryRepository';
 import type { ISavedReleasesRepository } from '@/domain/repositories/ISavedReleasesRepository';
 import type { IUserNotificationPreferencesRepository } from '@/domain/repositories/IUserNotificationPreferencesRepository';
+import type { ISendingDomainRepository } from '@/domain/repositories/ISendingDomainRepository';
 
 // ============================================================================
 // Provider Imports (Domain Interfaces)
@@ -99,9 +101,11 @@ import { resendEmailProvider } from '@/infrastructure/email';
 import type { IEmailProvider } from '@/domain/providers/IEmailProvider';
 import type { IImageStorageProvider } from '@/domain/providers/IImageStorageProvider';
 import type { ICsvGenerator } from '@/domain/providers/ICsvGenerator';
+import type { IMailgunClient } from '@/domain/providers/IMailgunClient';
 import { SoundCloudClient } from '@/lib/soundcloud-client';
 import { SpotifyClient } from '@/lib/spotify-client';
 import { CsvGenerator } from '@/infrastructure/csv/CsvGenerator';
+import { MailgunDomainClient } from '@/infrastructure/email/mailgun/MailgunDomainClient';
 
 // ============================================================================
 // Use Case Imports
@@ -134,6 +138,8 @@ import { ListGateSubmissionsUseCase } from '@/domain/services/ListGateSubmission
 import { SubmitEmailUseCase } from '@/domain/services/SubmitEmailUseCase';
 import { GenerateDownloadTokenUseCase } from '@/domain/services/GenerateDownloadTokenUseCase';
 import { ProcessDownloadUseCase } from '@/domain/services/ProcessDownloadUseCase';
+import { ProcessDownloadGateUseCase } from '@/domain/services/ProcessDownloadGateUseCase';
+import { ValidateDownloadTokenUseCase } from '@/domain/services/ValidateDownloadTokenUseCase';
 import { TrackGateAnalyticsUseCase } from '@/domain/services/TrackGateAnalyticsUseCase';
 import { VerifySoundCloudRepostUseCase } from '@/domain/services/VerifySoundCloudRepostUseCase';
 import { VerifySoundCloudFollowUseCase } from '@/domain/services/VerifySoundCloudFollowUseCase';
@@ -197,6 +203,12 @@ import { ToggleUserActiveUseCase } from '@/domain/services/admin/ToggleUserActiv
 import { UpdateUserQuotaUseCase } from '@/domain/services/admin/UpdateUserQuotaUseCase';
 import { GetUserNotificationPreferencesUseCase } from '@/domain/services/GetUserNotificationPreferencesUseCase';
 import { UpdateUserNotificationPreferencesUseCase } from '@/domain/services/UpdateUserNotificationPreferencesUseCase';
+import { RequestPasswordResetUseCase } from '@/domain/services/RequestPasswordResetUseCase';
+import { ResetPasswordUseCase } from '@/domain/services/ResetPasswordUseCase';
+import { AddSendingDomainUseCase } from '@/domain/services/AddSendingDomainUseCase';
+import { VerifySendingDomainUseCase } from '@/domain/services/VerifySendingDomainUseCase';
+import { GetUserSendingDomainsUseCase } from '@/domain/services/GetUserSendingDomainsUseCase';
+import { DeleteSendingDomainUseCase } from '@/domain/services/DeleteSendingDomainUseCase';
 
 // ============================================================================
 // Infrastructure Imports
@@ -346,6 +358,10 @@ export class RepositoryFactory {
     return new PostgresUserNotificationPreferencesRepository();
   }
 
+  static createSendingDomainRepository(): ISendingDomainRepository {
+    return new PostgresSendingDomainRepository();
+  }
+
   static createMusicPlatformRepository(platform: 'soundcloud' | 'spotify'): IMusicPlatformRepository {
     if (platform === 'soundcloud') {
       return new SoundCloudRepository(new SoundCloudRSSClient());
@@ -391,6 +407,13 @@ export class ProviderFactory {
 
   static createSoundCloudClient(): SoundCloudClient {
     return new SoundCloudClient();
+  }
+
+  static createMailgunClient(): IMailgunClient {
+    return new MailgunDomainClient(
+      env.MAILGUN_API_KEY || '',
+      env.MAILGUN_API_URL
+    );
   }
 
   // Note: Image storage provider would be instantiated here when needed
@@ -610,6 +633,23 @@ export class UseCaseFactory {
       RepositoryFactory.createDownloadSubmissionRepository(),
       RepositoryFactory.createDownloadGateRepository(),
       RepositoryFactory.createDownloadAnalyticsRepository()
+    );
+  }
+
+  static createProcessDownloadGateUseCase(): ProcessDownloadGateUseCase {
+    return new ProcessDownloadGateUseCase(
+      RepositoryFactory.createDownloadGateRepository(),
+      RepositoryFactory.createDownloadSubmissionRepository(),
+      RepositoryFactory.createContactRepository(),
+      RepositoryFactory.createConsentHistoryRepository(),
+      ProviderFactory.createEmailProvider()
+    );
+  }
+
+  static createValidateDownloadTokenUseCase(): ValidateDownloadTokenUseCase {
+    return new ValidateDownloadTokenUseCase(
+      RepositoryFactory.createDownloadSubmissionRepository(),
+      RepositoryFactory.createDownloadGateRepository()
     );
   }
 
@@ -1105,6 +1145,54 @@ export class UseCaseFactory {
   static createUpdateUserNotificationPreferencesUseCase(): UpdateUserNotificationPreferencesUseCase {
     return new UpdateUserNotificationPreferencesUseCase(
       RepositoryFactory.createUserNotificationPreferencesRepository()
+    );
+  }
+
+  // ============================================================================
+  // Password Reset Use Cases
+  // ============================================================================
+
+  static createRequestPasswordResetUseCase(): RequestPasswordResetUseCase {
+    return new RequestPasswordResetUseCase(
+      RepositoryFactory.createUserRepository(),
+      ProviderFactory.createEmailProvider()
+    );
+  }
+
+  static createResetPasswordUseCase(): ResetPasswordUseCase {
+    return new ResetPasswordUseCase(
+      RepositoryFactory.createUserRepository()
+    );
+  }
+
+  // ============================================================================
+  // Sending Domain Use Cases
+  // ============================================================================
+
+  static createAddSendingDomainUseCase(): AddSendingDomainUseCase {
+    return new AddSendingDomainUseCase(
+      RepositoryFactory.createSendingDomainRepository(),
+      ProviderFactory.createMailgunClient()
+    );
+  }
+
+  static createVerifySendingDomainUseCase(): VerifySendingDomainUseCase {
+    return new VerifySendingDomainUseCase(
+      RepositoryFactory.createSendingDomainRepository(),
+      ProviderFactory.createMailgunClient()
+    );
+  }
+
+  static createGetUserSendingDomainsUseCase(): GetUserSendingDomainsUseCase {
+    return new GetUserSendingDomainsUseCase(
+      RepositoryFactory.createSendingDomainRepository()
+    );
+  }
+
+  static createDeleteSendingDomainUseCase(): DeleteSendingDomainUseCase {
+    return new DeleteSendingDomainUseCase(
+      RepositoryFactory.createSendingDomainRepository(),
+      ProviderFactory.createMailgunClient()
     );
   }
 }
