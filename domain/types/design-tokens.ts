@@ -46,6 +46,13 @@ export const CARD_STYLES = {
     sm: 'p-4',
     md: 'p-6',
     lg: 'p-8',
+    compact: 'p-3', // For no-scroll layouts
+  },
+
+  // Height constraints (for stat cards, etc.)
+  height: {
+    auto: 'h-auto',
+    compact: 'h-auto', // Removes fixed heights, lets content dictate
   },
 } as const;
 
@@ -180,15 +187,80 @@ export const LAYOUT_STYLES = {
     lg: 'max-w-7xl mx-auto',
   },
 
-  // Spacing
+  // Spacing (vertical rhythm)
   spacing: {
-    section: 'space-y-5',
-    stack: 'space-y-2',
+    // Section spacing (between major sections)
+    section: 'space-y-5',      // Default: 1.25rem (20px)
+    sectionCompact: 'space-y-4', // Compact: 1rem (16px) - for no-scroll layouts
+
+    // Stack spacing (between related items)
+    stack: 'space-y-2',        // Default: 0.5rem (8px)
+    stackTight: 'space-y-1',   // Tight: 0.25rem (4px)
+
+    // Inline spacing
     inline: 'flex gap-2',
+    inlineCompact: 'flex gap-1.5',
+  },
+
+  // Sidebar dimensions (Golden Ratio: 1:1.618)
+  sidebar: {
+    width: 'w-[200px]',        // 200px sidebar for ~1:6 ratio with main content
+    widthSettings: 'w-64',     // 256px for settings (16rem)
   },
 
   // Page wrapper
   page: 'min-h-screen h-screen relative flex flex-col bg-background selection:bg-accent/30 selection:text-foreground overflow-hidden',
+
+  // Page content (no scroll optimization)
+  pageContent: {
+    // Standard padding
+    padding: 'px-6 lg:px-8 pt-6 pb-12',
+    // Compact padding (for no-scroll layouts)
+    paddingCompact: 'px-6 lg:px-8 pt-4 pb-8',
+  },
+} as const;
+
+/**
+ * Dashboard Component Styles
+ * Specific to dashboard sidebar and navigation
+ */
+export const DASHBOARD_STYLES = {
+  // Sidebar
+  sidebar: {
+    // Container
+    container: 'h-screen sticky top-0 border-r border-border/40 bg-background/80 backdrop-blur-md flex flex-col z-50',
+
+    // Header (brand section)
+    header: 'p-4 pb-2',
+    headerTitle: 'text-xl font-serif tracking-tight text-foreground leading-[0.9]',
+    headerSubtitle: 'text-[10px] text-muted-foreground font-light mt-0.5',
+
+    // Navigation
+    nav: 'flex-1 px-3 py-4 space-y-0.5 overflow-y-auto',
+    navItem: 'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all group relative',
+    navItemActive: 'bg-foreground text-background shadow-md',
+    navItemInactive: 'text-muted-foreground hover:bg-accent/5 hover:text-foreground',
+    navIcon: 'w-4 h-4 transition-colors',
+
+    // Footer
+    footer: 'p-3 space-y-3',
+    footerDivider: 'border-t border-border/40',
+  },
+
+  // Tables
+  table: {
+    // Container
+    wrapper: 'overflow-x-auto',
+    container: 'min-w-full',
+
+    // Row heights (compact for no-scroll)
+    rowCompact: 'h-10',  // Reduced from default ~12-14
+    rowDefault: 'h-12',
+
+    // Cell padding
+    cellPaddingCompact: 'px-3 py-2',
+    cellPaddingDefault: 'px-4 py-3',
+  },
 } as const;
 
 /**
