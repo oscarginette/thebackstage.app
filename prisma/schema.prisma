@@ -662,6 +662,8 @@ model users {
   subscription_started_at                                             DateTime?                         @db.Timestamp(6)
   theme                                                               String                            @default("system") @db.VarChar(10)
   theme_updated_at                                                    DateTime?                         @default(now()) @db.Timestamp(6)
+  reset_password_token                                                String?                           @db.VarChar(64)
+  reset_password_token_expires_at                                     DateTime?                         @db.Timestamp(6)
   brevo_import_history                                                brevo_import_history[]
   brevo_integrations                                                  brevo_integrations?
   consent_history                                                     consent_history[]
@@ -687,9 +689,11 @@ model users {
   demo_sends                                                          demo_sends[]
   demo_supports                                                       demo_supports[]
   spotify_auto_save_subscriptions                                     spotify_auto_save_subscriptions[]
+  sending_domains                                                     sending_domains[]
 
   @@index([active], map: "idx_users_active")
   @@index([email], map: "idx_users_email")
+  @@index([reset_password_token], map: "idx_users_reset_password_token")
   @@index([role], map: "idx_users_role")
   @@index([soundcloud_id], map: "idx_users_soundcloud_id")
   @@index([spotify_id], map: "idx_users_spotify_id")
@@ -835,4 +839,25 @@ model demo_supports {
   @@index([user_id], map: "idx_demo_supports_user_id")
   @@index([support_type], map: "idx_demo_supports_support_type")
   @@index([played_at(sort: Desc)], map: "idx_demo_supports_played_at")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sending_domains {
+  id                     Int       @id @default(autoincrement())
+  user_id                Int
+  domain                 String    @unique @db.VarChar(255)
+  status                 String    @default("pending") @db.VarChar(50)
+  dns_records            Json?     @db.JsonB
+  mailgun_domain_name    String?   @db.VarChar(255)
+  verification_attempts  Int       @default(0)
+  last_verification_at   DateTime? @db.Timestamp(6)
+  verified_at            DateTime? @db.Timestamp(6)
+  error_message          String?
+  created_at             DateTime  @default(now()) @db.Timestamp(6)
+  updated_at             DateTime  @default(now()) @db.Timestamp(6)
+  users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_sending_domains_user_id")
+  @@index([status], map: "idx_sending_domains_status")
+  @@index([domain], map: "idx_sending_domains_domain")
 }
