@@ -198,6 +198,7 @@ import { DeleteEmailTemplateUseCase } from '@/domain/services/email-templates/De
 import { CheckNewReleasesUseCase } from '@/domain/services/CheckNewReleasesUseCase';
 import { ImportBrevoContactsUseCase } from '@/domain/services/ImportBrevoContactsUseCase';
 import { GetBrevoImportHistoryUseCase } from '@/domain/services/GetBrevoImportHistoryUseCase';
+import { UpdateUserSenderEmailUseCase } from '@/domain/services/UpdateUserSenderEmailUseCase';
 import { GetAllUsersUseCase } from '@/domain/services/admin/GetAllUsersUseCase';
 import { ToggleUserActiveUseCase } from '@/domain/services/admin/ToggleUserActiveUseCase';
 import { UpdateUserQuotaUseCase } from '@/domain/services/admin/UpdateUserQuotaUseCase';
@@ -517,7 +518,8 @@ export class UseCaseFactory {
       RepositoryFactory.createContactRepository(),
       ProviderFactory.createEmailProvider(),
       RepositoryFactory.createTrackRepository(),
-      RepositoryFactory.createExecutionLogRepository()
+      RepositoryFactory.createExecutionLogRepository(),
+      RepositoryFactory.createUserRepository()
     );
   }
 
@@ -695,6 +697,7 @@ export class UseCaseFactory {
       ProviderFactory.createEmailProvider(),
       RepositoryFactory.createTrackRepository(),
       RepositoryFactory.createExecutionLogRepository(),
+      RepositoryFactory.createUserRepository(),
       baseUrl
     );
   }
@@ -1197,6 +1200,17 @@ export class UseCaseFactory {
     return new DeleteSendingDomainUseCase(
       RepositoryFactory.createSendingDomainRepository(),
       ProviderFactory.createMailgunClient()
+    );
+  }
+
+  // ============================================================================
+  // User Configuration Use Cases
+  // ============================================================================
+
+  static createUpdateUserSenderEmailUseCase(): UpdateUserSenderEmailUseCase {
+    return new UpdateUserSenderEmailUseCase(
+      RepositoryFactory.createUserRepository(),
+      RepositoryFactory.createSendingDomainRepository()
     );
   }
 }
