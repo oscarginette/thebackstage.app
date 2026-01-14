@@ -39,6 +39,8 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       row.soundcloud_permalink,
       row.spotify_id,
       row.instagram_url,
+      null, // sender_email - not yet implemented
+      null, // sender_name - not yet implemented
       new Date(row.updated_at)
     );
   }
@@ -81,6 +83,8 @@ export class PostgresUserSettingsRepository implements IUserSettingsRepository {
       row.soundcloud_permalink,
       row.spotify_id,
       row.instagram_url,
+      null, // sender_email - not yet implemented
+      null, // sender_name - not yet implemented
       new Date(row.updated_at)
     );
   }

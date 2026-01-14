@@ -17,6 +17,7 @@ import { PostgresBrevoImportHistoryRepository } from './PostgresBrevoImportHisto
 import { PostgresDemoRepository } from './PostgresDemoRepository';
 import { PostgresDemoSendRepository } from './PostgresDemoSendRepository';
 import { PostgresDemoSupportRepository } from './PostgresDemoSupportRepository';
+import { PostgresUserRepository } from './PostgresUserRepository';
 
 // Singleton instances
 export const trackRepository = new PostgresTrackRepository();
@@ -29,6 +30,7 @@ export const emailTemplateRepository = new PostgresEmailTemplateRepository();
 export const emailCampaignRepository = new PostgresEmailCampaignRepository();
 export const downloadGateRepository = new PostgresDownloadGateRepository();
 export const downloadSubmissionRepository = new PostgresDownloadSubmissionRepository();
+export const userRepository = new PostgresUserRepository();
 
 // Subscription system repositories
 export const productRepository = new PostgresProductRepository();

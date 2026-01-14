@@ -20,6 +20,7 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
   /**
    * Create a new campaign
    * Multi-tenant: Always associates campaign with user_id
+   * Note: Drafts allow null/empty fields for flexibility
    */
   async create(input: CreateCampaignInput): Promise<IEmailCampaign> {
     const result = await sql`
@@ -36,8 +37,8 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
         ${input.userId},
         ${input.templateId || null},
         ${input.trackId || null},
-        ${input.subject},
-        ${input.htmlContent},
+        ${input.subject || null},
+        ${input.htmlContent || null},
         ${input.status || 'draft'},
         ${input.scheduledAt ? input.scheduledAt.toISOString() : null}
       )

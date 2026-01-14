@@ -110,7 +110,9 @@ export class PostgresUserRepository implements IUserRepository {
           subscription_expires_at,
           monthly_quota,
           emails_sent_this_month,
-          quota_reset_at
+          quota_reset_at,
+          sender_email,
+          sender_name
         FROM users
         WHERE LOWER(email) = LOWER(${email.trim()})
         LIMIT 1
@@ -135,7 +137,11 @@ export class PostgresUserRepository implements IUserRepository {
         row.quota_reset_at ? new Date(row.quota_reset_at) : new Date(),
         row.name,
         row.subscription_started_at ? new Date(row.subscription_started_at) : undefined,
-        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined
+        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined,
+        undefined, // spotifyId
+        undefined, // soundcloudId
+        row.sender_email,
+        row.sender_name
       );
     } catch (error) {
       console.error('PostgresUserRepository.findByEmail error:', error);
@@ -165,7 +171,9 @@ export class PostgresUserRepository implements IUserRepository {
           subscription_expires_at,
           monthly_quota,
           emails_sent_this_month,
-          quota_reset_at
+          quota_reset_at,
+          sender_email,
+          sender_name
         FROM users
         WHERE id = ${id}
         LIMIT 1
@@ -190,7 +198,11 @@ export class PostgresUserRepository implements IUserRepository {
         row.quota_reset_at ? new Date(row.quota_reset_at) : new Date(),
         row.name,
         row.subscription_started_at ? new Date(row.subscription_started_at) : undefined,
-        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined
+        row.subscription_expires_at ? new Date(row.subscription_expires_at) : undefined,
+        undefined, // spotifyId
+        undefined, // soundcloudId
+        row.sender_email,
+        row.sender_name
       );
     } catch (error) {
       console.error('PostgresUserRepository.findById error:', error);
@@ -896,6 +908,44 @@ export class PostgresUserRepository implements IUserRepository {
       );
       throw new Error(
         `Failed to invalidate token: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Update user's custom sender email configuration
+   * Used to set custom "From" email for newsletters
+   * IMPORTANT: Domain must be verified in sending_domains table for emails to send successfully
+   */
+  async updateSenderEmail(
+    userId: number,
+    senderEmail: string | null,
+    senderName: string | null
+  ): Promise<void> {
+    try {
+      const result = await sql`
+        UPDATE users
+        SET
+          sender_email = ${senderEmail},
+          sender_name = ${senderName},
+          updated_at = NOW()
+        WHERE id = ${userId}
+        RETURNING id
+      `;
+
+      if (result.rowCount === 0) {
+        throw new Error(`User not found: ${userId}`);
+      }
+
+      console.log('[PostgresUserRepository] Sender email updated:', {
+        userId,
+        senderEmail,
+        senderName,
+      });
+    } catch (error) {
+      console.error('PostgresUserRepository.updateSenderEmail error:', error);
+      throw new Error(
+        `Failed to update sender email: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
