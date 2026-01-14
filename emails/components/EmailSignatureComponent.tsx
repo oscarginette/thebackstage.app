@@ -80,6 +80,8 @@ const logoFooterSection = {
 const logoFooter = {
   maxWidth: '100px',
   height: 'auto',
+  display: 'block',
+  margin: '0 auto',
 };
 
 const socialSection = {
