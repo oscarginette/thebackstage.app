@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
 import { PATHS } from '@/lib/paths';
 import { usePricingPlans, getYearlyDiscountPercentage, type PlanWithCalculatedPrice } from '@/hooks/usePricingPlans';
+import { useQuotaAccess } from '@/hooks/useQuotaAccess';
 import PlanCard from '@/components/upgrade/PlanCard';
 import PaymentInstructions from '@/components/upgrade/PaymentInstructions';
 
@@ -38,6 +39,70 @@ export default function UpgradePage() {
   // Get plans with calculated prices from hook
   const plans = usePricingPlans(billingPeriod);
   const discountPercentage = getYearlyDiscountPercentage();
+
+  // Get user quota information for intelligent plan recommendations
+  const { quotaInfo } = useQuotaAccess();
+
+  // Calculate plan status based on user's current usage
+  interface PlanWithStatus extends PlanWithCalculatedPrice {
+    isEnabled: boolean;
+    isRecommended: boolean;
+    disabledReason?: string;
+  }
+
+  const plansWithStatus: PlanWithStatus[] = !quotaInfo
+    ? // Fallback: if no quota info, show all plans enabled with popular badge
+      plans.map(plan => ({
+        ...plan,
+        isEnabled: true,
+        isRecommended: plan.popular || false,
+        disabledReason: undefined,
+      }))
+    : // Calculate based on user's quota
+      plans.map(plan => {
+        const currentContacts = quotaInfo.currentContacts;
+        const currentEmails = quotaInfo.currentEmails;
+
+        // Check if plan meets requirements
+        const meetsContacts = plan.contacts >= currentContacts;
+        const meetsEmails =
+          plan.emails === 'Ilimitados'
+            ? true
+            : typeof plan.emails === 'number' && plan.emails >= currentEmails;
+
+        const isEnabled = meetsContacts && meetsEmails;
+
+        // Determine disabled reason
+        let disabledReason: string | undefined;
+        if (!isEnabled) {
+          if (!meetsContacts && !meetsEmails) {
+            disabledReason = `Necesitas capacidad para ${currentContacts.toLocaleString()} contactos y ${currentEmails.toLocaleString()} emails/mes`;
+          } else if (!meetsContacts) {
+            disabledReason = `Necesitas capacidad para ${currentContacts.toLocaleString()} contactos`;
+          } else {
+            disabledReason = `Necesitas capacidad para ${currentEmails.toLocaleString()} emails/mes`;
+          }
+        }
+
+        return {
+          ...plan,
+          isEnabled,
+          isRecommended: false, // Will be set below
+          disabledReason,
+        };
+      });
+
+  // Find the recommended plan (cheapest that meets requirements)
+  if (quotaInfo) {
+    const enabledPlans = plansWithStatus.filter(p => p.isEnabled);
+    if (enabledPlans.length > 0) {
+      const cheapest = enabledPlans.sort((a, b) => a.basePrice - b.basePrice)[0];
+      const cheapestIndex = plansWithStatus.findIndex(p => p.id === cheapest.id);
+      if (cheapestIndex !== -1) {
+        plansWithStatus[cheapestIndex].isRecommended = true;
+      }
+    }
+  }
 
   const handleSelectPlan = (plan: PlanWithCalculatedPrice) => {
     setSelectedPlan({
@@ -162,12 +227,15 @@ export default function UpgradePage() {
         {/* Step 1: Plan Selection */}
         {step === 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {plans.map((plan) => (
+            {plansWithStatus.map((plan) => (
               <PlanCard
                 key={plan.id}
                 plan={plan}
                 billingPeriod={billingPeriod}
                 onSelect={handleSelectPlan}
+                isEnabled={plan.isEnabled}
+                isRecommended={plan.isRecommended}
+                disabledReason={plan.disabledReason}
               />
             ))}
           </div>
