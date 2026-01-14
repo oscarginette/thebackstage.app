@@ -467,22 +467,26 @@ export default function EmailContentEditor({
         </div>
 
         {/* Preview Panel */}
-        <div className="w-1/2 overflow-y-auto p-8 bg-muted">
-          <h3 className="text-xl font-serif text-foreground mb-6">{t('preview')}</h3>
+        <div className="w-1/2 flex flex-col bg-muted">
+          <div className="p-8 pb-4">
+            <h3 className="text-xl font-serif text-foreground mb-6">{t('preview')}</h3>
+          </div>
 
-          {loadingPreview ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin"></div>
-            </div>
-          ) : (
-            <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
-              <iframe
-                srcDoc={previewHtml}
-                className="w-full h-[600px] border-0"
-                title="Email Preview"
-              />
-            </div>
-          )}
+          <div className="flex-1 overflow-y-auto px-8 pb-8">
+            {loadingPreview ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin"></div>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl shadow-lg overflow-hidden h-full">
+                <iframe
+                  srcDoc={previewHtml}
+                  className="w-full h-full border-0"
+                  title="Email Preview"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

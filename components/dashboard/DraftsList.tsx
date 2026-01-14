@@ -179,10 +179,10 @@ export default function DraftsList({ onDraftSent }: DraftsListProps) {
         >
           <EmailContentEditor
             initialContent={{
-              subject: editingDraft.subject,
+              subject: editingDraft.subject || '',
               greeting: 'Hey mate,',
               message: '',
-              signature: 'Much love,\nThe Backstage'
+              signature: 'Much love,\nGee Beat'
             }}
             onSave={handleSendEditedDraft}
             onSaveDraft={handleUpdateDraft}

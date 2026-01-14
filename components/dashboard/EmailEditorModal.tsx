@@ -36,7 +36,7 @@ export default function EmailEditorModal({
       subject: '',
       greeting: '',
       message: '',
-      signature: 'Much love,\nThe Backstage'
+      signature: 'Much love,\nGee Beat'
     });
     setStep('edit');
   };
@@ -55,7 +55,7 @@ export default function EmailEditorModal({
         subject: 'New music from The Backstage',
         greeting: 'Hey mate,',
         message: 'This is my new track and it\'s now on Soundcloud!',
-        signature: 'Much love,\nThe Backstage'
+        signature: 'Much love,\nGee Beat'
       });
     }
     setStep('edit');
@@ -67,13 +67,13 @@ export default function EmailEditorModal({
       onClose={onClose}
       size="6xl"
       customHeader={
-        <div className="p-8 border-b border-border">
+        <div className="px-6 py-4 border-b border-border">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-serif text-foreground mb-1">
+              <h2 className="text-2xl font-serif text-foreground mb-0.5">
                 {step === 'choose' ? 'Crear Nuevo Email' : 'Editor de Email'}
               </h2>
-              <p className="text-muted-foreground font-light">
+              <p className="text-sm text-muted-foreground font-light">
                 {step === 'choose'
                   ? 'Selecciona un punto de partida para tu mensaje'
                   : 'Personaliza y envía tu comunicado'}
@@ -84,7 +84,7 @@ export default function EmailEditorModal({
               className="group p-2 rounded-full hover:bg-muted transition-colors"
               disabled={saving}
             >
-              <svg className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

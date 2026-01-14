@@ -14,7 +14,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
+import Modal, { ModalBody, ModalFooter } from '@/components/ui/Modal';
 import {
   EXPORT_COLUMN_METADATA,
   ContactExportColumn,
@@ -124,24 +125,16 @@ export function ExportModal({
     return totalContacts;
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background border-border rounded-lg border p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Export Contacts</h2>
-          <button
-            onClick={onClose}
-            disabled={isExporting}
-            className="text-foreground/60 hover:text-foreground"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="2xl"
+      title="Export Contacts"
+      subtitle={`Export ${getExportCount()} contact${getExportCount() === 1 ? '' : 's'} to CSV`}
+      closeOnBackdropClick={!isExporting}
+    >
+      <ModalBody>
         {/* Error Display */}
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-500 text-sm">
@@ -233,9 +226,10 @@ export function ExportModal({
             </div>
           ))}
         </div>
+      </ModalBody>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
+      <ModalFooter>
+        <div className="flex items-center justify-end gap-2">
           <button
             onClick={onClose}
             disabled={isExporting}
@@ -261,7 +255,7 @@ export function ExportModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </ModalFooter>
+    </Modal>
   );
 }

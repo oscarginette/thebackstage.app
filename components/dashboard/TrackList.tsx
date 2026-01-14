@@ -63,7 +63,7 @@ export default function TrackList({
             </p>
             <Link
               href={`${PATHS.SETTINGS}/integrations?focus=soundcloud&returnTo=/dashboard?tab=engagement`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-full text-sm font-bold hover:bg-accent/90 transition-all shadow-lg shadow-accent/20 active:scale-95"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-background text-accent border-2 border-accent rounded-full text-sm font-bold hover:bg-accent/5 transition-all active:scale-95"
             >
               <Settings className="w-4 h-4" />
               Ir a Settings

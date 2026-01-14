@@ -244,7 +244,7 @@ export default function DataTable<T>({
   const rowVirtualizer = useVirtualizer({
     count: sortedAndFilteredData.length,
     getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 40, // Compact row height (h-10 = 40px)
+    estimateSize: () => 56, // Default row height (h-14 = 56px)
     overscan: 10, // Render 10 extra rows above/below viewport
   });
 
@@ -332,7 +332,7 @@ export default function DataTable<T>({
       {sortedAndFilteredData.length > 0 && (
         <div className="border-b border-border/40 flex bg-muted/30">
           {selectable && (
-            <div className={cn(DASHBOARD_STYLES.table.cellPaddingCompact, "flex-shrink-0")} style={{ width: '60px' }}>
+            <div className={cn(DASHBOARD_STYLES.table.cellPaddingDefault, "flex-shrink-0")} style={{ width: '60px' }}>
               <input
                 type="checkbox"
                 checked={sortedAndFilteredData.length > 0 && selectedIds.length === sortedAndFilteredData.length}
@@ -350,7 +350,7 @@ export default function DataTable<T>({
                 key={i}
                 onClick={() => isSortable && handleSort(i)}
                 className={cn(
-                  DASHBOARD_STYLES.table.cellPaddingCompact,
+                  DASHBOARD_STYLES.table.cellPaddingDefault,
                   'text-[11px] font-black uppercase tracking-[0.2em]',
                   col.className?.includes('flex-') || col.className?.includes('w-') ? '' : 'flex-1',
                   col.className || '',
@@ -378,7 +378,7 @@ export default function DataTable<T>({
       <div
         ref={tableContainerRef}
         className="flex-1 overflow-auto bg-card/40"
-        style={{ minHeight: '600px', maxHeight: 'calc(100vh - 300px)' }}
+        style={{ minHeight: '300px', maxHeight: '400px' }}
       >
         {sortedAndFilteredData.length === 0 ? (
           <div className="px-8 py-24 text-center">
@@ -431,7 +431,7 @@ export default function DataTable<T>({
                   }}
                 >
                   {selectable && (
-                    <div className={cn(DASHBOARD_STYLES.table.cellPaddingCompact, "flex-shrink-0 flex items-center")} style={{ width: '60px' }}>
+                    <div className={cn(DASHBOARD_STYLES.table.cellPaddingDefault, "flex-shrink-0 flex items-center")} style={{ width: '60px' }}>
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -443,7 +443,7 @@ export default function DataTable<T>({
                   )}
                   {columns.map((col, j) => (
                     <div key={j} className={cn(
-                      DASHBOARD_STYLES.table.cellPaddingCompact,
+                      DASHBOARD_STYLES.table.cellPaddingDefault,
                       col.className?.includes('flex-') || col.className?.includes('w-') ? '' : 'flex-1',
                       col.className || ''
                     )}>

@@ -50,7 +50,7 @@ export default function DraftCard({ draft, onEdit, onDelete, onSend }: DraftCard
           </div>
 
           <h4 className="font-semibold text-[#1c1c1c] text-lg mb-1 truncate">
-            {draft.subject}
+            {draft.subject || '(Sin asunto)'}
           </h4>
 
           {draft.templateId && (

@@ -253,18 +253,18 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { label: 'Subscribed', value: stats.activeSubscribers, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
             { label: 'Total', value: stats.totalContacts, color: 'text-blue-600', bg: 'bg-blue-500/10' },
             { label: 'Last 30 Days', value: stats.newLast30Days, color: 'text-purple-600', bg: 'bg-purple-500/10' },
             { label: 'Unsubscribed', value: stats.unsubscribed, color: 'text-red-600', bg: 'bg-red-500/10' },
           ].map((s, i) => (
-            <Card key={i} variant="subtle" padding="sm" className="flex flex-col gap-1">
+            <Card key={i} variant="subtle" padding="compact" className="flex flex-col gap-0.5">
               <span className="text-[9px] font-black text-foreground/60 uppercase tracking-widest">{s.label}</span>
-              <span className={`text-xl font-serif ${s.color}`}>{s.value?.toLocaleString() ?? 0}</span>
+              <span className={`text-lg font-serif ${s.color}`}>{s.value?.toLocaleString() ?? 0}</span>
             </Card>
           ))}
         </div>
