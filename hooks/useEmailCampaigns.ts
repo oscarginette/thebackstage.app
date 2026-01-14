@@ -37,7 +37,8 @@ export function useEmailCampaigns() {
         throw new Error(data.error);
       }
 
-      setDrafts(data.campaigns || []);
+      const campaigns = data.campaigns || data.data?.campaigns || [];
+      setDrafts(campaigns);
     } catch (err: any) {
       setError(err.message || 'Error loading drafts');
     } finally {

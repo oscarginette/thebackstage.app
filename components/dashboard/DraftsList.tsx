@@ -116,9 +116,8 @@ export default function DraftsList({ onDraftSent }: DraftsListProps) {
   return (
     <>
       <Card variant="subtle" padding="md" className="rounded-[2rem]">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-serif text-foreground">Drafts</h3>
             <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">
               {drafts.length} saved
             </p>

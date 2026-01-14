@@ -318,10 +318,9 @@ function DashboardContent() {
                         </button>
                         </div>
                     </Card>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                        <section className={cn("lg:col-span-8", LAYOUT_STYLES.spacing.section)}>
-                        <h3 className="text-2xl font-serif px-2">Quick-send Tracks</h3>
+
+                    <section className={cn(LAYOUT_STYLES.spacing.section)}>
+                        <h3 className="text-2xl font-serif px-2 mb-4">Quick-send Tracks</h3>
                         <TrackList
                             tracks={allTracks}
                             loading={loadingTracks}
@@ -331,14 +330,14 @@ function DashboardContent() {
                             sendingTrackId={sendingTrackId}
                             hasSoundCloudId={hasSoundCloudId}
                         />
-                        </section>
-                        <aside className={cn("lg:col-span-4", LAYOUT_STYLES.spacing.section)}>
-                        <h3 className="text-2xl font-serif px-2">Saved Drafts</h3>
+                    </section>
+
+                    <section className={cn(LAYOUT_STYLES.spacing.section)}>
+                        <h3 className="text-2xl font-serif px-2 mb-4">Saved Drafts</h3>
                         <DraftsList onDraftSent={() => {
                             setMessage({ type: 'success', text: 'Borrador enviado correctamente' });
                         }} />
-                        </aside>
-                    </div>
+                    </section>
 
                     <section className="space-y-6">
                         <ExecutionHistory history={history} />
