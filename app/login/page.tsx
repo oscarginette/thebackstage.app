@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useTranslations } from "@/lib/i18n/context";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PATHS } from '@/lib/paths';
+import { useCredentialManager } from '@/hooks/useCredentialManager';
 
 export default function LoginPage() {
   const t = useTranslations("login");
@@ -21,6 +22,23 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { saveCredentials, getCredentials, isSupported } = useCredentialManager();
+
+  // Auto-fill credentials on mount if available
+  useEffect(() => {
+    if (!isLogin || !isSupported) return;
+
+    const loadCredentials = async () => {
+      const credentials = await getCredentials();
+      if (credentials) {
+        setEmail(credentials.email);
+        setPassword(credentials.password);
+      }
+    };
+
+    loadCredentials();
+  }, [isLogin, getCredentials, isSupported]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +60,8 @@ export default function LoginPage() {
           return;
         }
 
-        // Success - redirect to dashboard
+        // Success - save credentials and redirect
+        await saveCredentials(email, password);
         router.push(callbackUrl);
         router.refresh();
         // Note: Don't reset loading state here - component will unmount after redirect
@@ -82,7 +101,8 @@ export default function LoginPage() {
             return;
           }
 
-          // Success - redirect to dashboard
+          // Success - save credentials and redirect
+          await saveCredentials(email, password);
           router.push(callbackUrl);
           router.refresh();
           // Note: Don't reset loading state here - component will unmount after redirect
@@ -173,6 +193,8 @@ export default function LoginPage() {
                     </label>
                     <input
                       type="text"
+                      name="name"
+                      autoComplete="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full h-14 px-5 rounded-2xl border border-border/60 bg-white/50 focus:outline-none focus:ring-2 focus:ring-accent/10 focus:border-accent/40 focus:bg-white transition-all text-base placeholder:text-foreground/30"
@@ -191,6 +213,8 @@ export default function LoginPage() {
               </label>
               <input
                 type="email"
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-14 px-5 rounded-2xl border border-border/60 bg-white/50 focus:outline-none focus:ring-2 focus:ring-accent/10 focus:border-accent/40 focus:bg-white transition-all text-base placeholder:text-foreground/30"
@@ -216,6 +240,8 @@ export default function LoginPage() {
               </div>
               <input
                 type="password"
+                name="password"
+                autoComplete={isLogin ? "current-password" : "new-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full h-14 px-5 rounded-2xl border border-border/60 bg-white/50 focus:outline-none focus:ring-2 focus:ring-accent/10 focus:border-accent/40 focus:bg-white transition-all text-base placeholder:text-foreground/30"

@@ -53,7 +53,7 @@ export function DownloadGateForm({ artistName, trackTitle, onSubmit }: DownloadG
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [consentBackstage, setConsentBackstage] = useState(false);
-  const [consentGeeBeat, setConsentGbid] = useState(false);
+  const [consentGeeBeat, setConsentGbid] = useState(true); // Pre-checked opt-out for conversion optimization
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -71,11 +71,10 @@ export function DownloadGateForm({ artistName, trackTitle, onSubmit }: DownloadG
       return false;
     }
 
-    // At least one brand consent required (artist is always checked)
-    if (!consentBackstage && !consentGeeBeat) {
-      setError('Please accept at least one marketing consent to download');
-      return false;
-    }
+    // Artist consent is always required (checked + disabled)
+    // Gee Beat and Backstage are OPTIONAL - user can uncheck both
+    // This prevents "forced consent" which would violate GDPR
+    // No validation needed - artist consent alone is sufficient
 
     setError(null);
     return true;
@@ -121,10 +120,10 @@ export function DownloadGateForm({ artistName, trackTitle, onSubmit }: DownloadG
    * Check if form is valid for submission
    */
   const isFormValid = (): boolean => {
-    return (
-      email.includes('@') &&
-      (consentBackstage || consentGeeBeat)
-    );
+    // Only email validation required
+    // Artist consent is always true (mandatory checkbox)
+    // Gee Beat and Backstage are optional (GDPR compliance)
+    return email.includes('@');
   };
 
   // Success state - show verification instructions
@@ -248,37 +247,7 @@ export function DownloadGateForm({ artistName, trackTitle, onSubmit }: DownloadG
             Marketing Consent <span className="text-[#FF5500]">*</span>
           </p>
 
-          {/* The Backstage consent */}
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={consentBackstage}
-              onChange={(e) => setConsentBackstage(e.target.checked)}
-              disabled={loading}
-              className="mt-0.5 w-4 h-4 rounded border-foreground/20 bg-white text-[#FF5500] focus:ring-[#FF5500] focus:ring-offset-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Accept emails from The Backstage"
-            />
-            <span className="text-xs text-foreground/70 group-hover:text-foreground/90 transition-colors">
-              I accept to receive emails from <strong>The Backstage</strong>
-            </span>
-          </label>
-
-          {/* Gee Beat consent */}
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={consentGeeBeat}
-              onChange={(e) => setConsentGbid(e.target.checked)}
-              disabled={loading}
-              className="mt-0.5 w-4 h-4 rounded border-foreground/20 bg-white text-[#FF5500] focus:ring-[#FF5500] focus:ring-offset-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Accept emails from Gee Beat"
-            />
-            <span className="text-xs text-foreground/70 group-hover:text-foreground/90 transition-colors">
-              I accept to receive emails from <strong>Gee Beat</strong>
-            </span>
-          </label>
-
-          {/* Artist consent (always checked, disabled) */}
+          {/* Artist consent (always checked, disabled) - FIRST */}
           <label className="flex items-start gap-3 cursor-not-allowed opacity-60">
             <input
               type="checkbox"
@@ -292,6 +261,36 @@ export function DownloadGateForm({ artistName, trackTitle, onSubmit }: DownloadG
               <span className="block text-[10px] text-foreground/50 mt-1">
                 (Required - artist owns this content)
               </span>
+            </span>
+          </label>
+
+          {/* Gee Beat consent (pre-checked opt-out) - SECOND */}
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={consentGeeBeat}
+              onChange={(e) => setConsentGbid(e.target.checked)}
+              disabled={loading}
+              className="mt-0.5 w-4 h-4 rounded border-foreground/20 bg-white text-[#FF5500] focus:ring-[#FF5500] focus:ring-offset-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Receive exclusive music content from Gee Beat"
+            />
+            <span className="text-xs text-foreground group-hover:text-foreground transition-colors">
+              I want to receive exclusive music releases, industry tips, and DJ resources from <strong>Gee Beat</strong> (you can unsubscribe anytime)
+            </span>
+          </label>
+
+          {/* The Backstage consent (opt-in) - THIRD */}
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={consentBackstage}
+              onChange={(e) => setConsentBackstage(e.target.checked)}
+              disabled={loading}
+              className="mt-0.5 w-4 h-4 rounded border-foreground/20 bg-white text-[#FF5500] focus:ring-[#FF5500] focus:ring-offset-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Accept emails from The Backstage"
+            />
+            <span className="text-sm text-foreground/70 group-hover:text-foreground/90 transition-colors">
+              I also want to receive updates from <strong>The Backstage</strong> platform
             </span>
           </label>
         </div>
@@ -313,9 +312,11 @@ export function DownloadGateForm({ artistName, trackTitle, onSubmit }: DownloadG
         {/* GDPR disclosure */}
         <p className="text-[10px] text-foreground/50 leading-relaxed mt-6">
           By providing your email address, you agree that your email will be shared with{' '}
-          <strong>{artistName}</strong> and the selected brands above. You may receive emails
-          from them according to your consent choices. You can withdraw consent at any time by
-          unsubscribing from emails. For more information see our{' '}
+          <strong>{artistName}</strong> and the selected brands above. Gee Beat is pre-selected
+          to provide you with exclusive music content - you can uncheck it before submitting if
+          you prefer not to receive these emails. You may receive emails from the brands you
+          consent to. You can withdraw consent at any time by unsubscribing from emails. For
+          more information see our{' '}
           <a href="/privacy" className="underline hover:text-foreground/70 transition-colors">
             Privacy Policy
           </a>
