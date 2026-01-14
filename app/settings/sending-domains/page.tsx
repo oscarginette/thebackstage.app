@@ -6,24 +6,25 @@ import { PATHS } from '@/lib/paths';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sending Domains - The Backstage',
-  description: 'Verify your domain to send emails from your own address',
+  title: 'Senders & Domains - The Backstage',
+  description: 'Configure your sender email and verify domains to send from your own address',
 };
 
 // Force dynamic rendering (requires authentication)
 export const dynamic = 'force-dynamic';
 
 /**
- * Sending Domains Settings Page (Server Component)
+ * Senders & Domains Settings Page (Server Component)
  *
- * Handles authentication and fetches user's sending domains.
- * Follows Clean Architecture pattern: fetches data via Use Case,
+ * Unified page for sender email configuration and domain verification.
+ * Fetches both user settings (sender email) and sending domains.
+ * Follows Clean Architecture pattern: fetches data via Use Cases,
  * passes to client component for presentation.
  *
  * Security: Requires authentication, redirects to login if unauthorized.
  */
 export default async function SendingDomainsPage() {
-  console.log('[SendingDomainsPage] START - Loading sending domains page');
+  console.log('[SendingDomainsPage] START - Loading senders & domains page');
 
   try {
     // Authentication check
@@ -46,20 +47,35 @@ export default async function SendingDomainsPage() {
     console.log('[SendingDomainsPage] User ID parsed:', userId);
 
     // Fetch user's sending domains using Clean Architecture
-    console.log('[SendingDomainsPage] Creating use case...');
-    const useCase = UseCaseFactory.createGetUserSendingDomainsUseCase();
+    console.log('[SendingDomainsPage] Creating domains use case...');
+    const getDomainsUseCase = UseCaseFactory.createGetUserSendingDomainsUseCase();
 
     console.log('[SendingDomainsPage] Executing GetUserSendingDomainsUseCase for userId:', userId);
-    const domains = await useCase.execute(userId);
+    const domains = await getDomainsUseCase.execute(userId);
 
     console.log('[SendingDomainsPage] Domains loaded successfully:', {
       count: domains.length,
       domains: domains.map(d => ({ id: d.id, domain: d.domain, status: d.status })),
     });
 
+    // Fetch user settings (for sender email)
+    console.log('[SendingDomainsPage] Creating user settings use case...');
+    const getUserSettingsUseCase = UseCaseFactory.createGetUserSettingsUseCase();
+
+    console.log('[SendingDomainsPage] Executing GetUserSettingsUseCase for userId:', userId);
+    const userSettings = await getUserSettingsUseCase.execute(userId);
+
+    console.log('[SendingDomainsPage] User settings loaded:', {
+      hasSenderEmail: userSettings.hasSenderEmail(),
+      senderEmail: userSettings.senderEmail,
+      senderName: userSettings.senderName,
+    });
+
     return (
       <SendingDomainsClient
         initialDomains={domains.map(d => d.toJSON())}
+        currentSenderEmail={userSettings.senderEmail}
+        currentSenderName={userSettings.senderName}
       />
     );
   } catch (error) {
