@@ -34,15 +34,38 @@ export default function CustomEmail({
   const baseUrl = getAppUrl();
 
   const signatureLines = signature.split('\n');
+  const messageLines = message.split('\n');
 
-  // Parse message for bold text (**text**)
+  // Parse message for bold text (**text**) and URLs
   const parseMessage = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, i) => {
+    // First split by bold markers
+    const boldParts = text.split(/(\*\*.*?\*\*)/g);
+
+    return boldParts.map((part, i) => {
+      // Handle bold text
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i} style={{ fontWeight: '600' }}>{part.slice(2, -2)}</strong>;
       }
-      return part;
+
+      // Detect URLs in regular text
+      // Regex matches http://, https://, and www. URLs
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+      const urlParts = part.split(urlRegex);
+
+      return urlParts.map((urlPart, j) => {
+        // Re-test each part individually
+        const isUrl = /^(https?:\/\/[^\s]+|www\.[^\s]+)$/.test(urlPart);
+        if (isUrl) {
+          // Ensure URL has protocol for proper linking
+          const href = urlPart.startsWith('www.') ? `https://${urlPart}` : urlPart;
+          return (
+            <Link key={`${i}-${j}`} href={href} style={linkStyle}>
+              {urlPart}
+            </Link>
+          );
+        }
+        return urlPart;
+      });
     });
   };
 
@@ -57,14 +80,14 @@ export default function CustomEmail({
             <Section style={contentSection}>
               {greeting && (
                 <Text style={paragraph}>
-                  {greeting}
+                  {parseMessage(greeting)}
                 </Text>
               )}
-              {message && (
-                <Text style={paragraph}>
-                  {parseMessage(message)}
+              {message && messageLines.map((line, i) => (
+                <Text key={i} style={{ ...paragraph, margin: i === messageLines.length - 1 ? '0 0 16px 0' : '0' }}>
+                  {line.trim() === '' ? '\u00A0' : parseMessage(line)}
                 </Text>
-              )}
+              ))}
             </Section>
           )}
 
@@ -89,7 +112,7 @@ export default function CustomEmail({
               </Text>
               {signatureLines.map((line, i) => (
                 <Text key={i} style={signatureStyle}>
-                  {line}
+                  {parseMessage(line)}
                 </Text>
               ))}
             </Section>
@@ -156,6 +179,11 @@ const signatureStyle = {
   fontWeight: '400',
   lineHeight: '24px',
   margin: '0',
+};
+
+const linkStyle = {
+  color: '#0066CC',
+  textDecoration: 'underline',
 };
 
 const logoFooterSection = {

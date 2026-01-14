@@ -66,7 +66,7 @@ export class CsvGenerator implements ICsvGenerator {
           : '';
 
       case CONTACT_EXPORT_COLUMNS.UNSUBSCRIBE_TOKEN:
-        return contact.unsubscribeToken;
+        return contact.unsubscribeToken || '';
 
       case CONTACT_EXPORT_COLUMNS.METADATA:
         return contact.metadata ? JSON.stringify(contact.metadata) : '';
@@ -133,8 +133,10 @@ export class CsvGenerator implements ICsvGenerator {
     // - Wrap in quotes if contains comma, quote, or newline
     // - Double-escape existing quotes
     const escaped = values.map((value) => {
-      const needsEscape = /[",\n\r]/.test(value);
-      const escapedValue = value.replace(/"/g, '""');
+      // Guard against null/undefined values
+      const safeValue = value ?? '';
+      const needsEscape = /[",\n\r]/.test(safeValue);
+      const escapedValue = safeValue.replace(/"/g, '""');
       return needsEscape ? `"${escapedValue}"` : escapedValue;
     });
 
