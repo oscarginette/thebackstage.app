@@ -191,7 +191,7 @@ export class PostgresSendingDomainRepository implements ISendingDomainRepository
       row.user_id,
       row.domain,
       row.status as DomainStatus,
-      row.dns_records ? (JSON.parse(row.dns_records) as DNSRecords) : null,
+      row.dns_records || null, // JSONB already parsed by PostgreSQL driver
       row.mailgun_domain_name,
       row.verification_attempts || 0,
       row.last_verification_at,
