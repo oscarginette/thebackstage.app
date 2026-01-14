@@ -135,7 +135,15 @@ export function useEmailCampaigns() {
     }
   };
 
-  const sendDraft = async (id: string): Promise<{ success: boolean; emailsSent?: number; error?: string }> => {
+  const sendDraft = async (id: string): Promise<{
+    success: boolean;
+    emailsSent?: number;
+    emailsFailed?: number;
+    totalContacts?: number;
+    duration?: number;
+    failures?: Array<{ email: string; error: string }>;
+    error?: string;
+  }> => {
     try {
       const res = await fetch(`/api/campaigns/${id}/send`, {
         method: 'POST'
@@ -151,7 +159,14 @@ export function useEmailCampaigns() {
       await loadCampaigns();
       await loadDrafts();
 
-      return { success: true, emailsSent: data.emailsSent };
+      return {
+        success: true,
+        emailsSent: data.emailsSent,
+        emailsFailed: data.emailsFailed || 0,
+        totalContacts: data.totalContacts,
+        duration: data.duration,
+        failures: data.failures
+      };
     } catch (err: any) {
       setError(err.message || 'Error sending draft');
       return { success: false, error: err.message };

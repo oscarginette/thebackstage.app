@@ -123,6 +123,7 @@ import { SendNewTrackEmailsUseCase } from '@/domain/services/SendNewTrackEmailsU
 import { SendCustomEmailUseCase } from '@/domain/services/SendCustomEmailUseCase';
 import { SendTestEmailUseCase } from '@/domain/services/SendTestEmailUseCase';
 import { SendDraftUseCase } from '@/domain/services/SendDraftUseCase';
+import { CompileEmailHtmlUseCase } from '@/domain/services/CompileEmailHtmlUseCase';
 import { GetContactsWithStatsUseCase } from '@/domain/services/GetContactsWithStatsUseCase';
 import { DeleteContactsUseCase } from '@/domain/services/DeleteContactsUseCase';
 import { ImportContactsUseCase } from '@/domain/services/ImportContactsUseCase';
@@ -551,7 +552,15 @@ export class UseCaseFactory {
       RepositoryFactory.createContactRepository(),
       ProviderFactory.createEmailProvider(),
       RepositoryFactory.createExecutionLogRepository(),
-      RepositoryFactory.createEmailCampaignRepository()
+      RepositoryFactory.createEmailCampaignRepository(),
+      UseCaseFactory.createCompileEmailHtmlUseCase(),
+      RepositoryFactory.createUserSettingsRepository()
+    );
+  }
+
+  static createCompileEmailHtmlUseCase(): CompileEmailHtmlUseCase {
+    return new CompileEmailHtmlUseCase(
+      RepositoryFactory.createEmailSignatureRepository()
     );
   }
 
