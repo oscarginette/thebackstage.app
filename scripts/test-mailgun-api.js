@@ -84,7 +84,14 @@ async function testMailgunAPI() {
     if (domains.items && domains.items.length > 0) {
       console.log('   Existing domains:');
       domains.items.forEach(d => {
-        console.log(`   - ${d.name} (${d.state})`);
+        console.log(`   - ${d.name} (${d.state}) - Created: ${d.created_at}`);
+      });
+      console.log('');
+
+      // Show full details
+      console.log('   Full details:');
+      domains.items.forEach(d => {
+        console.log(JSON.stringify(d, null, 2));
       });
     }
     console.log('');
