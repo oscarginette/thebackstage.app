@@ -73,8 +73,19 @@ export class MailgunDomainClient implements IMailgunClient {
   async createDomain(domain: string): Promise<MailgunDomainCreationResult> {
     try {
       console.log('[MailgunDomainClient] Creating domain:', domain);
+      console.log('[MailgunDomainClient] Mailgun client config:', {
+        hasClient: !!this.mg,
+        hasDomains: !!this.mg?.domains,
+        hasCreate: !!this.mg?.domains?.create,
+      });
 
       // Call Mailgun Domains API
+      console.log('[MailgunDomainClient] Calling mg.domains.create with:', {
+        name: domain,
+        spam_action: 'disabled',
+        wildcard: false,
+      });
+
       const response = await this.mg.domains.create({
         name: domain,
         smtp_password: this.generateSecurePassword(),
@@ -82,27 +93,51 @@ export class MailgunDomainClient implements IMailgunClient {
         wildcard: false,         // Don't accept wildcard subdomains
       });
 
+      console.log('[MailgunDomainClient] Raw Mailgun response received');
+      console.log('[MailgunDomainClient] Response type:', typeof response);
+      console.log('[MailgunDomainClient] Response keys:', Object.keys(response || {}));
+
       console.log('[MailgunDomainClient] Domain created successfully:', {
         domain,
-        mailgunDomainName: response.domain.name,
-        state: response.domain.state,
+        mailgunDomainName: response.name,  // v4 API returns name directly
+        state: response.state,
+        hasSendingRecords: !!response.sending_dns_records,
+        hasReceivingRecords: !!response.receiving_dns_records,
+        recordsCount: response.sending_dns_records?.length || 0,
       });
 
       // Extract DNS records from response
+      console.log('[MailgunDomainClient] Parsing DNS records...');
       const dnsRecords = this.parseDNSRecords(response);
+      console.log('[MailgunDomainClient] DNS records parsed successfully');
 
       return {
         success: true,
-        mailgunDomainName: response.domain.name,
+        mailgunDomainName: response.name,  // v4 API returns name directly
         dnsRecords,
       };
     } catch (error: unknown) {
+      // Enhanced error logging
+      console.error('[MailgunDomainClient] ERROR - Detailed information:');
+      console.error('[MailgunDomainClient] Error type:', error?.constructor?.name);
+      console.error('[MailgunDomainClient] Error instanceof Error:', error instanceof Error);
+
+      if (error instanceof Error) {
+        console.error('[MailgunDomainClient] Error message:', error.message);
+        console.error('[MailgunDomainClient] Error stack:', error.stack);
+      }
+
+      console.error('[MailgunDomainClient] Error as object:', {
+        error,
+        errorString: String(error),
+        errorJSON: JSON.stringify(error, null, 2),
+      });
+
       const errorMessage = this.extractErrorMessage(error);
 
       console.error('[MailgunDomainClient] Failed to create domain:', {
         domain,
-        error,
-        errorMessage,
+        extractedErrorMessage: errorMessage,
       });
 
       return {
