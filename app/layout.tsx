@@ -40,6 +40,7 @@ export default async function RootLayout({
       </head>
       <body
         className={`${instrumentSerif.variable} ${inter.variable} antialiased transition-colors duration-200`}
+        suppressHydrationWarning
       >
         <SessionProvider>
           <I18nProvider initialLocale={locale}>
