@@ -4,6 +4,7 @@ import {
   trackRepository,
   contactRepository,
   executionLogRepository,
+  userRepository,
 } from '@/infrastructure/database/repositories';
 import { soundCloudRepository, spotifyRepository } from '@/infrastructure/music-platforms';
 import { resendEmailProvider } from '@/infrastructure/email';
@@ -44,6 +45,7 @@ export async function GET() {
       resendEmailProvider,
       trackRepository,
       executionLogRepository,
+      userRepository,
       baseUrl
     );
 

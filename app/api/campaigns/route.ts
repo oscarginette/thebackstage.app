@@ -120,6 +120,9 @@ export const POST = withErrorHandler(async (request: Request) => {
     templateId: validatedData.templateId,
     trackId: validatedData.trackId,
     subject: validatedData.subject,
+    greeting: validatedData.greeting,
+    message: validatedData.message,
+    signature: validatedData.signature,
     htmlContent: validatedData.htmlContent,
     status: validatedData.status,
     scheduledAt: validatedData.scheduledAt ? new Date(validatedData.scheduledAt) : null

@@ -98,9 +98,18 @@ export async function POST(request: NextRequest) {
   try {
     // Authentication
     const session = await auth();
+
+    // DEBUG: Log session info
+    console.log('[POST /api/sending-domains] Session debug:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+      userEmail: session?.user?.email,
+    });
+
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized', debug: { hasSession: !!session, hasUser: !!session?.user } },
         { status: 401 }
       );
     }
@@ -138,17 +147,37 @@ export async function POST(request: NextRequest) {
       dnsRecords: result.dnsRecords,
     });
   } catch (error) {
-    console.error('[POST /api/sending-domains] Error:', error);
+    console.error('[POST /api/sending-domains] FATAL ERROR - Full details:');
+    console.error('[POST /api/sending-domains] Error type:', error?.constructor?.name);
+    console.error('[POST /api/sending-domains] Error instanceof Error:', error instanceof Error);
+
+    if (error instanceof Error) {
+      console.error('[POST /api/sending-domains] Error message:', error.message);
+      console.error('[POST /api/sending-domains] Error stack:', error.stack);
+      console.error('[POST /api/sending-domains] Error name:', error.name);
+    }
+
+    console.error('[POST /api/sending-domains] Error as object:', {
+      error,
+      errorString: String(error),
+      errorKeys: Object.keys(error || {}),
+    });
 
     if (error instanceof Error) {
       return NextResponse.json(
-        { error: error.message },
+        {
+          error: error.message,
+          debug: {
+            name: error.name,
+            stack: error.stack?.split('\n').slice(0, 5), // First 5 lines of stack
+          }
+        },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', debug: { errorType: typeof error } },
       { status: 500 }
     );
   }
