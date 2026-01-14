@@ -202,12 +202,18 @@ export type UpdateEmailTemplateInput = z.infer<typeof UpdateEmailTemplateSchema>
 /**
  * Schema for POST /api/campaigns
  * Creates a new email campaign or draft
+ *
+ * Note: Drafts are flexible - only subject is required.
+ * When status is 'sent', all fields should be validated before sending.
  */
 export const CreateCampaignSchema = z.object({
   templateId: z.string().optional(),
   trackId: z.string().optional(),
-  subject: z.string().min(1, 'Subject is required').max(500, 'Subject too long'),
-  htmlContent: z.string().min(1, 'HTML content is required'),
+  subject: z.string().max(500, 'Subject too long').optional(),
+  greeting: z.string().max(200, 'Greeting too long').optional(),
+  message: z.string().optional(),
+  signature: z.string().max(500, 'Signature too long').optional(),
+  htmlContent: z.string().optional(),
   status: z.enum(['draft', 'sent']).default('draft'),
   scheduledAt: z.string().datetime('Invalid datetime format').optional(),
 });

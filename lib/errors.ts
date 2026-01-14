@@ -156,6 +156,19 @@ export class SpotifyApiError extends AppError {
   }
 }
 
+// Domain verification errors
+export class DomainNotFoundError extends AppError {
+  constructor(message: string = 'Domain not found or not configured', details?: unknown) {
+    super(message, ERROR_CODES.NOT_FOUND, 404, details);
+  }
+}
+
+export class DomainNotVerifiedError extends AppError {
+  constructor(message: string = 'Domain not verified yet', details?: unknown) {
+    super(message, ERROR_CODES.VALIDATION_ERROR, 400, details);
+  }
+}
+
 /**
  * Type guard to check if error is AppError
  */
