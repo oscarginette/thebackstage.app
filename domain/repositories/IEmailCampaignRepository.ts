@@ -13,8 +13,11 @@ export interface EmailCampaign {
   id: string;
   templateId: string | null;
   trackId: string | null;
-  subject: string;
-  htmlContent: string;
+  subject: string | null;  // Can be null for drafts
+  greeting?: string | null;  // Optional email greeting
+  message?: string | null;   // Optional email message
+  signature?: string | null; // Optional email signature
+  htmlContent: string | null;  // Can be null for drafts
   status: 'draft' | 'sent';
   scheduledAt: Date | null;
   sentAt: Date | null;
@@ -26,8 +29,11 @@ export interface CreateCampaignInput {
   userId: number;  // Multi-tenant: User who owns this campaign
   templateId?: string | null;
   trackId?: string | null;
-  subject: string;
-  htmlContent: string;
+  subject?: string;  // Optional for drafts
+  greeting?: string;  // Optional email greeting
+  message?: string;   // Optional email message
+  signature?: string; // Optional email signature
+  htmlContent?: string;  // Optional for drafts, required for sent
   status?: 'draft' | 'sent';
   scheduledAt?: Date | null;
 }

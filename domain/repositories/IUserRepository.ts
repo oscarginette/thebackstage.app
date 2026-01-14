@@ -187,4 +187,19 @@ export interface IUserRepository {
    * @throws Error if user not found or update fails
    */
   invalidatePasswordResetToken(userId: number): Promise<void>;
+
+  /**
+   * Update user's custom sender email configuration
+   * Used to set custom "From" email for newsletters
+   * @param userId - User identifier
+   * @param senderEmail - Custom sender email (e.g., "info@geebeat.com")
+   * @param senderName - Display name for sender (e.g., "Artist Name")
+   * @throws Error if user not found or update fails
+   * @note Domain must be verified in sending_domains table for emails to send successfully
+   */
+  updateSenderEmail(
+    userId: number,
+    senderEmail: string | null,
+    senderName: string | null
+  ): Promise<void>;
 }

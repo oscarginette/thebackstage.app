@@ -60,6 +60,15 @@ export interface ISendingDomainRepository {
   findByDomain(domain: string): Promise<SendingDomain | null>;
 
   /**
+   * Find domain by user ID and domain name
+   * Used to check if a specific domain is configured and verified for a user
+   * @param userId - User ID
+   * @param domain - Domain name (e.g., "geebeat.com")
+   * @returns Domain or null if not found
+   */
+  findByUserIdAndDomain(userId: number, domain: string): Promise<SendingDomain | null>;
+
+  /**
    * Find verified domain for user
    * @param userId - User ID
    * @returns Most recently verified domain or null
