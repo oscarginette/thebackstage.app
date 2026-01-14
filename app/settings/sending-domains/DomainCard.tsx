@@ -135,7 +135,11 @@ export default function DomainCard({ domain, onUpdate, onDelete }: DomainCardPro
             {getStatusBadge(domain.status)}
             {domain.verifiedAt && (
               <p className="text-xs text-foreground/50">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                })}
               </p>
             )}
           </div>
