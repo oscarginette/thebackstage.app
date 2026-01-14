@@ -38,6 +38,10 @@ export interface EmailCampaign {
   templateId: string | null;
   trackId: string | null;
   subject: string | null;  // Nullable for drafts
+  greeting?: string | null;  // Optional email greeting (for draft editing)
+  message?: string | null;   // Optional email message (for draft editing)
+  signature?: string | null; // Optional email signature (for draft editing)
+  coverImageUrl?: string | null;  // Optional cover image URL (for draft editing)
   htmlContent: string | null;  // Nullable for drafts
   status: 'draft' | 'sent';
   scheduledAt: string | null;

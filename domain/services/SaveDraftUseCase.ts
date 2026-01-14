@@ -112,6 +112,10 @@ export class SaveDraftUseCase {
       templateId: input.templateId || null,
       trackId: input.trackId || null,
       subject: input.subject,
+      greeting: input.greeting,
+      message: input.message,
+      signature: input.signature,
+      coverImageUrl: input.coverImage,
       htmlContent,
       status: 'draft',
       scheduledAt: input.scheduledAt || null
@@ -147,6 +151,10 @@ export class SaveDraftUseCase {
     const updatedCampaign = await this.campaignRepository.update({
       id,
       subject: input.subject,
+      greeting: input.greeting,
+      message: input.message,
+      signature: input.signature,
+      coverImageUrl: input.coverImage,
       htmlContent,
       scheduledAt: input.scheduledAt
     });

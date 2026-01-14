@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
-import { LayoutDashboard, Rocket, Mail, Users, Shield, Settings, LogOut, ExternalLink } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { LayoutDashboard, Rocket, Mail, Users, Shield, Settings, LogOut, ExternalLink, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/context';
 import { LAYOUT_STYLES, DASHBOARD_STYLES } from '@/domain/types/design-tokens';
+import { motion, AnimatePresence } from 'framer-motion';
+import { signOut } from 'next-auth/react';
 
 export type TabType = 'overview' | 'growth' | 'engagement' | 'audience' | 'admin';
 
@@ -23,6 +25,9 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ activeTab, onTabChange, isAdmin = false, user }: DashboardSidebarProps) {
   const tNav = useTranslations('nav');
+  const tSettings = useTranslations('settings');
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const mainNavItems: { id: TabType; label: string; icon: any }[] = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -34,6 +39,24 @@ export function DashboardSidebar({ activeTab, onTabChange, isAdmin = false, user
   if (isAdmin) {
     mainNavItems.push({ id: 'admin', label: 'Admin', icon: Shield });
   }
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <aside className={cn(LAYOUT_STYLES.sidebar.width, DASHBOARD_STYLES.sidebar.container)}>
@@ -87,16 +110,48 @@ export function DashboardSidebar({ activeTab, onTabChange, isAdmin = false, user
         {/* Divider */}
         <div className={DASHBOARD_STYLES.sidebar.footerDivider} />
 
-        {/* User Card */}
+        {/* User Card with Dropdown */}
         {user && (
-            <div className="p-2.5 rounded-lg bg-accent/5 border border-accent/10 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center text-[13px] font-bold text-accent">
-                    {user.email?.[0].toUpperCase() || 'U'}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-foreground truncate">{user.name || user.email?.split('@')[0]}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{user.role}</p>
-                </div>
+            <div ref={menuRef} className="relative">
+                <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="w-full p-2.5 rounded-lg bg-accent/5 border border-accent/10 hover:bg-accent/10 hover:border-accent/20 flex items-center gap-2.5 transition-all duration-200 group"
+                >
+                    <div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center text-[13px] font-bold text-accent">
+                        {user.email?.[0].toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-foreground truncate">{user.name || user.email?.split('@')[0]}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{user.role}</p>
+                    </div>
+                    <ChevronUp
+                        className={cn(
+                            "w-4 h-4 text-muted-foreground transition-transform duration-200",
+                            isUserMenuOpen ? "rotate-180" : ""
+                        )}
+                    />
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                    {isUserMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                            className="absolute bottom-full left-0 right-0 mb-2 bg-background border border-border/40 rounded-lg shadow-2xl overflow-hidden backdrop-blur-xl"
+                        >
+                            <button
+                                onClick={handleLogout}
+                                className="w-full px-3 py-2.5 flex items-center gap-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-200"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                {tSettings('logout')}
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         )}
 

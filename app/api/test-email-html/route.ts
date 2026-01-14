@@ -4,6 +4,8 @@ import NewTrackEmail from '@/emails/new-track';
 import CustomEmail from '@/emails/custom-email';
 import { env, getAppUrl, getBaseUrl } from '@/lib/env';
 import { EmailSignature } from '@/domain/value-objects/EmailSignature';
+import { auth } from '@/lib/auth';
+import { getUserEmailSignatureUseCase } from '@/lib/di-container';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +13,19 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { trackName, trackUrl, coverImage, customContent } = body;
+
+    // Get authenticated user's email signature
+    const session = await auth();
+    let emailSignature;
+
+    if (session?.user?.id) {
+      const useCase = getUserEmailSignatureUseCase();
+      const userSignature = await useCase.execute(parseInt(session.user.id));
+      emailSignature = userSignature.toJSON();
+    } else {
+      // Fallback to default if not authenticated
+      emailSignature = EmailSignature.createGeeBeatDefault().toJSON();
+    }
 
     // Generar URL de unsubscribe de ejemplo
     const baseUrl = getAppUrl();
@@ -28,7 +43,7 @@ export async function POST(request: Request) {
           signature: customContent.signature || '',
           coverImage: coverImage || '',
           unsubscribeUrl,
-          emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
+          emailSignature,
         })
       );
     } else {
@@ -38,7 +53,7 @@ export async function POST(request: Request) {
           trackUrl: trackUrl || 'https://soundcloud.com',
           coverImage: coverImage || '',
           unsubscribeUrl,
-          emailSignature: EmailSignature.createGeeBeatDefault().toJSON(),
+          emailSignature,
         })
       );
     }

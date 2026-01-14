@@ -250,9 +250,10 @@ export class EmailCampaign {
 
   /**
    * Create from database row
+   * Note: Returns EmailCampaign entity with additional fields attached
    */
-  static fromDatabase(row: any): EmailCampaign {
-    return new EmailCampaign(
+  static fromDatabase(row: any): any {
+    const campaign = new EmailCampaign(
       row.id,
       row.template_id,
       row.track_id,
@@ -264,5 +265,14 @@ export class EmailCampaign {
       new Date(row.created_at),
       new Date(row.updated_at)
     );
+
+    // Attach additional fields for draft editing (not part of core entity)
+    return {
+      ...campaign,
+      greeting: row.greeting || null,
+      message: row.message || null,
+      signature: row.signature || null,
+      coverImageUrl: row.cover_image_url || null,
+    };
   }
 }

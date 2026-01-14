@@ -61,9 +61,16 @@ import {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // TEMP DEBUG
+  console.log('[Middleware] Path:', pathname);
+  console.log('[Middleware] Cookies:', request.cookies.getAll().map(c => c.name).join(', '));
+
   // Check authentication status (only if AUTH_SECRET is available)
   let token = null;
   const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+  console.log('[Middleware] AUTH_SECRET exists:', !!authSecret);
+  console.log('[Middleware] AUTH_SECRET length:', authSecret?.length);
 
   if (authSecret) {
     try {
@@ -71,12 +78,15 @@ export async function middleware(request: NextRequest) {
         req: request,
         secret: authSecret,
       });
+      console.log('[Middleware] Token:', token ? 'EXISTS' : 'NULL');
+      console.log('[Middleware] Token data:', token);
     } catch (error) {
-      console.error('Error getting auth token:', error);
+      console.error('[Middleware] Error getting auth token:', error);
     }
   }
 
   const isAuthenticated = !!token;
+  console.log('[Middleware] Is authenticated:', isAuthenticated);
 
   // Protected routes that require authentication
   const protectedRoutes = ['/dashboard', '/settings'];

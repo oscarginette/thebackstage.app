@@ -17,6 +17,7 @@ export interface EmailCampaign {
   greeting?: string | null;  // Optional email greeting
   message?: string | null;   // Optional email message
   signature?: string | null; // Optional email signature
+  coverImageUrl?: string | null;  // Optional cover image URL (Cloudinary)
   htmlContent: string | null;  // Can be null for drafts
   status: 'draft' | 'sent';
   scheduledAt: Date | null;
@@ -33,6 +34,7 @@ export interface CreateCampaignInput {
   greeting?: string;  // Optional email greeting
   message?: string;   // Optional email message
   signature?: string; // Optional email signature
+  coverImageUrl?: string;  // Optional cover image URL (Cloudinary)
   htmlContent?: string;  // Optional for drafts, required for sent
   status?: 'draft' | 'sent';
   scheduledAt?: Date | null;
@@ -41,6 +43,10 @@ export interface CreateCampaignInput {
 export interface UpdateCampaignInput {
   id: string;
   subject?: string;
+  greeting?: string;
+  message?: string;
+  signature?: string;
+  coverImageUrl?: string;
   htmlContent?: string;
   status?: 'draft' | 'sent';
   scheduledAt?: Date | null;

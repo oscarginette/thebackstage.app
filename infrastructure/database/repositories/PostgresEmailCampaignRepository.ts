@@ -29,6 +29,10 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
         template_id,
         track_id,
         subject,
+        greeting,
+        message,
+        signature,
+        cover_image_url,
         html_content,
         status,
         scheduled_at
@@ -38,6 +42,10 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
         ${input.templateId || null},
         ${input.trackId || null},
         ${input.subject || null},
+        ${input.greeting || null},
+        ${input.message || null},
+        ${input.signature || null},
+        ${input.coverImageUrl || null},
         ${input.htmlContent || null},
         ${input.status || 'draft'},
         ${input.scheduledAt ? input.scheduledAt.toISOString() : null}
@@ -391,333 +399,74 @@ export class PostgresEmailCampaignRepository implements IEmailCampaignRepository
 
   /**
    * Update campaign
-   * Uses template literals for Vercel Postgres compatibility
+   * Simplified approach: Build SET clause dynamically
    */
   async update(input: UpdateCampaignInput): Promise<IEmailCampaign> {
-    const id = input.id;
-    const subject = input.subject;
-    const htmlContent = input.htmlContent;
-    const status = input.status;
-    const scheduledAt = input.scheduledAt ? input.scheduledAt.toISOString() : null;
-    const sentAt = input.sentAt ? input.sentAt.toISOString() : null;
+    // Build update fields dynamically
+    const updateFields: string[] = [];
+    const updateValues: any[] = [];
+    let paramIndex = 1;
 
-    // Determine which fields to update
-    const hasSubject = input.subject !== undefined;
-    const hasHtmlContent = input.htmlContent !== undefined;
-    const hasStatus = input.status !== undefined;
-    const hasScheduledAt = input.scheduledAt !== undefined;
-    const hasSentAt = input.sentAt !== undefined;
-
-    let result;
-
-    // Build conditional UPDATE queries using template literals
-    // Vercel Postgres requires template literal syntax
-    if (hasSubject && hasHtmlContent && hasStatus && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            status = ${status},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent && hasStatus && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            status = ${status},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent && hasStatus && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            status = ${status},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasStatus && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            status = ${status},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasStatus && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            status = ${status},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent && hasStatus) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            status = ${status},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasStatus && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            status = ${status},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasStatus && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            status = ${status},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasStatus && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            status = ${status},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasStatus && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            status = ${status},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasStatus && hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET status = ${status},
-            scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasHtmlContent) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            html_content = ${htmlContent},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasStatus) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            status = ${status},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasStatus) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            status = ${status},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasStatus && hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET status = ${status},
-            scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasStatus && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET status = ${status},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasScheduledAt && hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET scheduled_at = ${scheduledAt},
-            sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSubject) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET subject = ${subject},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasHtmlContent) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET html_content = ${htmlContent},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasStatus) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET status = ${status},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasScheduledAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET scheduled_at = ${scheduledAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else if (hasSentAt) {
-      result = await sql`
-        UPDATE email_campaigns
-        SET sent_at = ${sentAt},
-            updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
-    } else {
-      // No fields to update, just update timestamp
-      result = await sql`
-        UPDATE email_campaigns
-        SET updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
+    if (input.subject !== undefined) {
+      updateFields.push(`subject = $${paramIndex++}`);
+      updateValues.push(input.subject);
     }
+
+    if (input.greeting !== undefined) {
+      updateFields.push(`greeting = $${paramIndex++}`);
+      updateValues.push(input.greeting);
+    }
+
+    if (input.message !== undefined) {
+      updateFields.push(`message = $${paramIndex++}`);
+      updateValues.push(input.message);
+    }
+
+    if (input.signature !== undefined) {
+      updateFields.push(`signature = $${paramIndex++}`);
+      updateValues.push(input.signature);
+    }
+
+    if (input.coverImageUrl !== undefined) {
+      updateFields.push(`cover_image_url = $${paramIndex++}`);
+      updateValues.push(input.coverImageUrl);
+    }
+
+    if (input.htmlContent !== undefined) {
+      updateFields.push(`html_content = $${paramIndex++}`);
+      updateValues.push(input.htmlContent);
+    }
+
+    if (input.status !== undefined) {
+      updateFields.push(`status = $${paramIndex++}`);
+      updateValues.push(input.status);
+    }
+
+    if (input.scheduledAt !== undefined) {
+      updateFields.push(`scheduled_at = $${paramIndex++}`);
+      updateValues.push(input.scheduledAt ? input.scheduledAt.toISOString() : null);
+    }
+
+    if (input.sentAt !== undefined) {
+      updateFields.push(`sent_at = $${paramIndex++}`);
+      updateValues.push(input.sentAt ? input.sentAt.toISOString() : null);
+    }
+
+    // Always update updated_at
+    updateFields.push('updated_at = NOW()');
+
+    // Add id as the last parameter
+    updateValues.push(input.id);
+
+    // Build and execute query
+    const query = `
+      UPDATE email_campaigns
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await sql.query(query, updateValues);
 
     if (result.rows.length === 0) {
       throw new Error(`Campaign with ID ${input.id} not found`);
