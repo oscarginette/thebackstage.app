@@ -270,6 +270,7 @@ model email_campaigns {
   email_templates  email_templates? @relation(fields: [template_id], references: [id], onUpdate: NoAction)
   users            users?           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   email_logs       email_logs[]
+  execution_logs   execution_logs[]
 
   @@index([status], map: "idx_email_campaigns_status")
   @@index([user_id], map: "idx_email_campaigns_user_id")
@@ -365,17 +366,20 @@ model events {
 }
 
 model execution_logs {
-  id          Int       @id @default(autoincrement())
-  user_id     Int?
-  executed_at DateTime? @default(now()) @db.Timestamp(6)
-  new_tracks  Int?      @default(0)
-  emails_sent Int?      @default(0)
-  duration_ms Int?
-  error       String?
-  track_id    String?   @db.VarChar(500)
-  track_title String?   @db.VarChar(500)
-  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id              Int              @id @default(autoincrement())
+  user_id         Int?
+  campaign_id     Int?
+  executed_at     DateTime?        @default(now()) @db.Timestamp(6)
+  new_tracks      Int?             @default(0)
+  emails_sent     Int?             @default(0)
+  duration_ms     Int?
+  error           String?
+  track_id        String?          @db.VarChar(500)
+  track_title     String?          @db.VarChar(500)
+  users           users?           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  email_campaigns email_campaigns? @relation(fields: [campaign_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
+  @@index([campaign_id], map: "idx_execution_logs_campaign_id")
   @@index([executed_at(sort: Desc)], map: "idx_execution_logs_executed_at")
   @@index([user_id], map: "idx_execution_logs_user_id")
 }
