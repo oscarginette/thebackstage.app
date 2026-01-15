@@ -1,9 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronDown, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ExecutionHistoryItem } from '../../types/dashboard';
+import CampaignPreviewModal from './CampaignPreviewModal';
 
 interface ExecutionHistoryProps {
   history: ExecutionHistoryItem[];
@@ -26,6 +30,9 @@ interface CampaignStats {
 export default function ExecutionHistory({ history }: ExecutionHistoryProps) {
   const [campaignStats, setCampaignStats] = useState<Record<string, CampaignStats>>({});
   const [loadingStats, setLoadingStats] = useState(true);
+  const [previewingLogId, setPreviewingLogId] = useState<number | null>(null);
+  const [statsExpanded, setStatsExpanded] = useState<Record<string, boolean>>({});
+  const router = useRouter();
 
   useEffect(() => {
     fetchCampaignStats();
@@ -49,6 +56,13 @@ export default function ExecutionHistory({ history }: ExecutionHistoryProps) {
     } finally {
       setLoadingStats(false);
     }
+  };
+
+  const toggleStats = (trackId: string) => {
+    setStatsExpanded((prev) => ({
+      ...prev,
+      [trackId]: !prev[trackId],
+    }));
   };
 
   return (
@@ -113,21 +127,37 @@ export default function ExecutionHistory({ history }: ExecutionHistoryProps) {
                             <span>Sent to {item.emailsSent} audience members</span>
                           </div>
                         </div>
-                        {item.url ? (
-                          <a
-                            href={item.url}
-                            target="_blank"
-                            rel="noreferrer"
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => setPreviewingLogId(item.executionLogId)}
+                            disabled={!item.campaignId}
+                            title={item.campaignId ? "Preview campaign" : "Campaign data not available"}
                           >
-                            <Button variant="secondary" size="xs">
-                              Listen Track
-                            </Button>
-                          </a>
-                        ) : (
-                          <div className="px-3 py-1 text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
-                            Custom Campaign
-                          </div>
-                        )}
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span className="ml-1">Preview</span>
+                          </Button>
+                          {item.url ? (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <Button variant="secondary" size="xs">
+                                Listen Track
+                              </Button>
+                            </a>
+                          ) : (
+                            <div className="px-3 py-1 text-[10px] font-medium text-foreground/30 uppercase tracking-widest flex items-center gap-1.5">
+                              <FileText className="w-3 h-3" />
+                              <span>Custom</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -137,52 +167,78 @@ export default function ExecutionHistory({ history }: ExecutionHistoryProps) {
                         <div className="w-5 h-5 rounded-full border-2 border-border border-t-primary animate-spin"></div>
                       </div>
                     ) : stats ? (
-                      <div className="p-4 bg-muted/30">
-                        <div className="grid grid-cols-4 gap-3">
-                          {/* Delivered */}
-                          <div className="flex flex-col gap-0.5">
-                            <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Delivered</div>
-                            <div className="text-lg font-serif text-blue-600">{stats.delivered}</div>
-                            <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
-                              {stats.delivery_rate || 0}% rate
-                            </div>
-                          </div>
+                      <div className="bg-muted/30">
+                        {/* Collapsible Header */}
+                        <button
+                          onClick={() => toggleStats(item.trackId)}
+                          className="w-full p-3 px-4 flex items-center justify-between hover:bg-muted/50 transition-colors border-b border-border/30"
+                          aria-expanded={statsExpanded[item.trackId] ?? true}
+                          aria-label={`Toggle detailed statistics for ${item.title}`}
+                        >
+                          <span className="text-[10px] text-foreground/60 font-bold uppercase tracking-widest">
+                            Detailed Statistics
+                          </span>
+                          <ChevronDown
+                            className={`w-4 h-4 text-foreground/40 transition-transform duration-200 ${
+                              statsExpanded[item.trackId] ?? true ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </button>
 
-                          {/* Opens */}
-                          <div className="flex flex-col gap-0.5 border-l border-border/40 pl-3">
-                            <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Opens</div>
-                            <div className="text-lg font-serif text-emerald-600">{stats.opened}</div>
-                            <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
-                              {stats.open_rate || 0}% rate
-                            </div>
-                          </div>
+                        {/* Animated Stats Content */}
+                        <AnimatePresence initial={false}>
+                          {(statsExpanded[item.trackId] ?? true) && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: 'easeInOut' }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <div className="p-4">
+                                <div className="grid grid-cols-4 gap-3">
+                                  {/* Delivered */}
+                                  <div className="flex flex-col gap-0.5">
+                                    <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Delivered</div>
+                                    <div className="text-lg font-serif text-blue-600">{stats.delivered}</div>
+                                    <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
+                                      {stats.delivery_rate || 0}% rate
+                                    </div>
+                                  </div>
 
-                          {/* Clicks */}
-                          <div className="flex flex-col gap-0.5 border-l border-border/40 pl-3">
-                            <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Clicks</div>
-                            <div className="text-lg font-serif text-purple-600">{stats.clicked}</div>
-                            <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
-                              {stats.click_rate || 0}% rate
-                            </div>
-                          </div>
+                                  {/* Opens */}
+                                  <div className="flex flex-col gap-0.5 border-l border-border/40 pl-3">
+                                    <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Opens</div>
+                                    <div className="text-lg font-serif text-emerald-600">{stats.opened}</div>
+                                    <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
+                                      {stats.open_rate || 0}% rate
+                                    </div>
+                                  </div>
 
-                          {/* Bounced */}
-                          <div className="flex flex-col gap-0.5 border-l border-border/40 pl-3">
-                            <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Bounced</div>
-                            <div className="text-lg font-serif text-red-600">{stats.bounced}</div>
-                            <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
-                              {stats.bounce_rate || 0}% rate
-                            </div>
-                          </div>
-                        </div>
+                                  {/* Clicks */}
+                                  <div className="flex flex-col gap-0.5 border-l border-border/40 pl-3">
+                                    <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Clicks</div>
+                                    <div className="text-lg font-serif text-purple-600">{stats.clicked}</div>
+                                    <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
+                                      {stats.click_rate || 0}% rate
+                                    </div>
+                                  </div>
+
+                                  {/* Bounced */}
+                                  <div className="flex flex-col gap-0.5 border-l border-border/40 pl-3">
+                                    <div className="text-[9px] text-foreground font-black uppercase tracking-wider">Bounced</div>
+                                    <div className="text-lg font-serif text-red-600">{stats.bounced}</div>
+                                    <div className="text-[9px] text-foreground/60 font-bold uppercase tracking-tight">
+                                      {stats.bounce_rate || 0}% rate
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    ) : (
-                      <div className="p-3 px-4 bg-muted/30">
-                        <div className="text-[10px] text-foreground/60 font-bold uppercase tracking-widest text-center">
-                          Detailed statistics pending synchronization
-                        </div>
-                      </div>
-                    )}
+                    ) : null}
                   </Card>
                 </div>
               );
@@ -190,6 +246,14 @@ export default function ExecutionHistory({ history }: ExecutionHistoryProps) {
           </div>
         )}
       </div>
+
+      {/* Campaign Preview Modal */}
+      {previewingLogId && (
+        <CampaignPreviewModal
+          executionLogId={previewingLogId}
+          onClose={() => setPreviewingLogId(null)}
+        />
+      )}
     </Card>
   );
 }
