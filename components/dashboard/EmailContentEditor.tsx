@@ -5,6 +5,10 @@ import { EmailContent } from '../../types/dashboard';
 import { useTranslations } from '@/lib/i18n/context';
 import ListSelector from './ListSelector';
 import { LIST_FILTER_MODES } from '@/domain/value-objects/ListFilterCriteria';
+import RichTextEditor from '@/components/ui/RichTextEditor';
+import EmailPreview from '@/components/ui/EmailPreview';
+import { useAutoSaveCampaign } from '@/hooks/useAutoSaveCampaign';
+import { formatTimeAgo } from '@/lib/date-utils';
 // TODO: Re-enable when email content validation feature is committed
 // import { useEmailContentValidation } from '@/hooks/useEmailContentValidation';
 // import { Tooltip } from '@/components/ui/Tooltip';
@@ -202,6 +206,52 @@ function CoverImageUpload({
   );
 }
 
+/**
+ * AutoSaveIndicator Component
+ *
+ * Shows save status in footer
+ */
+function AutoSaveIndicator({
+  status,
+  lastSavedAt
+}: {
+  status: 'idle' | 'saving' | 'saved' | 'error';
+  lastSavedAt: Date | null;
+}) {
+  const t = useTranslations('dashboard.emails.editor');
+
+  if (status === 'idle' || !lastSavedAt) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      {status === 'saving' && (
+        <>
+          <div className="w-3 h-3 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+          <span>{t('autoSaving')}</span>
+        </>
+      )}
+      {status === 'saved' && (
+        <>
+          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>{t('autoSaved')} • {formatTimeAgo(lastSavedAt)}</span>
+        </>
+      )}
+      {status === 'error' && (
+        <>
+          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-red-600">{t('autoSaveError')}</span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function EmailContentEditor({
   initialContent,
   onSave,
@@ -217,7 +267,11 @@ export default function EmailContentEditor({
   const [coverImage, setCoverImage] = useState(initialContent.coverImage || '');
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [loadingPreview, setLoadingPreview] = useState(false);
-  const [savingDraft, setSavingDraft] = useState(false);
+  const [senderInfo, setSenderInfo] = useState<{ email: string; name?: string } | null>(null);
+  const [loadingSender, setLoadingSender] = useState(true);
+
+  // Auto-save hook
+  const { saveStatus, lastSavedAt, autoSave } = useAutoSaveCampaign();
 
   // Real-time validation
   // TODO: Re-enable when email content validation feature is committed
@@ -249,6 +303,31 @@ export default function EmailContentEditor({
     fetchPreview();
   }, [subject, greeting, message, signature, coverImage]);
 
+  useEffect(() => {
+    fetchSenderInfo();
+  }, []);
+
+  // Auto-save on every field change
+  useEffect(() => {
+    const listFilter = listFilterMode === 'all'
+      ? undefined
+      : {
+          mode: listFilterMode === 'include'
+            ? LIST_FILTER_MODES.SPECIFIC_LISTS
+            : LIST_FILTER_MODES.EXCLUDE_LISTS,
+          listIds: selectedListIds,
+        };
+
+    autoSave({
+      subject,
+      greeting,
+      message,
+      signature,
+      coverImage: coverImage || undefined,
+      listFilter
+    });
+  }, [subject, greeting, message, signature, coverImage, listFilterMode, selectedListIds, autoSave]);
+
   const fetchPreview = async () => {
     setLoadingPreview(true);
     try {
@@ -276,6 +355,44 @@ export default function EmailContentEditor({
     }
   };
 
+  const fetchSenderInfo = async () => {
+    setLoadingSender(true);
+    try {
+      const res = await fetch('/api/user/settings');
+
+      if (res.ok) {
+        const response = await res.json();
+        // Response structure: { success: true, data: { settings: {...} } }
+        const settings = response?.data?.settings;
+
+        if (settings) {
+          setSenderInfo({
+            email: settings.senderEmail || 'noreply@thebackstage.app',
+            name: settings.senderName || undefined
+          });
+        } else {
+          // Fallback to default if settings is null/undefined
+          setSenderInfo({
+            email: 'noreply@thebackstage.app'
+          });
+        }
+      } else {
+        // Fallback to default
+        setSenderInfo({
+          email: 'noreply@thebackstage.app'
+        });
+      }
+    } catch (error) {
+      console.error('[EmailEditor] Error fetching sender info:', error);
+      // Fallback to default
+      setSenderInfo({
+        email: 'noreply@thebackstage.app'
+      });
+    } finally {
+      setLoadingSender(false);
+    }
+  };
+
   const handleSave = async () => {
     // Build listFilter object
     const listFilter = listFilterMode === 'all'
@@ -297,39 +414,13 @@ export default function EmailContentEditor({
     });
   };
 
-  const handleSaveDraft = async () => {
-    setSavingDraft(true);
-    try {
-      // Build listFilter object
-      const listFilter = listFilterMode === 'all'
-        ? undefined
-        : {
-            mode: listFilterMode === 'include'
-              ? LIST_FILTER_MODES.SPECIFIC_LISTS
-              : LIST_FILTER_MODES.EXCLUDE_LISTS,
-            listIds: selectedListIds,
-          };
-
-      await onSaveDraft({
-        subject,
-        greeting,
-        message,
-        signature,
-        coverImage: coverImage || undefined,
-        listFilter
-      });
-    } finally {
-      setSavingDraft(false);
-    }
-  };
-
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Editor Panel and Preview */}
       <div className="flex-1 overflow-hidden flex">
         {/* Editor Panel */}
-        <div className="w-1/2 border-r border-border overflow-y-auto p-8 bg-muted">
-          <h3 className="text-xl font-serif text-foreground mb-6">{t('title')}</h3>
+        <div className="w-1/2 border-r border-border overflow-y-auto p-6 bg-muted">
+          <h3 className="text-xl font-serif text-foreground mb-4">{t('title')}</h3>
 
           <div className="space-y-4">
             {/* Subject */}
@@ -342,10 +433,10 @@ export default function EmailContentEditor({
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 transition-all ${
+                className={`w-full px-6 py-3 rounded-2xl border bg-background text-foreground focus:outline-none transition-all duration-200 shadow-sm hover:shadow-md ${
                   validation.fieldHasError('subject')
-                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
-                    : 'border-border focus:ring-accent/20 focus:border-accent'
+                    ? 'border-red-500 focus:ring-4 focus:ring-red-500/10 focus:border-red-500'
+                    : 'border-border focus:ring-4 focus:ring-accent/10 focus:border-accent hover:border-accent/30'
                 }`}
                 placeholder={t('subjectPlaceholder')}
                 aria-invalid={validation.fieldHasError('subject')}
@@ -379,18 +470,13 @@ export default function EmailContentEditor({
               <label className="block text-sm font-medium text-foreground/70 mb-2 font-serif">
                 {t('greeting')}
               </label>
-              <input
-                type="text"
+              <RichTextEditor
                 value={greeting}
-                onChange={(e) => setGreeting(e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 transition-all ${
-                  validation.fieldHasError('greeting')
-                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
-                    : 'border-border focus:ring-accent/20 focus:border-accent'
-                }`}
+                onChange={setGreeting}
                 placeholder={t('greetingPlaceholder')}
-                aria-invalid={validation.fieldHasError('greeting')}
-                aria-describedby={validation.fieldHasError('greeting') ? 'greeting-error' : undefined}
+                hasError={validation.fieldHasError('greeting')}
+                maxLength={200}
+                minHeight="80px"
               />
               {validation.fieldHasError('greeting') && (
                 <p id="greeting-error" className="mt-1 text-sm text-red-600" role="alert">
@@ -403,20 +489,14 @@ export default function EmailContentEditor({
             <div>
               <label className="block text-sm font-medium text-foreground/70 mb-2 font-serif">
                 {t('message')}
-                <span className="text-xs text-muted-foreground font-sans ml-2">{t('messageHint')}</span>
               </label>
-              <textarea
+              <RichTextEditor
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={6}
-                className={`w-full px-4 py-2.5 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 transition-all resize-none ${
-                  validation.fieldHasError('message')
-                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
-                    : 'border-border focus:ring-accent/20 focus:border-accent'
-                }`}
+                onChange={setMessage}
                 placeholder={t('messagePlaceholder')}
-                aria-invalid={validation.fieldHasError('message')}
-                aria-describedby={validation.fieldHasError('message') ? 'message-error' : undefined}
+                hasError={validation.fieldHasError('message')}
+                maxLength={5000}
+                minHeight="240px"
               />
               {validation.fieldHasError('message') && (
                 <p id="message-error" className="mt-1 text-sm text-red-600" role="alert">
@@ -430,18 +510,13 @@ export default function EmailContentEditor({
               <label className="block text-sm font-medium text-foreground/70 mb-2 font-serif">
                 {t('signature')}
               </label>
-              <textarea
+              <RichTextEditor
                 value={signature}
-                onChange={(e) => setSignature(e.target.value)}
-                rows={3}
-                className={`w-full px-4 py-2.5 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 transition-all resize-none ${
-                  validation.fieldHasError('signature')
-                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
-                    : 'border-border focus:ring-accent/20 focus:border-accent'
-                }`}
+                onChange={setSignature}
                 placeholder={t('signaturePlaceholder')}
-                aria-invalid={validation.fieldHasError('signature')}
-                aria-describedby={validation.fieldHasError('signature') ? 'signature-error' : undefined}
+                hasError={validation.fieldHasError('signature')}
+                maxLength={500}
+                minHeight="100px"
               />
               {validation.fieldHasError('signature') && (
                 <p id="signature-error" className="mt-1 text-sm text-red-600" role="alert">
@@ -468,24 +543,32 @@ export default function EmailContentEditor({
 
         {/* Preview Panel */}
         <div className="w-1/2 flex flex-col bg-muted">
-          <div className="p-8 pb-4">
-            <h3 className="text-xl font-serif text-foreground mb-6">{t('preview')}</h3>
+          <div className="p-6 pb-2">
+            <h3 className="text-xl font-serif text-foreground mb-4">{t('preview')}</h3>
+
+            {/* Sender Info Display */}
+            <div className="mb-4 text-sm text-muted-foreground">
+              {loadingSender ? (
+                <span>{t('loadingSender')}</span>
+              ) : senderInfo ? (
+                <span>
+                  <span className="font-medium">{t('fromLabel')}</span>{' '}
+                  {senderInfo.name ? (
+                    <>{senderInfo.name} &lt;{senderInfo.email}&gt;</>
+                  ) : (
+                    <>{senderInfo.email}</>
+                  )}
+                </span>
+              ) : null}
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-8 pb-8">
-            {loadingPreview ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="w-12 h-12 rounded-full border-4 border-border border-t-accent animate-spin"></div>
-              </div>
-            ) : (
-              <div className="bg-card rounded-2xl shadow-lg overflow-hidden h-full">
-                <iframe
-                  srcDoc={previewHtml}
-                  className="w-full h-full border-0"
-                  title="Email Preview"
-                />
-              </div>
-            )}
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
+            <EmailPreview
+              htmlContent={previewHtml}
+              loading={loadingPreview}
+              height="h-full"
+            />
           </div>
         </div>
       </div>
@@ -493,45 +576,23 @@ export default function EmailContentEditor({
       {/* Footer Actions */}
       <div className="p-6 border-t border-border bg-card">
         <div className="flex items-center justify-between gap-4">
-          <div className="text-sm text-muted-foreground">
-            {t('subjectLabel')} <span className="font-serif text-foreground ml-1">{subject}</span>
+          <div className="flex items-center gap-6">
+            <div className="text-sm text-muted-foreground">
+              {t('subjectLabel')} <span className="font-serif text-foreground ml-1">{subject}</span>
+            </div>
+            <AutoSaveIndicator status={saveStatus} lastSavedAt={lastSavedAt} />
           </div>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              disabled={saving || savingDraft}
+              disabled={saving}
               className="px-6 py-3 rounded-full text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               {t('cancel')}
             </button>
-            {/* TODO: Re-enable Tooltip when validation feature is committed */}
-            <button
-              onClick={handleSaveDraft}
-              disabled={!validation.isValid || saving || savingDraft}
-              className={`px-6 py-3 rounded-full border text-foreground flex items-center gap-2 transition-all ${
-                validation.isValid && !saving && !savingDraft
-                  ? 'border-border hover:border-foreground hover:bg-muted cursor-pointer'
-                  : 'border-border opacity-50 cursor-not-allowed'
-              }`}
-              title={validation.isValid ? t('saveDraft') : validation.saveButtonTooltip}
-            >
-              {savingDraft ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-                  {t('saving')}
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                  </svg>
-                  {t('saveDraft')}
-                </>
-              )}
-            </button>
             <button
               onClick={handleSave}
-              disabled={saving || savingDraft}
+              disabled={saving}
               className="px-8 py-3 rounded-full bg-foreground text-background font-medium hover:bg-foreground/90 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg hover:shadow-xl"
             >
               {saving ? (
