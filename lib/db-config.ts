@@ -368,8 +368,17 @@ export async function closeDatabase(): Promise<void> {
 /**
  * Setup graceful shutdown handlers
  * Only relevant for long-running processes (local dev, scripts)
+ * Skip in Edge Runtime (process.on and process.exit not supported)
+ *
+ * Edge Runtime detection: Check if process.on/exit exist
+ * In Edge Runtime, these functions are undefined
  */
-if (process.env.NODE_ENV !== 'production') {
+if (
+  process.env.NODE_ENV !== 'production' &&
+  typeof process !== 'undefined' &&
+  typeof process.on === 'function' &&
+  typeof process.exit === 'function'
+) {
   // Handle graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[DB] Received ${signal}, closing database connections...`);

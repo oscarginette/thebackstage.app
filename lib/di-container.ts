@@ -127,6 +127,7 @@ import { CompileEmailHtmlUseCase } from '@/domain/services/CompileEmailHtmlUseCa
 import { GetContactsWithStatsUseCase } from '@/domain/services/GetContactsWithStatsUseCase';
 import { DeleteContactsUseCase } from '@/domain/services/DeleteContactsUseCase';
 import { ImportContactsUseCase } from '@/domain/services/ImportContactsUseCase';
+import { CreateContactUseCase } from '@/domain/services/CreateContactUseCase';
 import { ExportContactsUseCase } from '@/domain/services/ExportContactsUseCase';
 import { FetchBrevoContactsUseCase } from '@/domain/services/FetchBrevoContactsUseCase';
 import { CreateDownloadGateUseCase } from '@/domain/services/CreateDownloadGateUseCase';
@@ -177,6 +178,7 @@ import { DeleteUsersUseCase } from '@/domain/services/DeleteUsersUseCase';
 import { GetPricingPlansUseCase } from '@/domain/services/GetPricingPlansUseCase';
 import { DeleteTracksByPatternUseCase } from '@/domain/services/DeleteTracksByPatternUseCase';
 import { GetExecutionHistoryUseCase } from '@/domain/services/GetExecutionHistoryUseCase';
+import { GetCampaignPreviewUseCase } from '@/domain/services/GetCampaignPreviewUseCase';
 import { UpdatePixelConfigUseCase } from '@/domain/services/UpdatePixelConfigUseCase';
 import { GetContactListsWithStatsUseCase } from '@/domain/services/GetContactListsWithStatsUseCase';
 import { CreateContactListUseCase } from '@/domain/services/CreateContactListUseCase';
@@ -200,6 +202,8 @@ import { CheckNewReleasesUseCase } from '@/domain/services/CheckNewReleasesUseCa
 import { ImportBrevoContactsUseCase } from '@/domain/services/ImportBrevoContactsUseCase';
 import { GetBrevoImportHistoryUseCase } from '@/domain/services/GetBrevoImportHistoryUseCase';
 import { UpdateUserSenderEmailUseCase } from '@/domain/services/UpdateUserSenderEmailUseCase';
+import { ResendCampaignUseCase } from '@/domain/services/ResendCampaignUseCase';
+import { AutoSaveCampaignUseCase } from '@/domain/services/campaigns/AutoSaveCampaignUseCase';
 import { GetAllUsersUseCase } from '@/domain/services/admin/GetAllUsersUseCase';
 import { ToggleUserActiveUseCase } from '@/domain/services/admin/ToggleUserActiveUseCase';
 import { UpdateUserQuotaUseCase } from '@/domain/services/admin/UpdateUserQuotaUseCase';
@@ -472,6 +476,13 @@ export class UseCaseFactory {
     );
   }
 
+  static createCreateContactUseCase(): CreateContactUseCase {
+    return new CreateContactUseCase(
+      RepositoryFactory.createContactRepository(),
+      RepositoryFactory.createConsentHistoryRepository()
+    );
+  }
+
   static createExportContactsUseCase(): ExportContactsUseCase {
     return new ExportContactsUseCase(
       RepositoryFactory.createContactRepository(),
@@ -554,7 +565,8 @@ export class UseCaseFactory {
       RepositoryFactory.createExecutionLogRepository(),
       RepositoryFactory.createEmailCampaignRepository(),
       UseCaseFactory.createCompileEmailHtmlUseCase(),
-      RepositoryFactory.createUserSettingsRepository()
+      RepositoryFactory.createUserSettingsRepository(),
+      RepositoryFactory.createSendingDomainRepository()
     );
   }
 
@@ -820,6 +832,18 @@ export class UseCaseFactory {
     );
   }
 
+  static createResendCampaignUseCase(): ResendCampaignUseCase {
+    return new ResendCampaignUseCase(
+      RepositoryFactory.createEmailCampaignRepository()
+    );
+  }
+
+  static createAutoSaveCampaignUseCase(): AutoSaveCampaignUseCase {
+    return new AutoSaveCampaignUseCase(
+      RepositoryFactory.createEmailCampaignRepository()
+    );
+  }
+
   // ============================================================================
   // Analytics Use Cases
   // ============================================================================
@@ -840,6 +864,14 @@ export class UseCaseFactory {
     return new GetExecutionHistoryUseCase(
       RepositoryFactory.createTrackRepository(),
       RepositoryFactory.createExecutionLogRepository()
+    );
+  }
+
+  static createGetCampaignPreviewUseCase(): GetCampaignPreviewUseCase {
+    return new GetCampaignPreviewUseCase(
+      RepositoryFactory.createExecutionLogRepository(),
+      RepositoryFactory.createEmailCampaignRepository(),
+      RepositoryFactory.createUserRepository()
     );
   }
 

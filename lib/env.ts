@@ -141,7 +141,8 @@ const envSchema = z.object({
   ENABLE_EMAIL_TRACKING: z.string().transform(val => val === 'true').optional(),
 
   // Email Testing (temporary filter for campaign testing)
-  TEST_EMAIL_ONLY: z.string().default('false').transform(val => val === 'true'),
+  // Client-accessible via NEXT_PUBLIC prefix
+  NEXT_PUBLIC_TEST_EMAIL_ONLY: z.string().default('false').transform(val => val === 'true'),
 
   // Upstash Redis (Rate Limiting)
   UPSTASH_REDIS_REST_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url('Invalid UPSTASH_REDIS_REST_URL - must be a valid URL').optional()),

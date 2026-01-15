@@ -45,6 +45,7 @@ export const SendCustomEmailSchema = z.object({
   message: z.string().min(1, 'Message is required'),
   signature: z.string().min(1, 'Signature is required').max(500, 'Signature too long'),
   coverImage: z.string().url('Invalid cover image URL').optional(),
+  senderEmail: z.string().email('Invalid sender email').optional(),
   saveAsDraft: z.boolean().default(false),
   templateId: z.string().optional(),
   scheduledAt: z.string().datetime('Invalid datetime format').optional(),
@@ -76,6 +77,25 @@ export const ImportContactsSchema = z.object({
 });
 
 export type ImportContactsInput = z.infer<typeof ImportContactsSchema>;
+
+/**
+ * Schema for POST /api/contacts/add
+ * Creates a single contact manually
+ */
+export const CreateContactSchema = z.object({
+  email: z.string().email('Invalid email format').min(1, 'Email is required'),
+  name: z.string().max(100, 'Name must be 100 characters or less').optional().nullable(),
+  subscribed: z.boolean().optional().default(true),
+  metadata: z.record(z.string(), z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.array(z.string()),
+    z.record(z.string(), z.unknown())
+  ])).optional(),
+});
+
+export type CreateContactInput = z.infer<typeof CreateContactSchema>;
 
 /**
  * Schema for POST /api/contacts/delete
@@ -214,6 +234,8 @@ export const CreateCampaignSchema = z.object({
   message: z.string().optional(),
   signature: z.string().max(500, 'Signature too long').optional(),
   coverImageUrl: z.string().url('Invalid cover image URL').optional().nullable(),
+  // NOTE: senderEmail removed - sender is configured globally in user settings
+  // Per-campaign sender selection is forbidden (see .claude/CLAUDE.md)
   htmlContent: z.string().optional(),
   status: z.enum(['draft', 'sent']).default('draft'),
   scheduledAt: z.string().datetime('Invalid datetime format').optional(),
