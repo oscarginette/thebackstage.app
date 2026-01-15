@@ -33,41 +33,8 @@ export default function CustomEmail({
   // Base URL for fallback
   const baseUrl = getAppUrl();
 
-  const signatureLines = signature.split('\n');
-  const messageLines = message.split('\n');
-
-  // Parse message for bold text (**text**) and URLs
-  const parseMessage = (text: string) => {
-    // First split by bold markers
-    const boldParts = text.split(/(\*\*.*?\*\*)/g);
-
-    return boldParts.map((part, i) => {
-      // Handle bold text
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} style={{ fontWeight: '600' }}>{part.slice(2, -2)}</strong>;
-      }
-
-      // Detect URLs in regular text
-      // Regex matches http://, https://, and www. URLs
-      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
-      const urlParts = part.split(urlRegex);
-
-      return urlParts.map((urlPart, j) => {
-        // Re-test each part individually
-        const isUrl = /^(https?:\/\/[^\s]+|www\.[^\s]+)$/.test(urlPart);
-        if (isUrl) {
-          // Ensure URL has protocol for proper linking
-          const href = urlPart.startsWith('www.') ? `https://${urlPart}` : urlPart;
-          return (
-            <Link key={`${i}-${j}`} href={href} style={linkStyle}>
-              {urlPart}
-            </Link>
-          );
-        }
-        return urlPart;
-      });
-    });
-  };
+  // HTML is already sanitized in SaveDraftUseCase using RichTextContent.create()
+  // Safe to render directly
 
   return (
     <Html>
@@ -80,21 +47,22 @@ export default function CustomEmail({
             <Section style={contentSection}>
               {greeting && (
                 <Text style={paragraph}>
-                  {parseMessage(greeting)}
+                  <span id="email-greeting" dangerouslySetInnerHTML={{ __html: greeting }} />
                 </Text>
               )}
-              {message && messageLines.map((line, i) => (
-                <Text key={i} style={{ ...paragraph, margin: i === messageLines.length - 1 ? '0 0 16px 0' : '0' }}>
-                  {line.trim() === '' ? '\u00A0' : parseMessage(line)}
+              {message && (
+                <Text style={paragraph}>
+                  <span id="email-message" dangerouslySetInnerHTML={{ __html: message }} />
                 </Text>
-              ))}
+              )}
             </Section>
           )}
 
           {/* Cover Image (only render if URL exists and is valid) */}
           {coverImage && coverImage.trim().length > 0 && (
-            <Section style={coverSection}>
+            <Section id="email-cover-section" style={coverSection}>
               <Img
+                id="email-cover-image"
                 src={coverImage}
                 alt="Cover image"
                 width="300"
@@ -110,11 +78,9 @@ export default function CustomEmail({
               <Text style={paragraph}>
                 Have a great day :)
               </Text>
-              {signatureLines.map((line, i) => (
-                <Text key={i} style={signatureStyle}>
-                  {parseMessage(line)}
-                </Text>
-              ))}
+              <Text style={signatureStyle}>
+                <span id="email-signature" dangerouslySetInnerHTML={{ __html: signature }} />
+              </Text>
             </Section>
           )}
 
