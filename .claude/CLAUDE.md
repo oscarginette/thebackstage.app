@@ -4,7 +4,14 @@
 
 **BEFORE writing ANY code**, read:
 1. **.claude/CODE_STANDARDS.md** - Code standards (MANDATORY)
-2. This file - Architecture and guidelines
+2. **.claude/COMPONENT_REUSE_SYSTEM.md** - Component reuse system (MANDATORY)
+3. This file - Architecture and guidelines
+
+**CRITICAL**: Before creating ANY component or function, ALWAYS check `.claude/COMPONENT_REUSE_SYSTEM.md` to:
+- Search for existing similar components
+- Verify if code can be reused
+- Follow the "Component-First Development" workflow
+- Avoid code duplication
 
 **ALL code MUST follow these standards without exceptions.**
 
@@ -645,6 +652,105 @@ for (const contact of contacts) {
 
 ---
 
+## 🔄 Component Reuse System (MANDATORY)
+
+**CRITICAL**: Before creating ANY new component, function, or utility, follow the Component Reuse System.
+
+### Mandatory Pre-Development Checklist
+
+**ALWAYS execute BEFORE writing code**:
+
+1. **Search for existing components**:
+   ```bash
+   find components/ -name "*<keyword>*"
+   grep -r "<pattern>" components/
+   ```
+
+2. **Review component inventories**:
+   - `/components/ui/` - Generic UI components
+   - `/components/dashboard/shared/` - Domain components
+   - `/lib/` - Shared utilities
+
+3. **Check `.claude/COMPONENT_REUSE_SYSTEM.md`**:
+   - Read the "Directorio de Componentes Reutilizables" section
+   - Verify if similar component exists
+   - Follow the decision tree for creating vs reusing
+
+### Available Reusable Components
+
+**Always check these BEFORE creating new ones**:
+
+#### UI Components (`/components/ui/`)
+- `Button` - All button variants with loading states
+- `Card` - Containers with styling variants
+- `Modal`, `ModalBody`, `ModalFooter` - Dialog/overlay system
+- `LoadingSpinner` - Loading indicators (sm/md/lg)
+- `ErrorState` - Error displays with retry
+- `EmailPreview` - Email HTML rendering in iframe
+
+#### Domain Components (`/components/dashboard/shared/`)
+- `CampaignMetadata` - Campaign metadata grid display
+- `EmailContentEditor` - Email creation/editing
+- `DraftCard` - Draft campaign cards
+
+#### Utilities (`/lib/`)
+- `date-utils.ts` - Date formatting (`formatCampaignDate`, `formatTimeAgo`, `formatEmailDate`)
+- `validation-schemas.ts` - Zod validation schemas
+- `env.ts` - Typed environment variables
+
+### Decision Rules
+
+**When to create a shared component**:
+- ✅ Code exists in 2+ places (ALWAYS extract)
+- ✅ Common UI pattern (spinner, error, modal, button)
+- ✅ Formatting/validation/calculation utility
+- ✅ Will likely be reused in future features
+
+**When OK to create inline**:
+- ✅ Completely unique to one context
+- ✅ Highly specific business logic
+- ✅ Won't repeat elsewhere
+- ✅ < 20 lines and very simple
+
+### Where to Place Components
+
+```
+/components/ui/          → Generic UI (no business logic)
+/components/[domain]/shared/  → Domain-specific reusable
+/lib/                    → Pure utilities (no UI)
+/domain/utils/           → Business logic helpers
+```
+
+### Workflow: "Component-First Development"
+
+```
+1. Need to create <Component X>
+   ↓
+2. SEARCH for similar components
+   • find components/ -name "*keyword*"
+   • grep -r "pattern" components/
+   • Review /components/ui/ inventory
+   ↓
+3. Found similar?
+   YES → Reuse or extend existing
+   NO  → Check if reusable
+         ↓
+         Reusable? → Create in /ui/ or /shared/
+         Not reusable? → Create inline
+```
+
+### Code Review Requirement
+
+**PRs will be rejected if**:
+- ❌ Code duplication > 10 lines detected
+- ❌ Component should be shared but created inline
+- ❌ Utility function should be in `/lib/` but isn't
+- ❌ Didn't check `.claude/COMPONENT_REUSE_SYSTEM.md` before coding
+
+**See `.claude/COMPONENT_REUSE_SYSTEM.md` for complete system documentation.**
+
+---
+
 ## Security Checklist
 
 - [ ] **Input Validation**: All user input validated in Use Cases
@@ -855,7 +961,22 @@ See `.claude/plans/dark-mode-implementation.md` for complete architecture docume
 
 ---
 
-*Last Updated: 2026-01-05*
-*Architecture: Clean Architecture + SOLID + Typed Constants + Dark Mode*
+## 📚 Additional Documentation
+
+**MANDATORY reading before development**:
+- **`.claude/CODE_STANDARDS.md`** - Comprehensive code standards and TypeScript guidelines
+- **`.claude/COMPONENT_REUSE_SYSTEM.md`** - Component reuse workflow and anti-duplication system
+- **`.claude/plans/dark-mode-implementation.md`** - Dark mode architecture details
+
+**Project structure references**:
+- `/components/ui/` - Reusable UI components inventory
+- `/components/dashboard/shared/` - Domain-specific shared components
+- `/lib/` - Shared utilities (date formatting, validation, etc.)
+- `/domain/` - Business logic (entities, services, repositories)
+
+---
+
+*Last Updated: 2026-01-15*
+*Architecture: Clean Architecture + SOLID + Typed Constants + Dark Mode + Component Reuse System*
 *GDPR Compliant: Yes*
 *CAN-SPAM Compliant: Yes*
