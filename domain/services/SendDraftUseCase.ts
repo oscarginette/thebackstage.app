@@ -57,7 +57,7 @@ export class SendDraftUseCase {
     console.log('📧 CAMPAIGN SEND - START');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('Input:', JSON.stringify(input, null, 2));
-    console.log('Test Mode:', env.TEST_EMAIL_ONLY ? 'ACTIVE ⚠️' : 'DISABLED');
+    console.log('Test Mode:', env.NEXT_PUBLIC_TEST_EMAIL_ONLY ? 'ACTIVE ⚠️' : 'DISABLED');
     console.log('Email Provider:', env.USE_MAILGUN ? 'Mailgun' : 'Resend');
     console.log('');
 
@@ -155,47 +155,19 @@ export class SendDraftUseCase {
           }
 
           // 3. Get subscribed contacts
+          // NOTE: Repository automatically applies TEST_EMAIL_ONLY filter
           console.log('👥 Step 3: Retrieving subscribed contacts...');
-          let contacts = await trackQuery(
+          const contacts = await trackQuery(
             'getSubscribedContacts',
             () => this.contactRepository.getSubscribed(input.userId),
             { userId: input.userId }
           );
 
-          console.log('✅ Retrieved contacts from database:', contacts.length);
+          console.log('✅ Retrieved contacts:', contacts.length);
           console.log('');
 
-          // TEMPORARY TEST FILTER: Only send to specific email in test mode
-          // Remove this block when ready for production
-          if (env.TEST_EMAIL_ONLY === true) {
-            const testEmail = 'info@geebeat.com';
-            const originalCount = contacts.length;
-
-            console.log('⚠️  TEST MODE ACTIVE');
-            console.log('   Original contacts:', originalCount);
-            console.log('   Filtering to test email only:', testEmail);
-
-            contacts = contacts.filter(c => c.email === testEmail);
-
-            console.log('   Filtered contacts:', contacts.length);
-
-            if (contacts.length === 0) {
-              console.log('   ❌ Test email not found in contact list!');
-              console.log('   Available emails:', contacts.slice(0, 5).map(c => c.email).join(', '));
-            } else {
-              console.log('   ✅ Test email found:', contacts[0].email);
-            }
-            console.log('');
-
-            addBreadcrumb('Test mode activated', {
-              testEmail,
-              originalContactCount: originalCount,
-              filteredCount: contacts.length
-            });
-          }
-
           if (contacts.length === 0) {
-            console.log('❌ No subscribed contacts after filtering');
+            console.log('❌ No subscribed contacts');
             throw new ValidationError('No hay contactos suscritos');
           }
 
@@ -236,7 +208,7 @@ export class SendDraftUseCase {
 
           // 6. Log execution
           console.log('📊 Step 6: Logging execution...');
-          await this.logExecution(campaign.subject, results.emailsSent.length, input.draftId, startTime);
+          await this.logExecution(campaign.subject, results.emailsSent.length, input.draftId, input.userId, startTime);
           console.log('✅ Execution logged');
           console.log('');
 
@@ -418,9 +390,12 @@ export class SendDraftUseCase {
     subject: string | null,
     emailsSent: number,
     campaignId: string,
+    userId: number,
     startTime: number
   ): Promise<void> {
     await this.executionLogRepository.create({
+      userId,
+      campaignId: campaignId,
       newTracks: 0,
       emailsSent,
       durationMs: Date.now() - startTime,
