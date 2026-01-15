@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
+import { useTranslations } from '@/lib/i18n/context';
 import type { ContactList } from '@/domain/entities/ContactList';
 
 interface ListSelectorProps {
@@ -17,6 +18,7 @@ export default function ListSelector({
   mode,
   onModeChange,
 }: ListSelectorProps) {
+  const t = useTranslations('dashboard.emails.editor');
   const [lists, setLists] = useState<ContactList[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,35 +49,37 @@ export default function ListSelector({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Send To</label>
-        <div className="flex flex-col gap-2">
-          <label className="flex items-center gap-2 cursor-pointer">
+      <div className="space-y-1.5">
+        <label className="block text-xs font-semibold tracking-wider text-muted-foreground/60">
+          {t('sendTo')}
+        </label>
+        <div className="flex items-center gap-4 bg-background/50 p-1.5 rounded-xl border border-border/50">
+          <label className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all ${mode === 'all' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
             <input
               type="radio"
               checked={mode === 'all'}
               onChange={() => onModeChange('all')}
-              className="w-4 h-4 text-[#FF5500] focus:ring-[#FF5500]"
+              className="sr-only"
             />
-            <span className="text-sm">All Contacts</span>
+            <span className="text-xs font-medium">{t('allContacts')}</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all ${mode === 'include' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
             <input
               type="radio"
               checked={mode === 'include'}
               onChange={() => onModeChange('include')}
-              className="w-4 h-4 text-[#FF5500] focus:ring-[#FF5500]"
+              className="sr-only"
             />
-            <span className="text-sm">Specific Lists</span>
+            <span className="text-xs font-medium">{t('specificLists')}</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-all ${mode === 'exclude' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
             <input
               type="radio"
               checked={mode === 'exclude'}
               onChange={() => onModeChange('exclude')}
-              className="w-4 h-4 text-[#FF5500] focus:ring-[#FF5500]"
+              className="sr-only"
             />
-            <span className="text-sm">Exclude Lists</span>
+            <span className="text-xs font-medium">{t('excludeListsLabel')}</span>
           </label>
         </div>
       </div>
@@ -83,12 +87,12 @@ export default function ListSelector({
       {mode !== 'all' && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            {mode === 'include' ? 'Select Lists' : 'Exclude Lists'}
+            {mode === 'include' ? t('selectLists') : t('excludeLists')}
           </label>
           {loading ? (
-            <div className="text-sm text-gray-500">Loading lists...</div>
+            <div className="text-sm text-gray-500">{t('loadingLists')}</div>
           ) : lists.length === 0 ? (
-            <div className="text-sm text-gray-500">No lists available. Create one first.</div>
+            <div className="text-sm text-gray-500">{t('noLists')}</div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
               {lists.map((list) => (

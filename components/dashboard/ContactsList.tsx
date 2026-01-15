@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState, forwardRef, useImperativeHandle, useMemo } from 'react';
-import { Users, Trash2, Mail, Filter, Search, FolderPlus, Download } from 'lucide-react';
+import { Users, Trash2, Mail, Filter, Search, FolderPlus, Download, UserPlus } from 'lucide-react';
 import DataTable from './DataTable';
 import ImportContactsButton from './ImportContactsButton';
 import BrevoImportWizardModal from './BrevoImportWizardModal';
 import AddContactsToListModal from './AddContactsToListModal';
 import { ExportModal } from './ExportModal';
+import { AddContactModal } from './AddContactModal';
 import Toast from '@/components/ui/Toast';
 import Modal, { ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Card } from '@/components/ui/Card';
@@ -38,6 +39,7 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddToListModal, setShowAddToListModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showAddContactModal, setShowAddContactModal] = useState(false);
 
   useEffect(() => {
     fetchContacts();
@@ -287,6 +289,15 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
         filterPredicates={filterPredicates}
         actions={
           <div className="flex gap-2">
+            <Button
+              onClick={() => setShowAddContactModal(true)}
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Contact
+            </Button>
             <ImportContactsButton onClick={onImportClick} />
             <Button
               onClick={handleBrevoImportClick}
@@ -331,6 +342,24 @@ const ContactsList = forwardRef<ContactsListRef, Props>(({ onImportClick }, ref)
           </div>
         }
       />
+
+      {/* Add Contact Modal */}
+      {showAddContactModal && (
+        <AddContactModal
+          isOpen={showAddContactModal}
+          onClose={() => setShowAddContactModal(false)}
+          onSuccess={(action) => {
+            fetchContacts(); // Refresh contacts list
+            const message =
+              action === 'resubscribed'
+                ? 'Contact resubscribed successfully!'
+                : 'Contact added successfully!';
+            setToastMessage(message);
+            setToastType('success');
+            setShowToast(true);
+          }}
+        />
+      )}
 
       {/* Brevo Import Wizard Modal */}
       <BrevoImportWizardModal

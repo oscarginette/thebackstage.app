@@ -86,7 +86,6 @@ export default function StatCards({ stats, labels, formatters }: StatCardsProps)
           value={card.value}
           icon={card.icon}
           colorScheme={card.colorScheme}
-          compact
         />
       ))}
     </div>

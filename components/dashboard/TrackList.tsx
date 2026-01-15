@@ -98,7 +98,7 @@ export default function TrackList({
                 {loading ? 'Sincronizando...' : 'Actualizar'}
               </button>
             </div>
-          <div className="grid grid-cols-1 gap-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="grid grid-cols-1 gap-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
             {tracks.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground font-serif text-lg">No hay tracks para mostrar</div>
             ) : (

@@ -57,21 +57,30 @@ export default function CampaignMetadata({
       label: 'Greeting',
       getValue: () => metadata.greeting,
       render: () => (
-        <div className="text-sm text-muted-foreground truncate">{metadata.greeting}</div>
+        <div
+          className="text-sm text-muted-foreground truncate"
+          dangerouslySetInnerHTML={{ __html: metadata.greeting || '' }}
+        />
       ),
     },
     message: {
       label: 'Message',
       getValue: () => metadata.message,
       render: () => (
-        <div className="text-sm text-muted-foreground truncate">{metadata.message}</div>
+        <div
+          className="text-sm text-muted-foreground truncate"
+          dangerouslySetInnerHTML={{ __html: metadata.message || '' }}
+        />
       ),
     },
     signature: {
       label: 'Signature',
       getValue: () => metadata.signature,
       render: () => (
-        <div className="text-sm text-muted-foreground truncate">{metadata.signature}</div>
+        <div
+          className="text-sm text-muted-foreground truncate"
+          dangerouslySetInnerHTML={{ __html: metadata.signature || '' }}
+        />
       ),
     },
     coverImage: {
@@ -100,13 +109,13 @@ export default function CampaignMetadata({
   }
 
   return (
-    <div className={`p-4 border-b border-border bg-muted/30 ${className}`}>
+    <div className={`${className}`}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {fieldsToRender.map((field) => {
           const config = fieldConfig[field];
           return (
             <div key={field}>
-              <div className="text-[9px] text-foreground font-black uppercase tracking-wider">
+              <div className="text-[9px] text-foreground font-black uppercase tracking-wider mb-0.5">
                 {config.label}
               </div>
               {config.render()}
