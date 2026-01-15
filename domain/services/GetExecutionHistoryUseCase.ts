@@ -13,6 +13,8 @@ import { IExecutionLogRepository } from '@/domain/repositories/IExecutionLogRepo
 import { sql } from '@/lib/db';
 
 export interface ExecutionHistoryItem {
+  executionLogId: number;
+  campaignId: string | null;
   trackId: string;
   title: string;
   url: string;
@@ -55,7 +57,9 @@ export class GetExecutionHistoryUseCase {
       // NOTE: This complex query should eventually be moved to repository
       const result = await sql`
         SELECT
+          el.id,
           COALESCE(el.track_id, 'campaign-' || el.id) as track_id,
+          el.campaign_id,
           COALESCE(st.title, el.track_title, 'Untitled Campaign') as title,
           COALESCE(st.url, '') as url,
           COALESCE(st.published_at, el.executed_at) as published_at,
@@ -73,6 +77,8 @@ export class GetExecutionHistoryUseCase {
 
       // Transform to domain format
       const history: ExecutionHistoryItem[] = result.rows.map((row: any) => ({
+        executionLogId: row.id,
+        campaignId: row.campaign_id || null,
         trackId: row.track_id,
         title: row.title,
         url: row.url || '',
