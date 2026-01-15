@@ -357,6 +357,8 @@
     "emails": {
       "editor": {
         "title": "Personalizar Contenido",
+        "fromLabel": "De:",
+        "loadingSender": "Cargando remitente...",
         "preview": "Vista Previa",
         "subject": "Asunto del Email",
         "subjectPlaceholder": "Asunto del email",
@@ -385,7 +387,17 @@
         "saving": "Guardando...",
         "sendEmail": "Enviar Email",
         "sending": "Enviando...",
-        "subjectLabel": "Subject:"
+        "subjectLabel": "Subject:",
+        "autoSaving": "Guardando...",
+        "autoSaved": "Guardado",
+        "autoSaveError": "Error al guardar",
+        "lastSaved": "Guardado: {time}",
+        "toolbar": {
+          "bold": "Negrita",
+          "italic": "Cursiva",
+          "underline": "Subrayado",
+          "link": "Enlace"
+        }
       },
       "preview": {
         "title": "Vista Previa del Email",

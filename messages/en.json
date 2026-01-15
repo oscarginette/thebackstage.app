@@ -314,7 +314,19 @@
         "saving": "Saving...",
         "sendEmail": "Send Email",
         "sending": "Sending...",
-        "subjectLabel": "Subject:"
+        "subjectLabel": "Subject:",
+        "fromLabel": "From:",
+        "loadingSender": "Loading sender info...",
+        "autoSaving": "Saving...",
+        "autoSaved": "Saved",
+        "autoSaveError": "Error saving",
+        "lastSaved": "Last saved: {time}",
+        "toolbar": {
+          "bold": "Bold",
+          "italic": "Italic",
+          "underline": "Underline",
+          "link": "Link"
+        }
       },
       "preview": {
         "title": "Email Preview",
