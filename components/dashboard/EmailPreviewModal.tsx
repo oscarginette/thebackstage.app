@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { SoundCloudTrack } from '../../types/dashboard';
 import { useTranslations } from '@/lib/i18n/context';
+import { useEmailPreview } from '@/hooks/useEmailPreview';
 
 interface EmailPreviewModalProps {
   track: SoundCloudTrack;
@@ -21,8 +22,6 @@ export default function EmailPreviewModal({
   contactsCount
 }: EmailPreviewModalProps) {
   const t = useTranslations('dashboard.emails.preview');
-  const [previewHtml, setPreviewHtml] = useState<string>('');
-  const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
   // Email content states
@@ -31,36 +30,15 @@ export default function EmailPreviewModal({
   const [message, setMessage] = useState(`This is my new track **${track.title}** and it's now on Soundcloud!`);
   const [signature, setSignature] = useState('Much love,\nThe Backstage');
 
-  useEffect(() => {
-    fetchPreview();
-  }, [track, subject, greeting, message, signature, editMode]);
-
-  const fetchPreview = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/test-email-html', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          trackName: track.title,
-          trackUrl: track.url,
-          coverImage: track.coverImage || '',
-          customContent: editMode ? {
-            greeting,
-            message,
-            signature
-          } : undefined
-        })
-      });
-
-      const data = await res.json();
-      setPreviewHtml(data.html || '');
-    } catch (error) {
-      console.error('Error fetching preview:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Debounced email preview hook (prevents flicker on every keystroke)
+  const { previewHtml, isLoadingPreview: loading } = useEmailPreview(
+    track.title,
+    track.url,
+    track.coverImage || '',
+    editMode ? greeting : undefined,
+    editMode ? message : undefined,
+    editMode ? signature : undefined
+  );
 
   const handleConfirm = () => {
     if (editMode) {
@@ -174,7 +152,6 @@ export default function EmailPreviewModal({
                 <div>
                   <label className="block text-sm font-medium text-foreground/70 mb-2">
                     {t('message')}
-                    <span className="text-xs text-muted-foreground ml-2">{t('messageHint')}</span>
                   </label>
                   <textarea
                     value={message}

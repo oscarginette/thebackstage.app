@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface EmailPreviewProps {
@@ -26,25 +27,66 @@ interface EmailPreviewProps {
  * // Campaign history (untrusted, needs sandbox)
  * <EmailPreview htmlContent={campaign.html} height="h-[500px]" sandbox={true} />
  */
-export default function EmailPreview({
+function EmailPreview({
   htmlContent,
   loading = false,
   height = 'h-full',
   sandbox = false,
   className = '',
 }: EmailPreviewProps) {
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+
+  const handleLoad = () => {
+    if (height === 'auto' && iframeRef.current) {
+      const iframe = iframeRef.current;
+      if (iframe.contentWindow) {
+        // Use a small timeout to ensure content is fully rendered
+        setTimeout(() => {
+          try {
+            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (doc && doc.body) {
+              iframe.style.height = '0px'; // Reset to get accurate scrollHeight
+              iframe.style.height = `${doc.body.scrollHeight}px`;
+            }
+          } catch (e) {
+            console.warn('Could not resize iframe', e);
+          }
+        }, 100);
+      }
+    }
+  };
+
+  // Also update height when content changes
+  React.useEffect(() => {
+    handleLoad();
+  }, [htmlContent, height]);
+
   if (loading) {
     return <LoadingSpinner centered />;
   }
 
   return (
-    <div className={`bg-card rounded-2xl shadow-lg overflow-hidden ${height} ${className}`}>
+    <div className={`bg-card rounded-2xl shadow-lg ${height === 'auto' ? 'max-w-[700px] mx-auto' : height} ${className}`}>
       <iframe
+        ref={iframeRef}
         srcDoc={htmlContent}
-        className="w-full h-full border-0"
+        onLoad={handleLoad}
+        className="w-full border-0 transition-opacity duration-150"
         title="Email Preview"
+        style={{
+          height: height === 'auto' ? 'auto' : '100%',
+          minHeight: height === 'auto' ? '600px' : undefined,
+          overflow: 'hidden',
+        }}
+        scrolling={height === 'auto' ? 'no' : 'auto'}
         {...(sandbox && { sandbox: 'allow-same-origin' })}
       />
     </div>
   );
 }
+
+/**
+ * Memoized export to prevent unnecessary re-renders.
+ * Implements performance optimization principle.
+ */
+export default React.memo(EmailPreview);

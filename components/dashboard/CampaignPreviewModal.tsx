@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import Modal, { ModalBody, ModalFooter } from '@/components/ui/Modal';
+import Modal, { ModalFooter } from '@/components/ui/Modal';
 import { formatCampaignDate } from '@/lib/date-utils';
 import CampaignMetadata from '@/components/dashboard/shared/CampaignMetadata';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -22,6 +23,12 @@ interface CampaignPreviewData {
   htmlContent: string;
   sentAt: string;
   emailsSent: number;
+  // NOTE: senderEmail and senderName are populated from user settings by GetCampaignPreviewUseCase
+  // These represent the sender that was configured when this campaign was sent (historical data)
+  // They are NOT stored per-campaign - they come from users.sender_email / users.sender_name
+  // Per-campaign sender selection is forbidden (see .claude/CLAUDE.md)
+  senderEmail?: string | null;
+  senderName?: string | null;
   metadata: {
     greeting?: string;
     message?: string;
@@ -127,11 +134,14 @@ export default function CampaignPreviewModal({
     }
   };
 
-  return (
+  // Render modal in portal to ensure it appears above all other content
+  const modalContent = (
     <Modal
       isOpen={true}
       onClose={onClose}
       size="6xl"
+      zIndex={60}
+      maxHeight="max-h-[90vh]"
       customHeader={
         <div className="p-6 border-b border-border">
           <div className="flex items-start justify-between">
@@ -173,36 +183,62 @@ export default function CampaignPreviewModal({
         </div>
       }
     >
-      {/* Scrollable Content */}
-      <ModalBody className="bg-muted">
+      {/* Content Area - Same structure as EmailContentEditor */}
+      <div className="flex-1 overflow-hidden flex flex-col">
         {loading ? (
-          <LoadingSpinner size="lg" message="Loading campaign preview..." centered />
+          <div className="flex-1 flex items-center justify-center bg-muted">
+            <LoadingSpinner size="lg" message="Loading campaign preview..." centered />
+          </div>
         ) : error ? (
-          <ErrorState
-            title="Failed to load preview"
-            message={error}
-            onRetry={fetchCampaignPreview}
-            centered
-          />
-        ) : campaign ? (
-          <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
-            {/* Campaign Metadata */}
-            {campaign.metadata && (
-              <CampaignMetadata
-                metadata={campaign.metadata}
-                visibleFields={['track', 'greeting', 'signature']}
-              />
-            )}
-
-            {/* HTML Preview */}
-            <EmailPreview
-              htmlContent={campaign.htmlContent}
-              height="h-[500px]"
-              sandbox={true}
+          <div className="flex-1 flex items-center justify-center bg-muted">
+            <ErrorState
+              title="Failed to load preview"
+              message={error}
+              onRetry={fetchCampaignPreview}
+              centered
             />
           </div>
+        ) : campaign ? (
+          <>
+            {/* Sender Email Display */}
+            <div className="px-6 py-3 bg-background border-b border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">From:</p>
+              <p className="text-sm font-medium text-foreground">
+                {campaign.senderName && campaign.senderEmail
+                  ? `${campaign.senderName} <${campaign.senderEmail}>`
+                  : campaign.senderEmail
+                  ? campaign.senderEmail
+                  : 'noreply@thebackstage.app'}
+              </p>
+
+              {campaign.senderEmail && !campaign.senderEmail.includes('thebackstage.app') && (
+                <div className="mt-1.5 p-1.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs text-yellow-800 dark:text-yellow-200">
+                  ⚠️ Note: If your domain is not verified, emails will be sent from noreply@thebackstage.app
+                </div>
+              )}
+            </div>
+
+            {/* Campaign Metadata - Compact */}
+            {campaign.metadata && (
+              <div className="px-6 py-2 bg-muted border-b border-border">
+                <CampaignMetadata
+                  metadata={campaign.metadata}
+                  visibleFields={['track', 'greeting', 'signature']}
+                />
+              </div>
+            )}
+
+            {/* HTML Preview - Takes all remaining space (2.5x more space) */}
+            <div className="flex-1 min-h-0 overflow-y-auto bg-muted p-6">
+              <EmailPreview
+                htmlContent={campaign.htmlContent}
+                height="h-full min-h-[500px]"
+                sandbox={true}
+              />
+            </div>
+          </>
         ) : null}
-      </ModalBody>
+      </div>
 
       {/* Fixed Footer */}
       <ModalFooter>
@@ -242,4 +278,8 @@ export default function CampaignPreviewModal({
       </ModalFooter>
     </Modal>
   );
+
+  // Use portal to render modal at document body level
+  if (typeof window === 'undefined') return null;
+  return createPortal(modalContent, document.body);
 }
