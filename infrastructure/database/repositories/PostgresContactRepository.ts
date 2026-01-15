@@ -8,9 +8,63 @@ import {
 } from '@/domain/repositories/IContactRepository';
 import type { ContactMetadata } from '@/domain/types/metadata';
 import { ListFilterCriteria, LIST_FILTER_MODES } from '@/domain/value-objects/ListFilterCriteria';
+import { env } from '@/lib/env';
 
 export class PostgresContactRepository implements IContactRepository {
+  /**
+   * Get subscribed contacts with automatic TEST_EMAIL_ONLY filtering.
+   *
+   * CRITICAL: This method applies test mode filtering at the repository level
+   * to ensure ALL email sending use cases (campaigns, tracks, demos, etc.)
+   * respect the TEST_EMAIL_ONLY environment variable.
+   *
+   * When TEST_EMAIL_ONLY=true:
+   * - Returns ONLY test email: djanyamusic@gmail.com (Anya's Gmail)
+   * - Prevents accidental sends to real contacts during testing
+   * - Applies to ALL use cases that call this method
+   *
+   * NOTE: Mailgun does NOT deliver emails when sender domain == recipient domain
+   * (loop protection). Do NOT use same-domain recipients like info@geebeat.com
+   * when sending from @geebeat.com - emails will stay in "accepted" status
+   * without reaching "delivered". Always use external email addresses for testing.
+   *
+   * @param userId - User ID to get contacts for
+   * @returns Subscribed contacts (filtered if TEST_EMAIL_ONLY=true)
+   */
   async getSubscribed(userId: number): Promise<Contact[]> {
+    // Get all subscribed contacts
+    const contacts = await this.getSubscribedRaw(userId);
+
+    // Apply test filter if enabled (CENTRALIZED)
+    if (env.NEXT_PUBLIC_TEST_EMAIL_ONLY === true) {
+      const testEmails = [
+        'djanyamusic@gmail.com'  // Anya's Gmail (external - for DMARC verification)
+      ];
+      const filtered = contacts.filter(c => testEmails.includes(c.email));
+
+      console.log('⚠️  TEST MODE ACTIVE (Repository Level)');
+      console.log(`   Original contacts: ${contacts.length}`);
+      console.log(`   Filtered to: ${filtered.length} test email(s)`);
+      console.log(`   Test emails: ${testEmails.join(', ')}`);
+
+      return filtered;
+    }
+
+    return contacts;
+  }
+
+  /**
+   * Get subscribed contacts WITHOUT test filtering.
+   *
+   * INTERNAL USE ONLY: Returns all contacts regardless of TEST_EMAIL_ONLY.
+   * Use this method when you need the raw contact list (e.g., analytics, admin views).
+   *
+   * For email sending, use getSubscribed() instead (applies test filter).
+   *
+   * @param userId - User ID to get contacts for
+   * @returns All subscribed contacts (no filtering)
+   */
+  private async getSubscribedRaw(userId: number): Promise<Contact[]> {
     const result = await sql`
       SELECT id, email, name, unsubscribe_token, subscribed, created_at
       FROM contacts
