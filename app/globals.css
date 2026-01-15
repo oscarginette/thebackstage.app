@@ -162,7 +162,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bg-aurora-dark {
-  background-image: 
+  background-image:
     radial-gradient(at 40% 20%, hsla(260, 50%, 15%, 1) 0px, transparent 50%),
     radial-gradient(at 80% 0%, hsla(220, 50%, 15%, 1) 0px, transparent 50%),
     radial-gradient(at 0% 50%, hsla(280, 50%, 15%, 1) 0px, transparent 50%),
@@ -172,4 +172,122 @@ h1, h2, h3, h4, h5, h6 {
     radial-gradient(at 0% 0%, hsla(20, 80%, 30%, 0.3) 0px, transparent 50%); /* Subtle brand orange hint */
   filter: blur(80px);
   opacity: 0.4;
+}
+
+/* React-Quill Custom Styles */
+.quill-editor-wrapper {
+  position: relative;
+}
+
+/* Quill toolbar customization */
+.quill-editor-wrapper .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--muted) !important;
+  border-radius: 0 !important;
+  padding: 0.5rem !important;
+}
+
+.quill-editor-wrapper .ql-toolbar button {
+  color: var(--foreground) !important;
+  transition: all 0.2s;
+}
+
+.quill-editor-wrapper .ql-toolbar button:hover {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+  border-radius: 0.375rem;
+}
+
+.quill-editor-wrapper .ql-toolbar button.ql-active {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+  border-radius: 0.375rem;
+}
+
+.quill-editor-wrapper .ql-stroke {
+  stroke: var(--foreground) !important;
+}
+
+.quill-editor-wrapper .ql-toolbar button:hover .ql-stroke {
+  stroke: var(--accent-foreground) !important;
+}
+
+.quill-editor-wrapper .ql-toolbar button.ql-active .ql-stroke {
+  stroke: var(--accent-foreground) !important;
+}
+
+.quill-editor-wrapper .ql-fill {
+  fill: var(--foreground) !important;
+}
+
+.quill-editor-wrapper .ql-toolbar button:hover .ql-fill {
+  fill: var(--accent-foreground) !important;
+}
+
+.quill-editor-wrapper .ql-toolbar button.ql-active .ql-fill {
+  fill: var(--accent-foreground) !important;
+}
+
+/* Quill editor content area */
+.quill-editor-wrapper .ql-container {
+  border: none !important;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.quill-editor-wrapper .ql-editor {
+  padding: 1.5rem !important;
+  color: var(--foreground) !important;
+  min-height: inherit;
+  direction: ltr;
+  text-align: left;
+}
+
+.quill-editor-wrapper .ql-editor.ql-blank::before {
+  color: var(--muted-foreground) !important;
+  opacity: 0.5;
+  font-style: normal;
+  left: 1.5rem !important;
+}
+
+/* Quill link styles */
+.quill-editor-wrapper .ql-editor a {
+  color: var(--accent) !important;
+  text-decoration: underline;
+}
+
+.quill-editor-wrapper .ql-editor a:hover {
+  opacity: 0.8;
+}
+
+/* Quill paragraph spacing */
+.quill-editor-wrapper .ql-editor p {
+  margin: 0.5em 0;
+  line-height: 1.6;
+}
+
+.quill-editor-wrapper .ql-editor p:first-child {
+  margin-top: 0;
+}
+
+.quill-editor-wrapper .ql-editor p:last-child {
+  margin-bottom: 0;
+}
+
+/* Selection highlight */
+.quill-editor-wrapper .ql-editor ::selection {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  opacity: 0.3;
+}
+
+/* Custom caret animation - modern blinking cursor */
+@keyframes caret-blink {
+  0%, 70%, 100% {
+    opacity: 1;
+  }
+  20%, 50% {
+    opacity: 0;
+  }
 }

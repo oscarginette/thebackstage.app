@@ -8,7 +8,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl';
   title?: string;
   subtitle?: string;
   showCloseButton?: boolean;
@@ -16,6 +16,8 @@ interface ModalProps {
   className?: string;
   customHeader?: ReactNode;
   hideDefaultHeader?: boolean;
+  zIndex?: number; // Custom z-index (default: 50)
+  maxHeight?: string; // Custom max-height (default: 'max-h-[90vh]')
 }
 
 const sizeClasses = {
@@ -28,6 +30,7 @@ const sizeClasses = {
   '4xl': 'max-w-4xl',
   '5xl': 'max-w-5xl',
   '6xl': 'max-w-6xl',
+  '7xl': 'max-w-7xl',
 };
 
 /**
@@ -70,13 +73,20 @@ export default function Modal({
   className = '',
   customHeader,
   hideDefaultHeader = false,
+  zIndex = 50,
+  maxHeight = 'max-h-[90vh]',
 }: ModalProps) {
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={closeOnBackdropClick ? onClose : undefined}
+      className="fixed inset-0 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      style={{ zIndex }}
+      onClick={(e) => {
+        if (closeOnBackdropClick && e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
         className={cn(
@@ -84,7 +94,9 @@ export default function Modal({
           CARD_STYLES.background.solid,
           CARD_STYLES.border.default,
           // Base structure
-          'rounded-3xl shadow-2xl w-full max-h-[90vh] overflow-hidden flex flex-col',
+          'rounded-3xl shadow-2xl w-full overflow-hidden flex flex-col',
+          // Height
+          maxHeight,
           // Size
           sizeClasses[size],
           // Custom overrides
@@ -132,7 +144,7 @@ export default function Modal({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-hidden flex flex-col">
           {children}
         </div>
       </div>
