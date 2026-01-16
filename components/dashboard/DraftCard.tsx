@@ -13,6 +13,7 @@ interface DraftCardProps {
 export default function DraftCard({ draft, onEdit, onDelete, onSend }: DraftCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [enablingWarmup, setEnablingWarmup] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -21,6 +22,32 @@ export default function DraftCard({ draft, onEdit, onDelete, onSend }: DraftCard
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleEnableWarmup = async () => {
+    setEnablingWarmup(true);
+    try {
+      const response = await fetch(`/api/campaigns/${draft.id}/warmup/start`, {
+        method: 'POST'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al activar warm-up');
+      }
+
+      // Show success message
+      alert(`✅ Warm-up activado!\n\nTotal de contactos: ${data.warmupSchedule.totalContacts}\nDías estimados: ${data.warmupSchedule.estimatedDays}\n\nAhora puedes enviar el primer batch.`);
+
+      // Reload the drafts list to show the warmup card
+      window.location.reload();
+    } catch (error) {
+      console.error('Error enabling warmup:', error);
+      alert(`❌ Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    } finally {
+      setEnablingWarmup(false);
     }
   };
 
@@ -75,6 +102,21 @@ export default function DraftCard({ draft, onEdit, onDelete, onSend }: DraftCard
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </button>
+
+          {/* Enable Warmup Button (only if warmup not enabled) */}
+          {!draft.warmupEnabled && (
+            <button
+              onClick={handleEnableWarmup}
+              disabled={enablingWarmup}
+              className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+              title="Activar warm-up gradual para proteger reputación del dominio"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {enablingWarmup ? 'Activando...' : 'Warm-up'}
+            </button>
+          )}
 
           {/* Send Button */}
           <button
