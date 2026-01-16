@@ -3,7 +3,18 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Music, CheckCircle2, Instagram } from 'lucide-react';
+import { Loader2, Music, CheckCircle2, Instagram, Cloud } from 'lucide-react';
+
+const SoundCloudIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+    stroke="none"
+  >
+    <path d="M11.562 13.1c-.027 0-.053.003-.092.006V7.087c0-.18-.12-.343-.3-.384-.18-.041-.351.054-.42.22l-1.921 4.596c.036-.015.072-.03.111-.04.14-.04.281-.06.425-.06.273 0 .531.077.755.214.153.093.284.212.392.348zm10.155.808c-.732-2.712-3.23-4.575-6.024-4.575-.125 0-.251.004-.376.014C14.17 6.444 11.458 4.25 8.318 4.25c-3.791 0-6.864 3.111-6.864 6.95 0 .265.016.526.046.782C.646 12.653 0 13.514 0 14.5c0 1.258 1.052 2.278 2.348 2.278h19.222c1.341 0 2.43-1.072 2.43-2.394 0-.236-.035-.466-.1-.682l-.183.206z" />
+  </svg>
+);
 
 interface SocialActionStepProps {
   title: string;
@@ -105,10 +116,10 @@ export function SocialActionStep({
               setCommentError(null);
             }}
             disabled={loading}
-            placeholder="Write your comment here..."
+            placeholder="bomb"
             maxLength={300}
             aria-label="Comment on SoundCloud track"
-            className="w-full px-4 py-3 bg-background/50 border border-foreground/10 rounded-lg text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[#ff5500] focus:ring-1 focus:ring-[#ff5500] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm h-12"
+            className="w-full px-4 py-3 bg-white border-2 border-black/5 rounded-lg text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-[#ff5500] focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm h-11 shadow-sm"
           />
           {/* Character counter and error */}
           <div className="flex justify-between items-center mt-2 h-4">
@@ -139,13 +150,19 @@ export function SocialActionStep({
         ) : isCompleted ? (
           "Completed"
         ) : (
-          buttonText
+          <div className="flex items-center justify-center gap-2">
+            {icon === 'soundcloud' && <SoundCloudIcon className="w-5 h-5 flex-shrink-0" />}
+            {icon === 'instagram' && <Instagram className="w-5 h-5 flex-shrink-0" />}
+            <span>{buttonText}</span>
+          </div>
         )}
       </button>
 
-      <p className="text-[10px] text-foreground/40 mt-8 leading-relaxed">
-        This action helps the artist reach more listeners and supports their creative journey. Thank you for your support!
-      </p>
+      {description && (
+        <p className="text-[10px] text-foreground/50 mt-8 leading-relaxed text-left">
+          {description}
+        </p>
+      )}
     </motion.div>
   );
 }
