@@ -40,12 +40,12 @@ export default function CreateGateForm() {
   const [useManualUrl, setUseManualUrl] = useState(false);
   const [formData, setFormData] = useState<CreateGateFormData>({
     title: '',
-    description: undefined,
-    artistName: undefined,
-    genre: undefined,
+    description: '',
+    artistName: '',
+    genre: '',
     soundcloudTrackUrl: '',
-    soundcloudTrackId: undefined,
-    artworkUrl: undefined,
+    soundcloudTrackId: '',
+    artworkUrl: '',
     fileUrl: '',
     fileSizeMb: undefined,
     fileType: 'audio', // ✅ Use backend enum, not MIME type
@@ -54,12 +54,12 @@ export default function CreateGateForm() {
     requireSoundcloudRepost: true,
     requireSoundcloudFollow: true,
     requireInstagramFollow: true,
-    instagramProfileUrl: undefined,
+    instagramProfileUrl: '',
     requireSpotifyConnect: true,
-    customMessage: undefined,
+    customMessage: '',
     maxDownloads: undefined,
     expiresAt: undefined,
-    slug: undefined,
+    slug: '',
     isActive: true,
   });
 
