@@ -73,4 +73,19 @@ export interface IContactRepository {
     userId: number,
     filterCriteria: ListFilterCriteria
   ): Promise<Contact[]>;
+
+  /**
+   * Get subscribed contacts who haven't received a specific campaign yet
+   * Used by warm-up batch sending to select next batch of recipients
+   *
+   * @param userId - User identifier
+   * @param campaignId - Campaign identifier
+   * @param limit - Maximum number of contacts to return
+   * @returns Array of contacts who haven't been sent this campaign (ordered by created_at ASC)
+   */
+  getUnsentForCampaign(
+    userId: number,
+    campaignId: string,
+    limit: number
+  ): Promise<Contact[]>;
 }

@@ -502,4 +502,37 @@ export class PostgresContactRepository implements IContactRepository {
 
     throw new Error(`Unsupported filter mode: ${filterCriteria.mode}`);
   }
+
+  /**
+   * Get contacts who haven't received a specific campaign yet
+   * Used by warm-up system to select next batch
+   */
+  async getUnsentForCampaign(
+    userId: number,
+    campaignId: string,
+    limit: number
+  ): Promise<Contact[]> {
+    const result = await sql`
+      SELECT c.id, c.email, c.name, c.unsubscribe_token, c.subscribed, c.created_at
+      FROM contacts c
+      WHERE c.user_id = ${userId}
+        AND c.subscribed = true
+        AND c.id NOT IN (
+          SELECT el.contact_id
+          FROM email_logs el
+          WHERE el.campaign_id = ${parseInt(campaignId)}
+        )
+      ORDER BY c.created_at ASC
+      LIMIT ${limit}
+    `;
+
+    return result.rows.map((row: any) => ({
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      unsubscribeToken: row.unsubscribe_token,
+      subscribed: row.subscribed,
+      createdAt: row.created_at
+    }));
+  }
 }
