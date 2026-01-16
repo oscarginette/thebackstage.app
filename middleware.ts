@@ -61,7 +61,12 @@ export default auth(async function middleware(req) {
       return NextResponse.redirect(new URL(pathname + search, 'https://in.thebackstage.app'));
     }
 
-    // 2b. Root landing page auto-redirect
+    // 2b. Redirect authenticated users away from auth pages
+    if (session && (pathname === '/login' || pathname === '/signup')) {
+      return NextResponse.redirect(new URL('/dashboard', 'https://in.thebackstage.app'));
+    }
+
+    // 2c. Root landing page auto-redirect
     if (pathname === '/') {
       const viewAsPublic = searchParams.get('public') === 'true';
 
@@ -108,11 +113,14 @@ export default auth(async function middleware(req) {
  *
  * Run middleware on:
  * - Root path (for auto-redirect logic)
+ * - Auth pages (to redirect if already logged in)
  * - Protected dashboard and settings routes
  */
 export const config = {
   matcher: [
     '/', // Intercept root for auto-redirect
+    '/login', // Intercept login to redirect if already authenticated
+    '/signup', // Intercept signup to redirect if already authenticated
     '/dashboard/:path*', // Protect dashboard
     '/settings/:path*', // Protect settings
   ],
