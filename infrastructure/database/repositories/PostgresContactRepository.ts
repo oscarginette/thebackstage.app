@@ -306,7 +306,7 @@ export class PostgresContactRepository implements IContactRepository {
               ${contact.source},
               ${contact.subscribed},
               ${metadataJson},
-              ${contact.createdAt || sql`CURRENT_TIMESTAMP`}
+              ${contact.createdAt || new Date()}
             )
             ON CONFLICT (user_id, email) DO UPDATE SET
               name = EXCLUDED.name,
@@ -378,7 +378,7 @@ export class PostgresContactRepository implements IContactRepository {
             ${contact.source},
             ${contact.subscribed},
             ${metadataJson},
-            ${contact.createdAt || sql`CURRENT_TIMESTAMP`}
+            ${contact.createdAt || new Date()}
           )
           ON CONFLICT (user_id, email) DO UPDATE SET
             name = EXCLUDED.name,
