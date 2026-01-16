@@ -131,6 +131,7 @@ const envSchema = z.object({
 
   // Application URLs
   NEXT_PUBLIC_APP_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url('Invalid NEXT_PUBLIC_APP_URL - must be a valid URL').optional()),
+  NEXT_PUBLIC_DASHBOARD_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url('Invalid NEXT_PUBLIC_DASHBOARD_URL - must be a valid URL').optional()),
   BASE_URL: z.preprocess((val) => (val === '' ? undefined : val), z.string().url().optional()),
 
   // Feature Flags (transformed to boolean)

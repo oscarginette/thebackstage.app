@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession } from 'next-auth/react';
 import { useTranslations } from '@/lib/i18n/context';
-import { PATHS } from '@/lib/paths';
+import { PATHS, getDashboardUrl } from '@/lib/paths';
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import LandingHero from "@/components/landing/LandingHero";
 import ProblemSection from "@/components/landing/ProblemSection";
@@ -42,7 +42,7 @@ export default function Home() {
             </Link>
             <LanguageSwitcher />
             <Link
-              href={session ? PATHS.DASHBOARD.ROOT : PATHS.LOGIN}
+              href={session ? getDashboardUrl() : PATHS.LOGIN}
               className="h-10 px-6 rounded-full bg-foreground text-background text-sm font-medium flex items-center justify-center transition-all hover:opacity-90 active:scale-95"
             >
               {session ? t('dashboard') : t('getStarted')}

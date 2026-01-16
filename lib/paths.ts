@@ -31,6 +31,16 @@ export const PATHS = {
 
   // Dashboard
   DASHBOARD: {
+    _baseUrl: () => {
+      if (typeof window === 'undefined') {
+        // Server-side: use environment variable
+        return process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://in.thebackstage.app';
+      }
+      // Client-side: detect if we're already on the dashboard subdomain
+      return window.location.hostname === 'in.thebackstage.app'
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://in.thebackstage.app');
+    },
     ROOT: '/dashboard',
     TEMPLATES: {
       ROOT: '/dashboard/templates',
@@ -145,3 +155,25 @@ export function buildUrl(path: string, params?: Record<string, string | number |
  * Ensures that all required parameters are provided
  */
 export type PathBuilder = typeof PATHS;
+
+/**
+ * Helper to construct absolute dashboard URLs
+ *
+ * Works both server-side (using env vars) and client-side (detecting subdomain).
+ * Handles cross-domain navigation to the dashboard.
+ *
+ * @example
+ * // Client-side
+ * window.location.href = getDashboardUrl(PATHS.DASHBOARD.ROOT);
+ *
+ * // With path parameter
+ * getDashboardUrl(PATHS.DASHBOARD.TEMPLATES.EDIT('123'));
+ * // Returns: 'https://in.thebackstage.app/dashboard/templates/123'
+ *
+ * @param path - Optional dashboard path (defaults to /dashboard)
+ * @returns Absolute URL for the dashboard
+ */
+export function getDashboardUrl(path?: string): string {
+  const baseUrl = PATHS.DASHBOARD._baseUrl();
+  return path ? `${baseUrl}${path}` : `${baseUrl}/dashboard`;
+}

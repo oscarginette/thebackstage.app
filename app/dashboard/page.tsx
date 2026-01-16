@@ -20,6 +20,7 @@ import UserTable from '../../components/admin/UserTable';
 import AudienceSubTabs, { AudienceSubTabType } from '../../components/dashboard/AudienceSubTabs';
 import ContactListsManager from '../../components/dashboard/ContactListsManager';
 import { DashboardSidebar } from '../../components/dashboard/DashboardSidebar';
+import { DashboardFooter } from '../../components/dashboard/DashboardFooter';
 import { Settings, Plus, Mail, Rocket, Users, ArrowRight, FileText, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/context';
@@ -491,6 +492,9 @@ function DashboardContent() {
             )}
         </div>
       </main>
+
+      {/* Footer */}
+      <DashboardFooter />
     </div>
   );
 }
