@@ -10,6 +10,7 @@ import { useEmailCampaigns } from '../../hooks/useEmailCampaigns';
 import DraftCard from './DraftCard';
 import EmailContentEditor from './EmailContentEditor';
 import SendingProgressModal from './SendingProgressModal';
+import { WarmupProgressCard } from './WarmupProgressCard';
 
 interface DraftsListProps {
   onDraftSent?: () => void;
@@ -204,13 +205,22 @@ export default function DraftsList({ onDraftSent }: DraftsListProps) {
 
         <div className="space-y-3">
           {drafts.map((draft) => (
-            <DraftCard
-              key={draft.id}
-              draft={draft}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onSend={handleSend}
-            />
+            <div key={draft.id} className="space-y-3">
+              <DraftCard
+                draft={draft}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onSend={handleSend}
+              />
+
+              {/* Show warmup card if warmup is enabled for this draft */}
+              {draft.warmupEnabled && (
+                <WarmupProgressCard
+                  campaignId={draft.id}
+                  onRefresh={loadDrafts}
+                />
+              )}
+            </div>
           ))}
         </div>
       </Card>
