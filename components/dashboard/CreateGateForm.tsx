@@ -26,6 +26,7 @@ import GenreSelector from './GenreSelector';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { SocialProfileInput } from '@/components/ui/SocialProfileInput';
 import { CARD_STYLES, cn } from '@/domain/types/design-tokens';
 import { useTranslations } from '@/lib/i18n/context';
 
@@ -543,28 +544,27 @@ export default function CreateGateForm() {
                               {/* Instagram URL Input inside card */}
                               {req.hasInput && isChecked && (
                                 <div className="px-3 pb-3 pt-0">
-                                  <Input
-                                    type="url"
-                                    name="instagramProfileUrl"
+                                  <SocialProfileInput
+                                    platform="instagram"
                                     value={formData.instagramProfileUrl || ''}
-                                    onChange={async (e) => {
-                                      handleChange(e);
-                                      // Save to user settings
+                                    onChange={async (value) => {
+                                      // Update form data
+                                      setFormData(prev => ({ ...prev, instagramProfileUrl: value }));
+
+                                      // Save to user settings (auto-saves for future gates)
                                       try {
                                         await fetch('/api/user/settings', {
                                           method: 'PATCH',
                                           headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({ instagramUrl: e.target.value })
+                                          body: JSON.stringify({ instagramUrl: value })
                                         });
                                       } catch (error) {
                                         console.error('Error saving Instagram URL:', error);
                                       }
                                     }}
-                                    placeholder="https://instagram.com/yourusername"
+                                    label=""
+                                    helperText="Se guardará para futuros gates"
                                   />
-                                  <p className="text-[9px] text-foreground/40 mt-1.5 leading-relaxed">
-                                    Se guardará para futuros gates
-                                  </p>
                                 </div>
                               )}
                             </div>
