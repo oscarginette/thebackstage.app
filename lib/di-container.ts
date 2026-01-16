@@ -146,6 +146,7 @@ import { TrackGateAnalyticsUseCase } from '@/domain/services/TrackGateAnalyticsU
 import { VerifySoundCloudRepostUseCase } from '@/domain/services/VerifySoundCloudRepostUseCase';
 import { VerifySoundCloudFollowUseCase } from '@/domain/services/VerifySoundCloudFollowUseCase';
 import { PostSoundCloudCommentUseCase } from '@/domain/services/PostSoundCloudCommentUseCase';
+import { UpdateSoundCloudTrackBuyLinkUseCase } from '@/domain/services/UpdateSoundCloudTrackBuyLinkUseCase';
 import { CheckAllMusicPlatformsUseCase } from '@/domain/services/CheckAllMusicPlatformsUseCase';
 import { GetSoundCloudTracksUseCase } from '@/domain/services/GetSoundCloudTracksUseCase';
 import { CheckNewTracksUseCase } from '@/domain/services/CheckNewTracksUseCase';
@@ -715,6 +716,13 @@ export class UseCaseFactory {
       RepositoryFactory.createDownloadSubmissionRepository(),
       RepositoryFactory.createDownloadGateRepository(),
       RepositoryFactory.createDownloadAnalyticsRepository(),
+      ProviderFactory.createSoundCloudClient()
+    );
+  }
+
+  static createUpdateSoundCloudTrackBuyLinkUseCase(): UpdateSoundCloudTrackBuyLinkUseCase {
+    return new UpdateSoundCloudTrackBuyLinkUseCase(
+      RepositoryFactory.createDownloadGateRepository(),
       ProviderFactory.createSoundCloudClient()
     );
   }

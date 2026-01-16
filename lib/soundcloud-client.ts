@@ -376,6 +376,135 @@ export class SoundCloudClient {
   }
 
   /**
+   * Updates a track's purchase URL and title (shopping cart buy link)
+   *
+   * After OAuth authorization, this method programmatically adds a buy link to a SoundCloud track.
+   * A shopping cart icon appears below the track waveform, redirecting users to the specified URL.
+   *
+   * IMPORTANT NOTES:
+   * - Only track owner can update purchase_url (access token must belong to track owner)
+   * - purchase_title is unreliable on free accounts (API accepts but returns null)
+   * - purchase_title works reliably only on Artist Pro accounts
+   * - Best-effort service (failures logged, don't block downloads)
+   *
+   * @param accessToken - OAuth access token (must be from track owner)
+   * @param trackId - SoundCloud track ID (numeric string)
+   * @param purchaseUrl - External purchase/download link (e.g., Download Gate URL)
+   * @param purchaseTitle - Custom button text (optional, e.g., "Download Free Track")
+   * @returns Result object with success status and error message if failed
+   */
+  async updateTrackPurchaseLink(
+    accessToken: string,
+    trackId: string,
+    purchaseUrl: string,
+    purchaseTitle?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Validate inputs
+      if (!accessToken || !trackId || !purchaseUrl) {
+        return {
+          success: false,
+          error: 'Missing required parameters (accessToken, trackId, or purchaseUrl)',
+        };
+      }
+
+      // Build request body
+      const trackData: any = {
+        track: {
+          purchase_url: purchaseUrl,
+        },
+      };
+
+      // Only include purchase_title if provided (unreliable on free accounts)
+      if (purchaseTitle && purchaseTitle.trim().length > 0) {
+        trackData.track.purchase_title = purchaseTitle;
+      }
+
+      // PUT to SoundCloud API
+      const response = await fetch(
+        `${SOUNDCLOUD_API_BASE}/tracks/${trackId}?oauth_token=${accessToken}&client_id=${this.clientId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(trackData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        // Handle specific error cases
+        if (response.status === 403) {
+          return {
+            success: false,
+            error: `Insufficient permissions to update track (403 Forbidden). User must own the track.`,
+          };
+        }
+
+        if (response.status === 404) {
+          return {
+            success: false,
+            error: `Track not found (404). Invalid track ID: ${trackId}`,
+          };
+        }
+
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: `Invalid or expired access token (401 Unauthorized).`,
+          };
+        }
+
+        return {
+          success: false,
+          error: `SoundCloud API error: ${response.status} - ${errorText}`,
+        };
+      }
+
+      const data = await response.json();
+
+      // Verify purchase_url was set
+      if (data.purchase_url !== purchaseUrl) {
+        console.warn(
+          '[SoundCloudClient] Purchase URL mismatch (may be normal for free accounts):',
+          {
+            expected: purchaseUrl,
+            actual: data.purchase_url,
+          }
+        );
+      }
+
+      // Warn if purchase_title was ignored (common on free accounts)
+      if (purchaseTitle && data.purchase_title !== purchaseTitle) {
+        console.warn(
+          '[SoundCloudClient] Purchase title was ignored (likely free account):',
+          {
+            expected: purchaseTitle,
+            actual: data.purchase_title,
+          }
+        );
+      }
+
+      console.log('[SoundCloudClient] Successfully updated track purchase link:', {
+        trackId,
+        purchase_url: data.purchase_url,
+        purchase_title: data.purchase_title,
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('[SoundCloudClient] updateTrackPurchaseLink error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
    * Verify client credentials are configured
    * @returns True if credentials exist
    */
