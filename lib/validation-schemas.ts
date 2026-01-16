@@ -165,31 +165,14 @@ export type UpdateDownloadGateInput = z.infer<typeof UpdateDownloadGateSchema>;
  * Schema for POST /api/gate/[slug]/submit
  * Submits email for download gate (public endpoint)
  *
- * Supports two formats:
- * 1. Simple format (EmailCaptureForm): { email, firstName?, consentMarketing }
- * 2. Multi-brand format (DownloadGateForm): { email, firstName?, consentBackstage, consentGeeBeat, source }
- *
- * When consentMarketing=true (simple format):
- * - consentBackstage = true (platform transactional emails)
- * - consentGeeBeat = true (main music brand)
- * - source = 'the_backstage' (default platform source)
+ * Simple format: User accepts ALL marketing (Backstage + Gee Beat + Artist)
+ * No granular consent - accepting means accepting everything.
  */
 export const SubmitDownloadGateSchema = z.object({
   email: z.string().email('Invalid email address'),
   firstName: z.string().max(100, 'First name too long').optional(),
-
-  // Simple format (legacy)
-  consentMarketing: z.boolean().optional(),
-
-  // Multi-brand format (new)
-  consentBackstage: z.boolean().optional(),
-  consentGeeBeat: z.boolean().optional(),
-  source: z.enum(['the_backstage', 'gee_beat']).optional(),
-}).refine(
-  // At least one consent format must be provided
-  (data) => data.consentMarketing !== undefined || (data.consentBackstage !== undefined && data.consentGeeBeat !== undefined),
-  { message: 'Either consentMarketing or both consentBackstage and consentGeeBeat must be provided' }
-);
+  consentMarketing: z.boolean({ message: 'Marketing consent must be explicitly provided' }),
+});
 
 export type SubmitDownloadGateInput = z.infer<typeof SubmitDownloadGateSchema>;
 

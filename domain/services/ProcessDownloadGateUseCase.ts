@@ -9,8 +9,13 @@
  * - Check for duplicate submission (email + gate)
  * - Create contact if new email
  * - Create download submission record
- * - Log GDPR consent (multi-brand: The Backstage + Gee Beat)
+ * - Log GDPR consent (consentMarketing = accepts ALL brands: Backstage + Gee Beat + Artist)
  * - Send confirmation email with next steps
+ *
+ * Consent Logic:
+ * - Simple format only: consentMarketing boolean
+ * - When true: user accepts emails from ALL brands (no granular consent)
+ * - When false: submission rejected (must accept to download)
  *
  * SOLID Compliance:
  * - SRP: Single responsibility (gate form submission)
@@ -43,15 +48,7 @@ export interface ProcessDownloadGateInput {
   gateSlug: string; // Public gate identifier
   email: string;
   firstName?: string;
-
-  // Simple format (legacy - EmailCaptureForm)
-  consentMarketing?: boolean; // Implies consent for all brands (Backstage + Gee Beat)
-
-  // Multi-brand format (new - DownloadGateForm)
-  consentBackstage?: boolean; // GDPR: explicit consent for The Backstage
-  consentGeeBeat?: boolean; // GDPR: explicit consent for Gee Beat
-  source?: 'the_backstage' | 'gee_beat'; // Which platform is submitting (defaults to 'the_backstage')
-
+  consentMarketing: boolean; // User accepts ALL marketing (Backstage + Gee Beat + Artist)
   ipAddress: string | null;
   userAgent: string | null;
 }
@@ -78,7 +75,7 @@ export interface ProcessDownloadGateResult {
  * 2. Check duplicate
  * 3. Create/update contact
  * 4. Create submission
- * 5. Log multi-brand consent (The Backstage + Gee Beat)
+ * 5. Log consent (consentMarketing = ALL brands accepted)
  * 6. Send email
  */
 export class ProcessDownloadGateUseCase {
@@ -153,8 +150,8 @@ export class ProcessDownloadGateUseCase {
   }
 
   /**
-   * Validate input data and normalize simple format to multi-brand format
-   * @param input - Form submission data (mutates input to normalize format)
+   * Validate input data
+   * @param input - Form submission data
    * @throws ValidationError if invalid
    */
   private validateInput(input: ProcessDownloadGateInput): void {
@@ -166,31 +163,14 @@ export class ProcessDownloadGateUseCase {
       throw new ValidationError('Valid email is required');
     }
 
-    // Normalize simple format (consentMarketing) to multi-brand format
-    if (input.consentMarketing !== undefined) {
-      // Legacy format: consentMarketing implies consent for all brands
-      input.consentBackstage = input.consentMarketing;
-      input.consentGeeBeat = input.consentMarketing;
-      input.source = input.source || 'the_backstage'; // Default source
+    // GDPR: consent must be explicit boolean
+    if (typeof input.consentMarketing !== 'boolean') {
+      throw new ValidationError('Marketing consent must be explicitly provided');
     }
 
-    // GDPR: consent must be explicit boolean (not undefined) after normalization
-    if (typeof input.consentBackstage !== 'boolean') {
-      throw new ValidationError('Backstage consent must be explicitly provided');
-    }
-
-    if (typeof input.consentGeeBeat !== 'boolean') {
-      throw new ValidationError('Gee Beat consent must be explicitly provided');
-    }
-
-    // Default source if not provided
-    if (!input.source) {
-      input.source = 'the_backstage';
-    }
-
-    // At least one brand consent required
-    if (!input.consentBackstage && !input.consentGeeBeat) {
-      throw new ValidationError('You must accept at least one marketing consent to download');
+    // User must accept marketing to download
+    if (!input.consentMarketing) {
+      throw new ValidationError('You must accept marketing consent to download');
     }
   }
 
@@ -244,30 +224,20 @@ export class ProcessDownloadGateUseCase {
     let contact = await this.contactRepository.findByEmail(input.email, userId);
 
     if (!contact) {
-      // After validateInput, these are guaranteed to be booleans
-      const consentBackstage = input.consentBackstage!;
-      const consentGeeBeat = input.consentGeeBeat!;
-      const source = input.source!;
-
       // Create new contact
-      const sourceValue =
-        source === 'the_backstage'
-          ? DOWNLOAD_SOURCES.THE_BACKSTAGE
-          : DOWNLOAD_SOURCES.GEE_BEAT;
-
+      // consentMarketing=true means user accepts ALL brands (Backstage + Gee Beat)
       const result = await this.contactRepository.bulkImport([
         {
           userId,
           email: input.email,
           name: input.firstName || null,
-          subscribed: consentBackstage || consentGeeBeat, // Subscribed if any consent
-          source: sourceValue,
+          subscribed: input.consentMarketing, // Subscribed if accepted marketing
+          source: DOWNLOAD_SOURCES.THE_BACKSTAGE, // Always from The Backstage platform
           metadata: {
             downloadGate: true,
             firstName: input.firstName,
-            consentBackstage,
-            consentGeeBeat,
-            platform: source,
+            consentMarketing: input.consentMarketing,
+            acceptedAllBrands: true, // User accepts Backstage + Gee Beat + Artist
           },
         },
       ]);
@@ -280,11 +250,10 @@ export class ProcessDownloadGateUseCase {
       }
     } else {
       // Update existing contact subscription status if needed
-      const shouldBeSubscribed = input.consentBackstage! || input.consentGeeBeat!;
-      if (contact.subscribed !== shouldBeSubscribed) {
+      if (contact.subscribed !== input.consentMarketing) {
         await this.contactRepository.updateSubscriptionStatus(
           contact.id,
-          shouldBeSubscribed,
+          input.consentMarketing,
           userId
         );
       }
@@ -302,22 +271,19 @@ export class ProcessDownloadGateUseCase {
    * @returns Created submission
    */
   private async createSubmission(input: ProcessDownloadGateInput, gateId: string) {
-    // After validateInput, these are guaranteed to be booleans
-    const consentBackstage = input.consentBackstage!;
-    const consentGeeBeat = input.consentGeeBeat!;
-
     return await this.submissionRepository.create({
       gateId,
       email: input.email,
       firstName: input.firstName,
-      consentMarketing: consentBackstage || consentGeeBeat, // True if any consent
+      consentMarketing: input.consentMarketing,
       ipAddress: input.ipAddress || undefined,
       userAgent: input.userAgent || undefined,
     });
   }
 
   /**
-   * Log GDPR consent history with multi-brand tracking
+   * Log GDPR consent history
+   * consentMarketing=true means user accepts ALL brands (Backstage + Gee Beat + Artist)
    * @param contactId - Contact ID
    * @param input - Form submission data
    * @param gate - Download gate
@@ -327,20 +293,12 @@ export class ProcessDownloadGateUseCase {
     input: ProcessDownloadGateInput,
     gate: any
   ): Promise<void> {
-    // After validateInput, these are guaranteed to be booleans
-    const consentBackstage = input.consentBackstage!;
-    const consentGeeBeat = input.consentGeeBeat!;
-    const source = input.source!;
-
     // Construct metadata compatible with ConsentHistoryMetadata
     const downloadMetadata = {
-      acceptedBackstage: consentBackstage,
-      acceptedGeeBeat: consentGeeBeat,
-      acceptedArtist: true,
-      downloadSource:
-        source === 'the_backstage'
-          ? DOWNLOAD_SOURCES.THE_BACKSTAGE
-          : DOWNLOAD_SOURCES.GEE_BEAT,
+      acceptedBackstage: input.consentMarketing, // User accepts ALL when true
+      acceptedGeeBeat: input.consentMarketing, // User accepts ALL when true
+      acceptedArtist: true, // Always true (artist owns content)
+      downloadSource: DOWNLOAD_SOURCES.THE_BACKSTAGE, // Always from The Backstage
       gateSlug: input.gateSlug,
       trackTitle: gate.title,
       artistName: gate.artistName || undefined,

@@ -20,7 +20,8 @@ export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/gate/[slug]/submit
- * Submit email and create download submission with multi-brand consent
+ * Submit email and create download submission
+ * consentMarketing=true means user accepts ALL brands (Backstage + Gee Beat + Artist)
  */
 export async function POST(
   request: Request,
@@ -40,7 +41,7 @@ export async function POST(
       );
     }
 
-    const { email, firstName, consentBackstage, consentGeeBeat, source } = validation.data;
+    const { email, firstName, consentMarketing } = validation.data;
 
     // Extract IP and user agent for GDPR compliance
     const ipAddress = request.headers.get('x-forwarded-for') || null;
@@ -54,9 +55,7 @@ export async function POST(
       gateSlug: slug,
       email,
       firstName,
-      consentBackstage,
-      consentGeeBeat,
-      source,
+      consentMarketing,
       ipAddress,
       userAgent,
     });
