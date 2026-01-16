@@ -21,6 +21,7 @@ export interface DownloadGateProps {
   requireSpotifyConnect: boolean;
   requireInstagramFollow: boolean;
   instagramProfileUrl: string | null;
+  enableSoundcloudBuyLink: boolean;
   active: boolean;
   maxDownloads: number | null;
   expiresAt: Date | null;
@@ -66,6 +67,7 @@ export class DownloadGate {
   get requireSpotifyConnect(): boolean { return this.props.requireSpotifyConnect; }
   get requireInstagramFollow(): boolean { return this.props.requireInstagramFollow; }
   get instagramProfileUrl(): string | null { return this.props.instagramProfileUrl; }
+  get enableSoundcloudBuyLink(): boolean { return this.props.enableSoundcloudBuyLink; }
   get active(): boolean { return this.props.active; }
   get maxDownloads(): number | null { return this.props.maxDownloads; }
   get expiresAt(): Date | null { return this.props.expiresAt; }

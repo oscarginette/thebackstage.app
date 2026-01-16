@@ -18,6 +18,7 @@ export interface DownloadGate {
   requireInstagramFollow: boolean;
   instagramProfileUrl: string | null;
   requireSpotifyConnect: boolean;
+  enableSoundcloudBuyLink: boolean;
   active: boolean;
   maxDownloads: number | null;
   expiresAt: string | null;
@@ -96,6 +97,7 @@ export interface CreateGateFormData {
   requireInstagramFollow: boolean;
   instagramProfileUrl?: string;
   requireSpotifyConnect: boolean;
+  enableSoundcloudBuyLink?: boolean;
   customMessage?: string;
   maxDownloads?: number;
   expiresAt?: string;

@@ -34,6 +34,7 @@ export interface CreateGateInput {
   requireSpotifyConnect?: boolean;
   requireInstagramFollow?: boolean;
   instagramProfileUrl?: string;
+  enableSoundcloudBuyLink?: boolean;
   active?: boolean;
   maxDownloads?: number;
   expiresAt?: Date;
