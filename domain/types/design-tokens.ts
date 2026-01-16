@@ -76,6 +76,7 @@ export const INPUT_STYLES = {
     soundcloud: 'focus:ring-[#FF5500]/20 focus:border-[#FF5500]/40',
     spotify: 'focus:ring-[#1DB954]/20 focus:border-[#1DB954]/40',
     brevo: 'focus:ring-[#0B996E]/20 focus:border-[#0B996E]/40',
+    instagram: 'focus:ring-[#E4405F]/20 focus:border-[#E4405F]/40',
   },
 
   // Text colors

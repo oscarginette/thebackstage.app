@@ -37,7 +37,7 @@ import { INPUT_STYLES, TEXT_STYLES, cn } from '@/domain/types/design-tokens';
 /**
  * Focus variant types for platform-specific branding
  */
-export type InputFocusVariant = 'primary' | 'soundcloud' | 'spotify' | 'brevo';
+export type InputFocusVariant = 'primary' | 'soundcloud' | 'spotify' | 'brevo' | 'instagram';
 
 /**
  * Input component props
