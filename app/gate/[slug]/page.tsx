@@ -72,6 +72,15 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
 
   // Auto-redirect to Spotify OAuth when step changes to SPOTIFY
   useEffect(() => {
+    console.log('[DownloadGatePage] Step check:', {
+      currentStep,
+      expectedSpotify: GATE_STEPS.SPOTIFY,
+      isSpotifyStep: currentStep === GATE_STEPS.SPOTIFY,
+      oauthLoading,
+      requireSpotify: gate?.requireSpotifyConnect,
+      submission: submission?.soundcloudRepostVerified,
+    });
+
     if (currentStep === GATE_STEPS.SPOTIFY && !oauthLoading && gate?.requireSpotifyConnect) {
       console.log('[DownloadGatePage] Auto-redirecting to Spotify OAuth...');
       handleSpotify(spotifyAutoSaveOptIn);
