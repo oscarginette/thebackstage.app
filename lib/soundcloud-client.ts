@@ -1,8 +1,8 @@
 /**
  * SoundCloud API Client
  *
- * Wrapper for SoundCloud API with OAuth 2.1 PKCE flow.
- * Implements Proof Key for Code Exchange (PKCE) as required by SoundCloud.
+ * Concrete implementation of ISoundCloudClient interface.
+ * Implements OAuth 2.1 PKCE flow as required by SoundCloud (October 2024+).
  *
  * PKCE Flow:
  * 1. Generate random code_verifier (128 chars, crypto-secure)
@@ -16,7 +16,9 @@
  * - Client secret never exposed to browser
  * - Access tokens stored server-side only
  *
- * Required by: SoundCloud OAuth 2.1 (October 2024+)
+ * SOLID Compliance:
+ * - DIP: Implements ISoundCloudClient interface (dependency inversion)
+ * - SRP: Single responsibility (SoundCloud API operations)
  *
  * Documentation:
  * - OAuth 2.1: https://developers.soundcloud.com/docs/api/guide#authentication
@@ -26,6 +28,13 @@
 
 import { randomBytes, createHash } from 'crypto';
 import { env } from '@/lib/env';
+import type {
+  ISoundCloudClient,
+  PKCEPair,
+  SoundCloudTokenResponse,
+  SoundCloudUserProfile,
+  SoundCloudOperationResult,
+} from '@/domain/providers/ISoundCloudClient';
 
 // OAuth 2.1 endpoints (updated October 2024)
 const SOUNDCLOUD_AUTH_URL = 'https://secure.soundcloud.com/authorize';
@@ -35,34 +44,9 @@ const SOUNDCLOUD_TOKEN_URL = 'https://secure.soundcloud.com/oauth/token';
 const SOUNDCLOUD_API_BASE = 'https://api.soundcloud.com';
 const SOUNDCLOUD_API_V2_BASE = 'https://api-v2.soundcloud.com';
 
-export interface SoundCloudAuthUrlParams {
-  state: string;
-  redirectUri: string;
-}
-
-export interface SoundCloudTokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  refresh_token?: string;
-  scope: string;
-}
-
-export interface SoundCloudUserProfile {
-  id: number;
-  username: string;
-  permalink: string;
-  permalink_url: string;
-  avatar_url?: string;
-  country?: string;
-  full_name?: string;
-  city?: string;
-  description?: string;
-  followers_count: number;
-  followings_count: number;
-  track_count: number;
-}
-
+/**
+ * SoundCloud repost object (API v2)
+ */
 export interface SoundCloudRepost {
   type: string;
   created_at: string;
@@ -73,14 +57,12 @@ export interface SoundCloudRepost {
 }
 
 /**
- * PKCE code verifier/challenge pair
+ * SoundCloud API Client
+ *
+ * Implements ISoundCloudClient interface for all SoundCloud API operations.
+ * This is the production implementation (infrastructure layer).
  */
-export interface PKCEPair {
-  codeVerifier: string;
-  codeChallenge: string;
-}
-
-export class SoundCloudClient {
+export class SoundCloudClient implements ISoundCloudClient {
   private clientId: string;
   private clientSecret: string;
 
@@ -316,7 +298,7 @@ export class SoundCloudClient {
   async createRepost(
     accessToken: string,
     trackId: string
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<SoundCloudOperationResult> {
     try {
       const response = await fetch(
         `${SOUNDCLOUD_API_BASE}/reposts/tracks/${trackId}`,
@@ -383,7 +365,7 @@ export class SoundCloudClient {
   async createFollow(
     accessToken: string,
     userId: string
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<SoundCloudOperationResult> {
     try {
       const response = await fetch(
         `${SOUNDCLOUD_API_BASE}/me/followings/${userId}`,
@@ -538,7 +520,7 @@ export class SoundCloudClient {
     trackId: string,
     purchaseUrl: string,
     purchaseTitle?: string
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<SoundCloudOperationResult> {
     try {
       // Validate inputs
       if (!accessToken || !trackId || !purchaseUrl) {
