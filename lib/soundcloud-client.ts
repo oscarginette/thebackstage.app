@@ -751,15 +751,15 @@ export class SoundCloudClient implements ISoundCloudClient {
   }
 
   /**
-   * Get track information including duration
+   * Get track information including duration and artist user ID
    * @param accessToken - OAuth access token
    * @param trackId - SoundCloud track ID
-   * @returns Track info with duration
+   * @returns Track info with duration, title, and optional artist user ID
    */
   async getTrackInfo(
     accessToken: string,
     trackId: string
-  ): Promise<{ duration: number; title: string }> {
+  ): Promise<{ duration: number; title: string; userId?: number }> {
     try {
       console.log('[SoundCloudClient] Fetching track info:', trackId);
 
@@ -787,15 +787,21 @@ export class SoundCloudClient implements ISoundCloudClient {
       }
 
       const track = await response.json();
+
+      // Extract artist user ID from track.user.id
+      const userId = track.user?.id || undefined;
+
       console.log('[SoundCloudClient] Track info retrieved:', {
         trackId,
         duration: track.duration,
         title: track.title,
+        userId,
       });
 
       return {
         duration: track.duration || 0, // Duration in milliseconds
         title: track.title || '',
+        userId, // Artist user ID (optional)
       };
     } catch (error) {
       console.error('[SoundCloudClient] getTrackInfo error:', error);

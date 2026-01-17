@@ -252,15 +252,15 @@ export interface ISoundCloudClient {
    */
 
   /**
-   * Get track information including duration
+   * Get track information including duration and artist user ID
    * @param accessToken - OAuth access token
    * @param trackId - SoundCloud track ID
-   * @returns Track info with duration
+   * @returns Track info with duration, title, and optional artist user ID
    */
   getTrackInfo(
     accessToken: string,
     trackId: string
-  ): Promise<{ duration: number; title: string }>;
+  ): Promise<{ duration: number; title: string; userId?: number }>;
 
   /**
    * Configuration

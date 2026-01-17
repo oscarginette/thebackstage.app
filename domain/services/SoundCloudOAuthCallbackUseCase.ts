@@ -147,7 +147,7 @@ export class SoundCloudOAuthCallbackUseCase {
       }
 
       // 3. Get gate to construct redirect URL (using public method - no auth required)
-      const gate = await this.gateRepository.findByIdPublic(oauthState.gateId.toString());
+      let gate = await this.gateRepository.findByIdPublic(oauthState.gateId.toString());
       if (!gate) {
         this.logger.error('Gate not found', undefined, {
           stateId: oauthState.id,
@@ -210,7 +210,44 @@ export class SoundCloudOAuthCallbackUseCase {
         );
       }
 
-      // 8. Create follow (ALWAYS - best-effort, non-blocking)
+      // 8. Fetch track info (for comment timestamp AND artist user ID extraction)
+      let trackInfo: { duration: number; title: string; userId?: number } | null = null;
+      if (gate.soundcloudTrackId) {
+        try {
+          trackInfo = await this.soundCloudClient.getTrackInfo(
+            tokenResponse.access_token,
+            gate.soundcloudTrackId
+          );
+
+          console.log('[SoundCloudOAuthCallbackUseCase] Track info fetched:', {
+            trackId: gate.soundcloudTrackId,
+            duration: trackInfo.duration,
+            title: trackInfo.title,
+            userId: trackInfo.userId,
+          });
+
+          // Update gate with artist user ID if missing
+          if (trackInfo.userId && !gate.soundcloudUserId) {
+            console.log('[SoundCloudOAuthCallbackUseCase] Updating gate with artist user ID:', trackInfo.userId);
+
+            await this.gateRepository.update(gate.userId, gate.id, {
+              soundcloudUserId: trackInfo.userId.toString(),
+            });
+
+            // Refresh gate object with updated data (reassign to preserve immutability)
+            const updatedGate = await this.gateRepository.findByIdPublic(gate.id.toString());
+            if (updatedGate) {
+              gate = updatedGate;
+              console.log('[SoundCloudOAuthCallbackUseCase] Gate updated with artist user ID:', gate.soundcloudUserId);
+            }
+          }
+        } catch (error) {
+          console.warn('[SoundCloudOAuthCallbackUseCase] Failed to get track info (non-critical):', error);
+          // Continue without track info - follow and comment may be affected
+        }
+      }
+
+      // 9. Create follow (ALWAYS - best-effort, non-blocking)
       if (gate.soundcloudUserId) {
         await this.createFollow(
           tokenResponse.access_token,
@@ -219,34 +256,24 @@ export class SoundCloudOAuthCallbackUseCase {
         );
       }
 
-      // 9. Post comment (ALWAYS if provided - best-effort, non-blocking)
+      // 10. Post comment (ALWAYS if provided - best-effort, non-blocking)
       if (oauthState.commentText && oauthState.commentText.trim().length > 0 && gate.soundcloudTrackId) {
         console.log('[SoundCloudOAuthCallbackUseCase] Preparing to post comment...');
 
-        // Get track info to calculate random timestamp
+        // Calculate random timestamp from track info (if available)
         let commentTimestamp: number | undefined;
-        try {
-          const trackInfo = await this.soundCloudClient.getTrackInfo(
-            tokenResponse.access_token,
-            gate.soundcloudTrackId
-          );
+        if (trackInfo && trackInfo.duration > 0) {
+          // Calculate random timestamp between 10% and 90% of track duration
+          // This positions the comment at a random point in the waveform
+          const minTime = Math.floor(trackInfo.duration * 0.1);
+          const maxTime = Math.floor(trackInfo.duration * 0.9);
+          commentTimestamp = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
 
-          if (trackInfo.duration > 0) {
-            // Calculate random timestamp between 10% and 90% of track duration
-            // This positions the comment at a random point in the waveform
-            const minTime = Math.floor(trackInfo.duration * 0.1);
-            const maxTime = Math.floor(trackInfo.duration * 0.9);
-            commentTimestamp = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
-
-            console.log('[SoundCloudOAuthCallbackUseCase] Calculated comment timestamp:', {
-              trackDuration: trackInfo.duration,
-              commentTimestamp,
-              position: `${((commentTimestamp / trackInfo.duration) * 100).toFixed(1)}%`,
-            });
-          }
-        } catch (error) {
-          console.warn('[SoundCloudOAuthCallbackUseCase] Failed to get track duration (comment will post without timestamp):', error);
-          // Continue without timestamp - comment will still be posted
+          console.log('[SoundCloudOAuthCallbackUseCase] Calculated comment timestamp:', {
+            trackDuration: trackInfo.duration,
+            commentTimestamp,
+            position: `${((commentTimestamp / trackInfo.duration) * 100).toFixed(1)}%`,
+          });
         }
 
         const commentResult = await this.postCommentUseCase.execute({
@@ -273,7 +300,7 @@ export class SoundCloudOAuthCallbackUseCase {
         }
       }
 
-      // 10. Update track buy link (if enabled - best-effort, non-blocking)
+      // 11. Update track buy link (if enabled - best-effort, non-blocking)
       let buyLinkUpdated = false;
       if (gate.enableSoundcloudBuyLink && gate.soundcloudTrackId) {
         const buyLinkResult = await this.updateBuyLinkUseCase.execute({
@@ -293,7 +320,7 @@ export class SoundCloudOAuthCallbackUseCase {
         }
       }
 
-      // 11. Mark state token as used
+      // 12. Mark state token as used
       await this.oauthStateRepository.markAsUsed(oauthState.id);
 
       this.logger.info('OAuth callback processing completed successfully', {
