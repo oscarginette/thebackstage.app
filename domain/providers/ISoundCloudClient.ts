@@ -174,6 +174,19 @@ export interface ISoundCloudClient {
   ): Promise<SoundCloudOperationResult>;
 
   /**
+   * Create a favorite/like for a track
+   * Favorites (likes) a track as the authenticated user
+   *
+   * @param accessToken - OAuth access token
+   * @param trackId - SoundCloud track ID to favorite
+   * @returns Operation result with success status
+   */
+  createFavorite(
+    accessToken: string,
+    trackId: string
+  ): Promise<SoundCloudOperationResult>;
+
+  /**
    * Create a follow for a user
    * Follows a user as the authenticated user
    *
@@ -196,13 +209,15 @@ export interface ISoundCloudClient {
    * @param accessToken - OAuth access token
    * @param trackId - SoundCloud track ID
    * @param commentText - Comment text (max 500 chars)
+   * @param timestamp - Optional timestamp in milliseconds (for positioning comment on waveform)
    * @returns Comment ID if successful
    * @throws Error if API call fails (403 Forbidden, 400 Bad Request, etc.)
    */
   postComment(
     accessToken: string,
     trackId: string,
-    commentText: string
+    commentText: string,
+    timestamp?: number
   ): Promise<string>;
 
   /**
@@ -229,6 +244,21 @@ export interface ISoundCloudClient {
     purchaseUrl: string,
     purchaseTitle?: string
   ): Promise<SoundCloudOperationResult>;
+
+  /**
+   * Track Information
+   */
+
+  /**
+   * Get track information including duration
+   * @param accessToken - OAuth access token
+   * @param trackId - SoundCloud track ID
+   * @returns Track info with duration
+   */
+  getTrackInfo(
+    accessToken: string,
+    trackId: string
+  ): Promise<{ duration: number; title: string }>;
 
   /**
    * Configuration

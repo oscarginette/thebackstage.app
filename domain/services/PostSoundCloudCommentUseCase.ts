@@ -44,6 +44,7 @@ export interface PostSoundCloudCommentInput {
   accessToken: string;
   soundcloudUserId: number;
   commentText: string;
+  commentTimestamp?: number; // Optional timestamp in milliseconds (positions comment on waveform)
   ipAddress?: string;
   userAgent?: string;
 }
@@ -117,17 +118,19 @@ export class PostSoundCloudCommentUseCase {
       // 4. Validate gate has SoundCloud track configured (uses shared validation)
       validateGateHasTrackId(gate);
 
-      // 5. Post comment via SoundCloud API
+      // 5. Post comment via SoundCloud API (with optional timestamp)
       await this.soundCloudClient.postComment(
         input.accessToken,
         gate.soundcloudTrackId!,
-        input.commentText
+        input.commentText,
+        input.commentTimestamp
       );
 
       this.logger.info('SoundCloud comment posted successfully', {
         submissionId: input.submissionId,
         gateId: gate.id,
         trackId: gate.soundcloudTrackId,
+        timestamp: input.commentTimestamp,
       });
 
       // 6. Track analytics event (non-critical, doesn't block result)

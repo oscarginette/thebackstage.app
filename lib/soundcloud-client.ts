@@ -354,6 +354,81 @@ export class SoundCloudClient implements ISoundCloudClient {
   }
 
   /**
+   * Create a favorite/like for a track
+   * Favorites (likes) a track as the authenticated user
+   *
+   * @param accessToken - OAuth access token
+   * @param trackId - SoundCloud track ID to favorite
+   * @returns Success status
+   */
+  async createFavorite(
+    accessToken: string,
+    trackId: string
+  ): Promise<SoundCloudOperationResult> {
+    try {
+      console.log('[SoundCloudClient] Attempting to favorite track:', trackId);
+
+      const response = await fetch(
+        `${SOUNDCLOUD_API_BASE}/me/favorites/${trackId}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `OAuth ${accessToken}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      console.log('[SoundCloudClient] Favorite response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[SoundCloudClient] Favorite failed:', {
+          status: response.status,
+          error: errorText,
+          trackId,
+        });
+
+        // Handle specific error cases
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: `Invalid or expired access token (401 Unauthorized).`,
+          };
+        }
+
+        if (response.status === 404) {
+          return {
+            success: false,
+            error: `Track not found (404). Invalid track ID: ${trackId}`,
+          };
+        }
+
+        if (response.status === 403) {
+          return {
+            success: false,
+            error: `Insufficient permissions to favorite (403 Forbidden).`,
+          };
+        }
+
+        return {
+          success: false,
+          error: `Failed to create favorite: ${response.status} ${errorText}`,
+        };
+      }
+
+      console.log('[SoundCloudClient] Successfully favorited track:', trackId);
+      return { success: true };
+    } catch (error) {
+      console.error('[SoundCloudClient] createFavorite error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
    * Create a follow for a user
    * Follows a user as the authenticated user
    *
@@ -367,6 +442,8 @@ export class SoundCloudClient implements ISoundCloudClient {
     userId: string
   ): Promise<SoundCloudOperationResult> {
     try {
+      console.log('[SoundCloudClient] Attempting to follow user:', userId);
+
       const response = await fetch(
         `${SOUNDCLOUD_API_BASE}/me/followings/${userId}`,
         {
@@ -378,8 +455,15 @@ export class SoundCloudClient implements ISoundCloudClient {
         }
       );
 
+      console.log('[SoundCloudClient] Follow response status:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('[SoundCloudClient] Follow failed:', {
+          status: response.status,
+          error: errorText,
+          userId,
+        });
 
         // Handle specific error cases
         if (response.status === 401) {
@@ -430,13 +514,15 @@ export class SoundCloudClient implements ISoundCloudClient {
    * @param accessToken - OAuth access token
    * @param trackId - SoundCloud track ID
    * @param commentText - Comment text (max 500 chars)
+   * @param timestamp - Optional timestamp in milliseconds (for positioning comment on waveform)
    * @returns Comment ID if successful
    * @throws Error if API call fails (403 Forbidden, 400 Bad Request, etc.)
    */
   async postComment(
     accessToken: string,
     trackId: string,
-    commentText: string
+    commentText: string,
+    timestamp?: number
   ): Promise<string> {
     try {
       // Validate comment text length
@@ -446,6 +532,23 @@ export class SoundCloudClient implements ISoundCloudClient {
 
       if (commentText.length > 500) {
         throw new Error('Comment text exceeds maximum length (500 characters)');
+      }
+
+      console.log('[SoundCloudClient] Attempting to post comment:', {
+        trackId,
+        commentLength: commentText.length,
+        timestamp,
+      });
+
+      // Build request body with timestamp if provided
+      const bodyParams: Record<string, string> = {
+        'comment[body]': commentText,
+      };
+
+      // Add timestamp if provided (positions comment on waveform)
+      if (timestamp !== undefined && timestamp >= 0) {
+        bodyParams['comment[timestamp]'] = timestamp.toString();
+        console.log('[SoundCloudClient] Comment will be posted at timestamp:', timestamp);
       }
 
       // POST to SoundCloud API - OAuth 2.1 requires Authorization header
@@ -458,14 +561,19 @@ export class SoundCloudClient implements ISoundCloudClient {
             'Content-Type': 'application/x-www-form-urlencoded',
             Accept: 'application/json',
           },
-          body: new URLSearchParams({
-            'comment[body]': commentText,
-          }),
+          body: new URLSearchParams(bodyParams),
         }
       );
 
+      console.log('[SoundCloudClient] Comment response status:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('[SoundCloudClient] Comment failed:', {
+          status: response.status,
+          error: errorText,
+          trackId,
+        });
 
         // Handle specific error cases
         if (response.status === 403) {
@@ -482,6 +590,7 @@ export class SoundCloudClient implements ISoundCloudClient {
       }
 
       const data = await response.json();
+      console.log('[SoundCloudClient] Comment posted successfully:', data);
 
       // Return comment ID from response
       if (!data.id && !data.comment_id) {
@@ -624,6 +733,45 @@ export class SoundCloudClient implements ISoundCloudClient {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
+    }
+  }
+
+  /**
+   * Get track information including duration
+   * @param accessToken - OAuth access token
+   * @param trackId - SoundCloud track ID
+   * @returns Track info with duration
+   */
+  async getTrackInfo(
+    accessToken: string,
+    trackId: string
+  ): Promise<{ duration: number; title: string }> {
+    try {
+      const response = await fetch(
+        `${SOUNDCLOUD_API_BASE}/tracks/${trackId}?client_id=${this.clientId}`,
+        {
+          headers: {
+            Authorization: `OAuth ${accessToken}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to get track info: ${response.status} ${errorText}`);
+      }
+
+      const track = await response.json();
+      return {
+        duration: track.duration || 0, // Duration in milliseconds
+        title: track.title || '',
+      };
+    } catch (error) {
+      console.error('[SoundCloudClient] getTrackInfo error:', error);
+      throw new Error(
+        `Failed to get track info: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

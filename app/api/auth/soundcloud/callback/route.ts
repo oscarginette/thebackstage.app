@@ -153,6 +153,23 @@ export async function GET(request: Request) {
         }
       }
 
+      // 5b. Create favorite/like (ALWAYS - best-effort, non-blocking)
+      if (gate.soundcloudTrackId) {
+        console.log('[SoundCloud Callback] Creating favorite/like for track:', gate.soundcloudTrackId);
+
+        const favoriteResult = await soundCloudClient.createFavorite(
+          tokenResponse.access_token,
+          gate.soundcloudTrackId
+        );
+
+        if (!favoriteResult.success) {
+          console.error('[SoundCloud Callback] Favorite creation failed (non-critical):', favoriteResult.error);
+          // Non-blocking - user can still download
+        } else {
+          console.log('[SoundCloud Callback] Favorite created successfully ✓');
+        }
+      }
+
       // 6. Create follow (ALWAYS - best-effort, non-blocking)
       if (gate.soundcloudUserId) {
         console.log('[SoundCloud Callback] Creating follow for user:', gate.soundcloudUserId);
@@ -176,7 +193,35 @@ export async function GET(request: Request) {
       }
 
       // 7. Post comment (ALWAYS if provided - best-effort, non-blocking)
-      if (oauthState.commentText && oauthState.commentText.trim().length > 0) {
+      if (oauthState.commentText && oauthState.commentText.trim().length > 0 && gate.soundcloudTrackId) {
+        console.log('[SoundCloud Callback] Preparing to post comment...');
+
+        // Get track info to calculate random timestamp
+        let commentTimestamp: number | undefined;
+        try {
+          const trackInfo = await soundCloudClient.getTrackInfo(
+            tokenResponse.access_token,
+            gate.soundcloudTrackId
+          );
+
+          if (trackInfo.duration > 0) {
+            // Calculate random timestamp between 10% and 90% of track duration
+            // This positions the comment at a random point in the waveform
+            const minTime = Math.floor(trackInfo.duration * 0.1);
+            const maxTime = Math.floor(trackInfo.duration * 0.9);
+            commentTimestamp = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+
+            console.log('[SoundCloud Callback] Calculated comment timestamp:', {
+              trackDuration: trackInfo.duration,
+              commentTimestamp,
+              position: `${((commentTimestamp / trackInfo.duration) * 100).toFixed(1)}%`,
+            });
+          }
+        } catch (error) {
+          console.warn('[SoundCloud Callback] Failed to get track duration (comment will post without timestamp):', error);
+          // Continue without timestamp - comment will still be posted
+        }
+
         const postCommentUseCase = UseCaseFactory.createPostSoundCloudCommentUseCase();
 
         const commentResult = await postCommentUseCase.execute({
@@ -184,6 +229,7 @@ export async function GET(request: Request) {
           accessToken: tokenResponse.access_token,
           soundcloudUserId: userProfile.id,
           commentText: oauthState.commentText,
+          commentTimestamp,
           ipAddress,
           userAgent,
         });
