@@ -1,7 +1,7 @@
 
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useDownloadGate } from '@/hooks/useDownloadGate';
 import { useGateSubmission } from '@/hooks/useGateSubmission';
 import { useOAuthCallback } from '@/hooks/useOAuthCallback';
@@ -69,6 +69,15 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
 
   // Progress steps configuration
   const steps = buildProgressSteps(gate, submission, currentStep);
+
+  // Auto-redirect to Spotify OAuth when step changes to SPOTIFY
+  useEffect(() => {
+    if (currentStep === GATE_STEPS.SPOTIFY && !oauthLoading && gate?.requireSpotifyConnect) {
+      console.log('[DownloadGatePage] Auto-redirecting to Spotify OAuth...');
+      handleSpotify(spotifyAutoSaveOptIn);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, oauthLoading, gate?.requireSpotifyConnect, spotifyAutoSaveOptIn]);
 
   // Loading state
   if (gateLoading) {

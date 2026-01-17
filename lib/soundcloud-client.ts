@@ -336,6 +336,12 @@ export class SoundCloudClient implements ISoundCloudClient {
           };
         }
 
+        // 422 "already exists" - treat as success (user already reposted)
+        if (response.status === 422 && errorText.toLowerCase().includes('already')) {
+          console.log('[SoundCloudClient] Track already reposted (treating as success):', trackId);
+          return { success: true };
+        }
+
         return {
           success: false,
           error: `Failed to create repost: ${response.status} ${errorText}`,
@@ -416,6 +422,12 @@ export class SoundCloudClient implements ISoundCloudClient {
           };
         }
 
+        // 422 "already exists" - treat as success (user already liked track)
+        if (response.status === 422 && errorText.toLowerCase().includes('already')) {
+          console.log('[SoundCloudClient] Track already liked (treating as success):', trackId);
+          return { success: true };
+        }
+
         return {
           success: false,
           error: `Failed to like track: ${response.status} ${errorText}`,
@@ -490,6 +502,12 @@ export class SoundCloudClient implements ISoundCloudClient {
             success: false,
             error: `Insufficient permissions to follow (403 Forbidden).`,
           };
+        }
+
+        // 422 "already exists" - treat as success (user already follows)
+        if (response.status === 422 && errorText.toLowerCase().includes('already')) {
+          console.log('[SoundCloudClient] User already followed (treating as success):', userId);
+          return { success: true };
         }
 
         return {
