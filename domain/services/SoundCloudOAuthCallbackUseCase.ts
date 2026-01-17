@@ -148,7 +148,7 @@ export class SoundCloudOAuthCallbackUseCase {
       // 3. Get gate to construct redirect URL (using public method - no auth required)
       const gate = await this.gateRepository.findByIdPublic(oauthState.gateId.toString());
       if (!gate) {
-        this.logger.error('Gate not found', {
+        this.logger.error('Gate not found', undefined, {
           stateId: oauthState.id,
           gateId: oauthState.gateId,
         });
