@@ -24,6 +24,6 @@ export async function GET() {
     appUrl: getAppUrl(),
     authUrl: 'https://secure.soundcloud.com/authorize',
     tokenUrl: 'https://secure.soundcloud.com/oauth/token',
-    scope: 'default',
+    scope: 'none (using SoundCloud defaults)',
   });
 }
