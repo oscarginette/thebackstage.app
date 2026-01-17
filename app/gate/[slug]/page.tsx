@@ -29,14 +29,21 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
 
   // OAuth callback handling
   const handleOAuthSuccess = (provider: string) => {
-    if (!submission) return;
+    console.log('[DownloadGatePage] handleOAuthSuccess called:', { provider, submission });
+
+    if (!submission) {
+      console.warn('[DownloadGatePage] No submission - cannot update');
+      return;
+    }
 
     if (provider === OAUTH_PROVIDERS.SOUNDCLOUD) {
+      console.log('[DownloadGatePage] Updating submission: soundcloudRepostVerified = true');
       updateSubmission({
         soundcloudRepostVerified: true,
         soundcloudFollowVerified: true,
       });
     } else if (provider === OAUTH_PROVIDERS.SPOTIFY) {
+      console.log('[DownloadGatePage] Updating submission: spotifyConnected = true');
       updateSubmission({
         spotifyConnected: true,
       });
