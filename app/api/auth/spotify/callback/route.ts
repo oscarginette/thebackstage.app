@@ -323,7 +323,7 @@ export async function GET(request: Request) {
 
     // 9. Get gate slug for redirect (gates are accessed by slug, not UUID)
     const downloadGateRepository = RepositoryFactory.createDownloadGateRepository();
-    const gate = await downloadGateRepository.findById(oauthState.gateId);
+    const gate = await downloadGateRepository.findByIdPublic(oauthState.gateId);
 
     if (!gate) {
       console.error('[Spotify OAuth] Gate not found:', oauthState.gateId);
