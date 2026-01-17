@@ -11,6 +11,7 @@ import { withErrorHandler, generateRequestId } from '@/lib/error-handler';
 import { successResponse } from '@/lib/api-response';
 import { UnauthorizedError, ValidationError } from '@/lib/errors';
 import { UpdateUserSettingsSchema } from '@/lib/validation-schemas';
+import { extractSpotifyArtistId } from '@/lib/spotify-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,8 +92,24 @@ export const PATCH = withErrorHandler(async (request: Request) => {
     }
   }
 
-  // Extract Spotify ID from URL if provided (TODO: implement similar logic)
-  let spotifyId = validatedData.spotifyId || validatedData.spotifyUrl;
+  // Extract Spotify Artist ID from URL if provided
+  let spotifyId: string | null = null;
+  const spotifyInput = validatedData.spotifyId || validatedData.spotifyUrl;
+
+  if (spotifyInput) {
+    try {
+      spotifyId = extractSpotifyArtistId(spotifyInput);
+
+      if (!spotifyId) {
+        console.warn('[PATCH /api/user/settings] Invalid Spotify Artist URL/ID format:', spotifyInput);
+      } else {
+        console.log('[PATCH /api/user/settings] Extracted Spotify Artist ID:', spotifyId);
+      }
+    } catch (error) {
+      console.error('Failed to extract Spotify Artist ID:', error);
+      spotifyId = null;
+    }
+  }
 
   // Get use case from factory (DI)
   const useCase = UseCaseFactory.createUpdateUserSettingsUseCase();
