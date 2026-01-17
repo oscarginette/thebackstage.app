@@ -189,8 +189,10 @@ export class SoundCloudClient {
    */
   async getUserProfile(accessToken: string): Promise<SoundCloudUserProfile> {
     try {
-      const response = await fetch(`${SOUNDCLOUD_API_BASE}/me?oauth_token=${accessToken}`, {
+      // OAuth 2.1 requires Authorization header instead of oauth_token query param
+      const response = await fetch(`${SOUNDCLOUD_API_BASE}/me`, {
         headers: {
+          Authorization: `OAuth ${accessToken}`,
           Accept: 'application/json',
         },
       });
@@ -223,11 +225,12 @@ export class SoundCloudClient {
     userId: number
   ): Promise<boolean> {
     try {
-      // Get user's reposts (API v2)
+      // Get user's reposts (API v2) - OAuth 2.1 requires Authorization header
       const response = await fetch(
-        `${SOUNDCLOUD_API_V2_BASE}/users/${userId}/track_reposts?client_id=${this.clientId}&oauth_token=${accessToken}&limit=50`,
+        `${SOUNDCLOUD_API_V2_BASE}/users/${userId}/track_reposts?client_id=${this.clientId}&limit=50`,
         {
           headers: {
+            Authorization: `OAuth ${accessToken}`,
             Accept: 'application/json',
           },
         }
@@ -269,11 +272,12 @@ export class SoundCloudClient {
     userId: number
   ): Promise<boolean> {
     try {
-      // Get user's followings
+      // Get user's followings - OAuth 2.1 requires Authorization header
       const response = await fetch(
-        `${SOUNDCLOUD_API_BASE}/users/${userId}/followings?oauth_token=${accessToken}&client_id=${this.clientId}`,
+        `${SOUNDCLOUD_API_BASE}/users/${userId}/followings?client_id=${this.clientId}`,
         {
           headers: {
+            Authorization: `OAuth ${accessToken}`,
             Accept: 'application/json',
           },
         }
@@ -328,12 +332,13 @@ export class SoundCloudClient {
         throw new Error('Comment text exceeds maximum length (500 characters)');
       }
 
-      // POST to SoundCloud API with client_id for non-expiring scope
+      // POST to SoundCloud API - OAuth 2.1 requires Authorization header
       const response = await fetch(
-        `${SOUNDCLOUD_API_BASE}/tracks/${trackId}/comments?oauth_token=${accessToken}&client_id=${this.clientId}`,
+        `${SOUNDCLOUD_API_BASE}/tracks/${trackId}/comments?client_id=${this.clientId}`,
         {
           method: 'POST',
           headers: {
+            Authorization: `OAuth ${accessToken}`,
             'Content-Type': 'application/x-www-form-urlencoded',
             Accept: 'application/json',
           },
@@ -421,12 +426,13 @@ export class SoundCloudClient {
         trackData.track.purchase_title = purchaseTitle;
       }
 
-      // PUT to SoundCloud API
+      // PUT to SoundCloud API - OAuth 2.1 requires Authorization header
       const response = await fetch(
-        `${SOUNDCLOUD_API_BASE}/tracks/${trackId}?oauth_token=${accessToken}&client_id=${this.clientId}`,
+        `${SOUNDCLOUD_API_BASE}/tracks/${trackId}?client_id=${this.clientId}`,
         {
           method: 'PUT',
           headers: {
+            Authorization: `OAuth ${accessToken}`,
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
