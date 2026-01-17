@@ -370,10 +370,10 @@ export class SoundCloudClient implements ISoundCloudClient {
     try {
       console.log('[SoundCloudClient] Attempting to favorite track:', { userId, trackId });
 
-      // SoundCloud API v2 endpoint for liking tracks
-      // PUT /users/{userId}/track_likes/tracks/{trackId}
+      // SoundCloud API endpoint for favoriting tracks
+      // PUT /me/favorites/{trackId} (authenticated user context)
       const response = await fetch(
-        `${SOUNDCLOUD_API_V2_BASE}/users/${userId}/track_likes/tracks/${trackId}`,
+        `${SOUNDCLOUD_API_BASE}/me/favorites/${trackId}`,
         {
           method: 'PUT',
           headers: {
@@ -544,28 +544,37 @@ export class SoundCloudClient implements ISoundCloudClient {
         timestamp,
       });
 
-      // Build request body with timestamp if provided
-      const bodyParams: Record<string, string> = {
-        'comment[body]': commentText,
+      // Build request body - SoundCloud API expects JSON format:
+      // {"comment": {"body": "text", "timestamp": 12345}}
+      const commentBody: {
+        comment: {
+          body: string;
+          timestamp?: number;
+        };
+      } = {
+        comment: {
+          body: commentText,
+        },
       };
 
       // Add timestamp if provided (positions comment on waveform)
       if (timestamp !== undefined && timestamp >= 0) {
-        bodyParams['comment[timestamp]'] = timestamp.toString();
+        commentBody.comment.timestamp = timestamp;
         console.log('[SoundCloudClient] Comment will be posted at timestamp:', timestamp);
       }
 
       // POST to SoundCloud API - OAuth 2.1 requires Authorization header only
+      // Body must be JSON format: {"comment":{"body":"text"}}
       const response = await fetch(
         `${SOUNDCLOUD_API_BASE}/tracks/${trackId}/comments`,
         {
           method: 'POST',
           headers: {
             Authorization: `OAuth ${accessToken}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Accept: 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+            Accept: 'application/json; charset=utf-8',
           },
-          body: new URLSearchParams(bodyParams),
+          body: JSON.stringify(commentBody),
         }
       );
 
