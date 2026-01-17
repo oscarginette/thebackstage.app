@@ -290,12 +290,24 @@ export async function GET(request: Request) {
       alreadyConnected: result.alreadyConnected,
     });
 
-    // 9. Redirect back to gate page with success
-    // Note: The frontend will need to know which gate to redirect to
-    // For now, redirect to a generic success page or back to the gate
+    // 9. Get gate slug for redirect (gates are accessed by slug, not UUID)
+    const downloadGateRepository = RepositoryFactory.createDownloadGateRepository();
+    const gate = await downloadGateRepository.findById(oauthState.gateId);
+
+    if (!gate) {
+      console.error('[Spotify OAuth] Gate not found:', oauthState.gateId);
+      return NextResponse.redirect(
+        new URL(
+          '/gate?error=gate_not_found&message=Download gate not found',
+          request.url
+        )
+      );
+    }
+
+    // 10. Redirect back to gate page with success (using slug, not UUID)
     return NextResponse.redirect(
       new URL(
-        `/gate/${oauthState.gateId}?spotify_connected=true`,
+        `/gate/${gate.slug}?spotify_connected=true`,
         request.url
       )
     );
