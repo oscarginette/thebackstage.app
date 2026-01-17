@@ -174,6 +174,8 @@ export class PostgresUserRepository implements IUserRepository {
           monthly_quota,
           emails_sent_this_month,
           quota_reset_at,
+          spotify_id,
+          soundcloud_id,
           sender_email,
           sender_name
         FROM users
