@@ -20,7 +20,7 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
   const [oauthLoading, setOauthLoading] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [buyLinkSuccess, setBuyLinkSuccess] = useState(false);
-  const [spotifyAutoSaveOptIn, setSpotifyAutoSaveOptIn] = useState(false);
+  const [spotifyAutoSaveOptIn, setSpotifyAutoSaveOptIn] = useState(true);
   const [instagramLoading, setInstagramLoading] = useState(false);
 
   useEffect(() => {
