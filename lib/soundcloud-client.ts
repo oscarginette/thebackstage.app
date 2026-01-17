@@ -305,6 +305,140 @@ export class SoundCloudClient {
   }
 
   /**
+   * Create a repost for a track
+   * Reposts a track as the authenticated user
+   *
+   * @param accessToken - OAuth access token
+   * @param trackId - SoundCloud track ID to repost
+   * @returns Success status
+   * @throws Error if API call fails (401 Unauthorized, 404 Not Found, etc.)
+   */
+  async createRepost(
+    accessToken: string,
+    trackId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetch(
+        `${SOUNDCLOUD_API_BASE}/reposts/tracks/${trackId}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `OAuth ${accessToken}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        // Handle specific error cases
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: `Invalid or expired access token (401 Unauthorized).`,
+          };
+        }
+
+        if (response.status === 404) {
+          return {
+            success: false,
+            error: `Track not found (404). Invalid track ID: ${trackId}`,
+          };
+        }
+
+        if (response.status === 403) {
+          return {
+            success: false,
+            error: `Insufficient permissions to repost (403 Forbidden).`,
+          };
+        }
+
+        return {
+          success: false,
+          error: `Failed to create repost: ${response.status} ${errorText}`,
+        };
+      }
+
+      console.log('[SoundCloudClient] Successfully created repost for track:', trackId);
+      return { success: true };
+    } catch (error) {
+      console.error('[SoundCloudClient] createRepost error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Create a follow for a user
+   * Follows a user as the authenticated user
+   *
+   * @param accessToken - OAuth access token
+   * @param userId - SoundCloud user ID to follow
+   * @returns Success status
+   * @throws Error if API call fails (401 Unauthorized, 404 Not Found, etc.)
+   */
+  async createFollow(
+    accessToken: string,
+    userId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetch(
+        `${SOUNDCLOUD_API_BASE}/me/followings/${userId}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `OAuth ${accessToken}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        // Handle specific error cases
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: `Invalid or expired access token (401 Unauthorized).`,
+          };
+        }
+
+        if (response.status === 404) {
+          return {
+            success: false,
+            error: `User not found (404). Invalid user ID: ${userId}`,
+          };
+        }
+
+        if (response.status === 403) {
+          return {
+            success: false,
+            error: `Insufficient permissions to follow (403 Forbidden).`,
+          };
+        }
+
+        return {
+          success: false,
+          error: `Failed to create follow: ${response.status} ${errorText}`,
+        };
+      }
+
+      console.log('[SoundCloudClient] Successfully followed user:', userId);
+      return { success: true };
+    } catch (error) {
+      console.error('[SoundCloudClient] createFollow error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
    * Post a comment on a SoundCloud track
    *
    * IMPORTANT: SoundCloud does not document comment scope explicitly.

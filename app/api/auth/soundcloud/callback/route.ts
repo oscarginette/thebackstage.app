@@ -10,10 +10,12 @@
  * 3. Exchange authorization code + code_verifier for access token
  * 4. Get SoundCloud user profile
  * 5. Update submission with SoundCloud profile
- * 6. Verify repost (if required by gate)
- * 7. Verify follow (if required by gate)
- * 8. Mark state token as used
- * 9. Redirect back to gate page with success/error
+ * 6. Post comment (if provided - best-effort)
+ * 7. Create repost (if required by gate - programmatically)
+ * 8. Create follow (if required by gate - programmatically)
+ * 9. Update track buy link (if enabled - best-effort)
+ * 10. Mark state token as used
+ * 11. Redirect back to gate page with success/error
  *
  * Query Parameters:
  * - code: Authorization code from SoundCloud
@@ -146,61 +148,47 @@ export async function GET(request: Request) {
         }
       }
 
-      // 6. Verify repost (if required)
-      if (gate.requireSoundcloudRepost) {
-        console.log('[SoundCloud Callback] Verifying repost for track:', gate.soundcloudTrackId);
-        const verifyRepostUseCase = UseCaseFactory.createVerifySoundCloudRepostUseCase();
+      // 6. Create repost (if required)
+      if (gate.requireSoundcloudRepost && gate.soundcloudTrackId) {
+        console.log('[SoundCloud Callback] Creating repost for track:', gate.soundcloudTrackId);
 
-        const repostResult = await verifyRepostUseCase.execute({
-          submissionId: oauthState.submissionId,
-          accessToken: tokenResponse.access_token,
-          soundcloudUserId: userProfile.id,
-          ipAddress,
-          userAgent,
-        });
-
-        console.log('[SoundCloud Callback] Repost verification result:', repostResult);
+        const repostResult = await soundCloudClient.createRepost(
+          tokenResponse.access_token,
+          gate.soundcloudTrackId
+        );
 
         if (!repostResult.success) {
-          console.error('Repost verification failed:', repostResult.error);
-          // Continue anyway - user can retry
-        } else if (!repostResult.verified) {
-          console.warn('[SoundCloud Callback] User has not reposted the track');
-          return redirectToGateWithError(
-            'You have not reposted the track. Please repost and try again.',
-            gate.slug
-          );
+          console.error('[SoundCloud Callback] Repost creation failed (non-critical):', repostResult.error);
+          // Non-blocking - user can still download
         } else {
-          console.log('[SoundCloud Callback] Repost verified successfully ✓');
+          console.log('[SoundCloud Callback] Repost created successfully ✓');
+
+          // Update submission verification status
+          await submissionRepository.updateVerificationStatus(oauthState.submissionId, {
+            soundcloudRepostVerified: true,
+          });
         }
       }
 
-      // 7. Verify follow (if required)
-      if (gate.requireSoundcloudFollow) {
-        console.log('[SoundCloud Callback] Verifying follow for user:', gate.soundcloudUserId);
-        const verifyFollowUseCase = UseCaseFactory.createVerifySoundCloudFollowUseCase();
+      // 7. Create follow (if required)
+      if (gate.requireSoundcloudFollow && gate.soundcloudUserId) {
+        console.log('[SoundCloud Callback] Creating follow for user:', gate.soundcloudUserId);
 
-        const followResult = await verifyFollowUseCase.execute({
-          submissionId: oauthState.submissionId,
-          accessToken: tokenResponse.access_token,
-          soundcloudUserId: userProfile.id,
-          ipAddress,
-          userAgent,
-        });
-
-        console.log('[SoundCloud Callback] Follow verification result:', followResult);
+        const followResult = await soundCloudClient.createFollow(
+          tokenResponse.access_token,
+          gate.soundcloudUserId
+        );
 
         if (!followResult.success) {
-          console.error('Follow verification failed:', followResult.error);
-          // Continue anyway - user can retry
-        } else if (!followResult.verified) {
-          console.warn('[SoundCloud Callback] User is not following the artist');
-          return redirectToGateWithError(
-            'You are not following the artist. Please follow and try again.',
-            gate.slug
-          );
+          console.error('[SoundCloud Callback] Follow creation failed (non-critical):', followResult.error);
+          // Non-blocking - user can still download
         } else {
-          console.log('[SoundCloud Callback] Follow verified successfully ✓');
+          console.log('[SoundCloud Callback] Follow created successfully ✓');
+
+          // Update submission verification status
+          await submissionRepository.updateVerificationStatus(oauthState.submissionId, {
+            soundcloudFollowVerified: true,
+          });
         }
       }
 
