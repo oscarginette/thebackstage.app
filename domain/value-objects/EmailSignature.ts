@@ -83,7 +83,7 @@ export class EmailSignature {
       [
         {
           platform: 'website',
-          url: 'https://www.thebackstage.app',
+          url: 'https://thebackstage.app',
           label: 'thebackstage.app',
         },
         {
