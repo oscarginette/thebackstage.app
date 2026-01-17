@@ -48,9 +48,18 @@ export class GenerateDownloadTokenUseCase {
    */
   async execute(input: GenerateDownloadTokenInput): Promise<GenerateDownloadTokenResult> {
     try {
+      console.log('[GenerateDownloadTokenUseCase] Starting execution:', { submissionId: input.submissionId });
+
       // 1. Find submission
       const submission = await this.submissionRepository.findById(input.submissionId);
+      console.log('[GenerateDownloadTokenUseCase] Submission found:', {
+        exists: !!submission,
+        id: submission?.id,
+        gateId: submission?.gateId,
+      });
+
       if (!submission) {
+        console.error('[GenerateDownloadTokenUseCase] Submission not found');
         return {
           success: false,
           error: 'Submission not found',
@@ -59,7 +68,14 @@ export class GenerateDownloadTokenUseCase {
 
       // 2. Check if token already exists and is still valid
       if (submission.downloadToken && submission.downloadTokenExpiresAt) {
+        console.log('[GenerateDownloadTokenUseCase] Existing token found:', {
+          hasToken: !!submission.downloadToken,
+          expiresAt: submission.downloadTokenExpiresAt,
+          isValid: submission.downloadTokenExpiresAt > new Date(),
+        });
+
         if (submission.downloadTokenExpiresAt > new Date()) {
+          console.log('[GenerateDownloadTokenUseCase] Reusing existing valid token');
           // Return existing valid token
           return {
             success: true,
@@ -72,8 +88,16 @@ export class GenerateDownloadTokenUseCase {
       // 3. Find gate using gateId from submission
       // For public submissions, we query without userId validation
       // The submission already validates the gate relationship
+      console.log('[GenerateDownloadTokenUseCase] Fetching gate:', { gateId: submission.gateId });
       const gate = await this.getGateForSubmission(submission.gateId);
+      console.log('[GenerateDownloadTokenUseCase] Gate found:', {
+        exists: !!gate,
+        active: gate?.active,
+        slug: gate?.slug,
+      });
+
       if (!gate) {
+        console.error('[GenerateDownloadTokenUseCase] Gate not found');
         return {
           success: false,
           error: 'Download gate not found',
@@ -98,8 +122,22 @@ export class GenerateDownloadTokenUseCase {
       }
 
       // 5. Verify all required verifications are complete
+      console.log('[GenerateDownloadTokenUseCase] Checking verifications:', {
+        soundcloudRepostVerified: submission.soundcloudRepostVerified,
+        soundcloudFollowVerified: submission.soundcloudFollowVerified,
+        spotifyConnected: submission.spotifyConnected,
+        instagramClickTracked: submission.instagramClickTracked,
+        requireSoundcloudRepost: gate.require_soundcloud_repost,
+        requireSoundcloudFollow: gate.require_soundcloud_follow,
+        requireSpotify: gate.require_spotify_connect,
+        requireInstagram: gate.require_instagram_follow,
+      });
+
       const verificationsComplete = this.checkVerificationsComplete(submission, gate);
+      console.log('[GenerateDownloadTokenUseCase] Verification result:', verificationsComplete);
+
       if (!verificationsComplete.complete) {
+        console.error('[GenerateDownloadTokenUseCase] Verifications incomplete:', verificationsComplete.error);
         return {
           success: false,
           error: verificationsComplete.error,
@@ -121,8 +159,15 @@ export class GenerateDownloadTokenUseCase {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + this.TOKEN_EXPIRY_HOURS);
 
+      console.log('[GenerateDownloadTokenUseCase] Generating new token...');
+
       // 8. Generate and save token to submission (repository generates the token)
       const token = await this.submissionRepository.generateDownloadToken(input.submissionId, expiresAt);
+
+      console.log('[GenerateDownloadTokenUseCase] Token generated successfully:', {
+        tokenLength: token?.length,
+        expiresAt,
+      });
 
       return {
         success: true,
