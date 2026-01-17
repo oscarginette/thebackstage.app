@@ -1,9 +1,17 @@
 
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { use, useState } from 'react';
+import { useDownloadGate } from '@/hooks/useDownloadGate';
+import { useGateSubmission } from '@/hooks/useGateSubmission';
+import { useOAuthCallback } from '@/hooks/useOAuthCallback';
+import { useGateStepNavigation } from '@/hooks/useGateStepNavigation';
+import { useGateActions } from '@/hooks/useGateActions';
+import { buildProgressSteps } from '@/lib/gate-step-utils';
+import { OAUTH_PROVIDERS, GATE_STEPS } from '@/domain/types/download-gate-steps';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { DownloadGateArtwork } from '@/components/download-gate/DownloadGateArtwork';
-import { DownloadProgressTracker, Step } from '@/components/download-gate/DownloadProgressTracker';
+import { DownloadProgressTracker } from '@/components/download-gate/DownloadProgressTracker';
 import { EmailCaptureForm } from '@/components/download-gate/EmailCaptureForm';
 import { SocialActionStep } from '@/components/download-gate/SocialActionStep';
 import { DownloadUnlockStep } from '@/components/download-gate/DownloadUnlockStep';
@@ -13,258 +21,62 @@ import { PATHS } from '@/lib/paths';
 
 export default function DownloadGatePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const [gate, setGate] = useState<any>(null);
-  const [submission, setSubmission] = useState<any>(null);
-  const [currentStep, setCurrentStep] = useState<string>('email');
-  const [loading, setLoading] = useState(true);
-  const [oauthLoading, setOauthLoading] = useState(false);
-  const [oauthError, setOauthError] = useState<string | null>(null);
-  const [buyLinkSuccess, setBuyLinkSuccess] = useState(false);
-  const [spotifyAutoSaveOptIn, setSpotifyAutoSaveOptIn] = useState(true);
-  const [instagramLoading, setInstagramLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchGate = async () => {
-      try {
-        const res = await fetch(`/api/gate/${slug}`);
-        if (res.ok) {
-          const data = await res.json();
-          setGate(data.gate);
-        } else {
-          setGate({
-            title: 'El House (Edit x Alejandro Paz) [Backstage DL]',
-            artistName: 'The Backstage',
-            artworkUrl: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17',
-            requireSoundcloudRepost: true,
-            requireSoundcloudFollow: true,
-            requireSpotifyConnect: true,
-          });
-        }
-      } catch (e) {
-         setGate({
-            title: 'El House (Edit x Alejandro Paz) [Backstage DL]',
-            artistName: 'The Backstage',
-            artworkUrl: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17',
-            requireSoundcloudRepost: true,
-            requireSoundcloudFollow: true,
-            requireSpotifyConnect: true,
-          });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGate();
+  // Custom hooks (business logic)
+  const { gate, loading: gateLoading, error: gateError } = useDownloadGate(slug);
+  const { submission, setSubmission, updateSubmission } = useGateSubmission(slug);
+  const currentStep = useGateStepNavigation(gate, submission);
 
-    // Handle OAuth callback
-    const urlParams = new URLSearchParams(window.location.search);
-    const oauthStatus = urlParams.get('oauth');
-    const oauthProvider = urlParams.get('provider');
-    const buyLinkParam = urlParams.get('buyLink');
+  // OAuth callback handling
+  const handleOAuthSuccess = (provider: string) => {
+    if (!submission) return;
 
-    if (oauthStatus === 'success' && oauthProvider) {
-      // OAuth successful - refresh submission from localStorage or API
-      const saved = localStorage.getItem(`gate_submission_${slug}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-
-        // Update submission with OAuth verification
-        if (oauthProvider === 'soundcloud') {
-          parsed.soundcloudRepostVerified = true;
-          parsed.soundcloudFollowVerified = true;
-        } else if (oauthProvider === 'spotify') {
-          parsed.spotifyConnected = true;
-        }
-
-        setSubmission(parsed);
-        localStorage.setItem(`gate_submission_${slug}`, JSON.stringify(parsed));
-      }
-
-      // Check if buy link was added
-      if (buyLinkParam === 'success') {
-        setBuyLinkSuccess(true);
-        // Hide message after 8 seconds
-        setTimeout(() => setBuyLinkSuccess(false), 8000);
-      }
-
-      // Clear URL parameters
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (oauthStatus === 'error') {
-      const errorMsg = urlParams.get('message') || 'OAuth verification failed';
-      setOauthError(errorMsg);
-
-      // Clear error after 5 seconds
-      setTimeout(() => setOauthError(null), 5000);
-
-      // Clear URL parameters
-      window.history.replaceState({}, '', window.location.pathname);
-    } else {
-      // Normal flow - load from localStorage
-      const saved = localStorage.getItem(`gate_submission_${slug}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSubmission(parsed);
-      }
+    if (provider === OAUTH_PROVIDERS.SOUNDCLOUD) {
+      updateSubmission({
+        soundcloudRepostVerified: true,
+        soundcloudFollowVerified: true,
+      });
+    } else if (provider === OAUTH_PROVIDERS.SPOTIFY) {
+      updateSubmission({
+        spotifyConnected: true,
+      });
     }
-  }, [slug]);
+  };
 
-  useEffect(() => {
-    if (gate && submission) {
-      if (submission.downloadCompleted) {
-        setCurrentStep('download');
-      } else if ((gate.requireSoundcloudFollow || gate.requireSoundcloudRepost) && !submission.soundcloudRepostVerified) {
-        setCurrentStep('soundcloud');
-      } else if (gate.requireInstagramFollow && !submission.instagramClickTracked) {
-        setCurrentStep('instagram');
-      } else if (gate.requireSpotifyConnect && !submission.spotifyConnected) {
-        setCurrentStep('spotify');
-      } else {
-        setCurrentStep('download');
-      }
-    }
-  }, [gate, submission]);
-
-  const steps: Step[] = [
-    { id: 'email', label: 'Email', completed: !!submission, current: currentStep === 'email' },
-    { id: 'soundcloud', label: 'Support', completed: submission?.soundcloudRepostVerified, current: currentStep === 'soundcloud' },
-    { id: 'instagram', label: 'Instagram', completed: submission?.instagramClickTracked, current: currentStep === 'instagram' },
-    { id: 'spotify', label: 'Spotify', completed: submission?.spotifyConnected, current: currentStep === 'spotify' },
-    { id: 'download', label: 'Download', completed: submission?.downloadCompleted, current: currentStep === 'download' },
-  ].filter(s => {
-    if (s.id === 'soundcloud') return gate?.requireSoundcloudRepost || gate?.requireSoundcloudFollow;
-    if (s.id === 'instagram') return gate?.requireInstagramFollow;
-    if (s.id === 'spotify') return gate?.requireSpotifyConnect;
-    return true;
+  const { oauthError, buyLinkSuccess } = useOAuthCallback({
+    onSuccess: handleOAuthSuccess,
   });
 
-  const handleEmailSubmit = async (data: any) => {
-    // Call the real API to submit email
-    const response = await fetch(`/api/gate/${slug}/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: data.email,
-        firstName: data.firstName,
-        consentMarketing: data.consentMarketing,
-      }),
-    });
+  // Action handlers
+  const {
+    handleEmailSubmit,
+    handleSoundcloudActions,
+    handleSpotify,
+    handleInstagramClick,
+    handleDownload,
+    oauthLoading,
+    instagramLoading,
+  } = useGateActions({
+    slug,
+    gateId: gate?.id,
+    submission,
+    onSubmissionUpdate: setSubmission,
+    onSubmissionPartialUpdate: updateSubmission,
+  });
 
-    if (!response.ok) {
-      // Parse error response
-      const errorData = await response.json().catch(() => ({ error: 'Internal server error' }));
-      throw new Error(errorData.error || 'Failed to submit email. Please try again.');
-    }
+  // Spotify auto-save opt-in state (UI-only state)
+  const [spotifyAutoSaveOptIn, setSpotifyAutoSaveOptIn] = useState(true);
 
-    const result = await response.json();
-    const newSubmission = {
-      submissionId: result.submissionId,
-      email: data.email,
-      soundcloudRepostVerified: false,
-      spotifyConnected: false,
-      instagramClickTracked: false,
-      downloadCompleted: false,
-    };
-    setSubmission(newSubmission);
-    localStorage.setItem(`gate_submission_${slug}`, JSON.stringify(newSubmission));
-  };
+  // Progress steps configuration
+  const steps = buildProgressSteps(gate, submission, currentStep);
 
-  const handleSoundcloudActions = async (commentText?: string) => {
-    if (!submission?.submissionId || !gate?.id) return;
+  // Loading state
+  if (gateLoading) {
+    return <LoadingSpinner size="lg" message="Loading gate..." centered />;
+  }
 
-    setOauthLoading(true);
-    // Redirect to SoundCloud OAuth flow (OAuth 2.1 with PKCE)
-    // The OAuth callback will handle verification and redirect back to this page
-    const params = new URLSearchParams({
-      submissionId: submission.submissionId,
-      gateId: gate.id,
-    });
-
-    if (commentText && commentText.trim().length > 0) {
-      params.append('comment', encodeURIComponent(commentText.trim()));
-    }
-
-    const redirectUrl = `/api/auth/soundcloud?${params.toString()}`;
-    window.location.href = redirectUrl;
-  };
-
-  const handleSpotify = async () => {
-    if (!submission?.submissionId || !gate?.id) return;
-
-    setOauthLoading(true);
-
-    // Redirect to Spotify OAuth flow with auto-save opt-in preference
-    const redirectUrl = `/api/auth/spotify?submissionId=${submission.submissionId}&gateId=${gate.id}&autoSaveOptIn=${spotifyAutoSaveOptIn}`;
-    window.location.href = redirectUrl;
-  };
-
-  const handleInstagramClick = async () => {
-    if (!submission?.submissionId || !gate?.id) return;
-
-    setInstagramLoading(true);
-
-    try {
-      // Track click via API
-      const res = await fetch(
-        `/api/instagram/track?submissionId=${submission.submissionId}&gateId=${gate.id}`
-      );
-
-      const data = await res.json();
-
-      if (data.success && data.instagramUrl) {
-        // Update submission state
-        const updatedSubmission = {
-          ...submission,
-          instagramClickTracked: true,
-          instagramClickTrackedAt: new Date(),
-        };
-        setSubmission(updatedSubmission);
-        localStorage.setItem(`gate_submission_${slug}`, JSON.stringify(updatedSubmission));
-
-        // Redirect to Instagram (opens in new tab)
-        window.open(data.instagramUrl, '_blank');
-      } else {
-        console.error('Failed to track Instagram click:', data.error);
-      }
-    } catch (error) {
-      console.error('Instagram click error:', error);
-    } finally {
-      setInstagramLoading(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    if (!submission?.submissionId) return;
-
-    try {
-      // Generate download token
-      const tokenResponse = await fetch(`/api/gate/${slug}/download-token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ submissionId: submission.submissionId }),
-      });
-
-      if (tokenResponse.ok) {
-        const { token } = await tokenResponse.json();
-
-        // Redirect to download
-        window.location.href = `/api/download/${token}`;
-
-        // Update submission as downloaded
-        const updated = { ...submission, downloadCompleted: true };
-        setSubmission(updated);
-        localStorage.setItem(`gate_submission_${slug}`, JSON.stringify(updated));
-      }
-    } catch (error) {
-      console.error('Error generating download token:', error);
-    }
-  };
-
-  if (loading) return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-black">
-      <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-    </div>
-  );
-
-  if (!gate) return (
+  // Error/Not Found state
+  if (gateError || !gate) return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FDFCF8] px-4 text-center">
       <h1 className="text-4xl font-black uppercase mb-4 tracking-tighter">Gate Not Found</h1>
       <a href={PATHS.HOME} className="px-8 py-4 bg-foreground text-background rounded-lg font-black uppercase tracking-widest text-xs hover:brightness-110 active:scale-95 transition-all">Back to Home</a>
@@ -355,25 +167,25 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
 
               <div className="overflow-y-auto no-scrollbar flex-1">
                 <AnimatePresence mode="wait">
-                  {currentStep === 'email' && (
+                  {currentStep === GATE_STEPS.EMAIL && (
                     <EmailCaptureForm key="email" onSubmit={handleEmailSubmit} />
                   )}
 
-                  {currentStep === 'soundcloud' && (
-                  <SocialActionStep
-                    key="soundcloud"
-                    title="Please support the artist to unlock your download"
-                    description={`Connect with SoundCloud to post a comment, like and repost ${gate.title} and follow ${gate.artistName}.`}
-                    buttonText="Connect"
-                    icon="soundcloud"
-                    onAction={handleSoundcloudActions}
-                    isCompleted={submission?.soundcloudRepostVerified}
-                    isLoading={oauthLoading}
-                    enableCommentInput={true}
-                  />
-                )}
+                  {currentStep === GATE_STEPS.SOUNDCLOUD && (
+                    <SocialActionStep
+                      key="soundcloud"
+                      title="Please support the artist to unlock your download"
+                      description={`Connect with SoundCloud to post a comment, like and repost ${gate.title} and follow ${gate.artistName}.`}
+                      buttonText="Connect"
+                      icon="soundcloud"
+                      onAction={handleSoundcloudActions}
+                      isCompleted={submission?.soundcloudRepostVerified}
+                      isLoading={oauthLoading}
+                      enableCommentInput={true}
+                    />
+                  )}
 
-                  {currentStep === 'instagram' && (
+                  {currentStep === GATE_STEPS.INSTAGRAM && (
                     <SocialActionStep
                       key="instagram"
                       title="Follow on Instagram"
@@ -386,14 +198,14 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
                     />
                   )}
 
-                  {currentStep === 'spotify' && (
+                  {currentStep === GATE_STEPS.SPOTIFY && (
                     <SocialActionStep
                       key="spotify"
                       title="Spotify Connect"
                       description="Connect your Spotify account to support the artist."
                       buttonText="Connect Spotify"
                       icon="spotify"
-                      onAction={handleSpotify}
+                      onAction={() => handleSpotify(spotifyAutoSaveOptIn)}
                       isCompleted={submission?.spotifyConnected}
                       isLoading={oauthLoading}
                     >
@@ -414,7 +226,7 @@ export default function DownloadGatePage({ params }: { params: Promise<{ slug: s
                     </SocialActionStep>
                   )}
 
-                  {currentStep === 'download' && (
+                  {currentStep === GATE_STEPS.DOWNLOAD && (
                     <DownloadUnlockStep
                       key="download"
                       onDownload={handleDownload}
