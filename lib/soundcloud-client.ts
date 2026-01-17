@@ -128,7 +128,7 @@ export class SoundCloudClient {
       client_id: this.clientId,
       redirect_uri: redirectUri,
       response_type: 'code',
-      scope: 'non-expiring', // Scope for API access
+      scope: 'default', // OAuth 2.1 default scope (replaces deprecated 'non-expiring')
       state,
       code_challenge_method: 'S256',
       code_challenge: codeChallenge,
