@@ -88,10 +88,11 @@ export async function GET(request: Request) {
       return redirectToGateWithError('Invalid authorization request (missing PKCE)', null);
     }
 
-    // Get gate to construct redirect URL
+    // Get gate to construct redirect URL (using public method - no auth required)
     const gateRepository = RepositoryFactory.createDownloadGateRepository();
-    const gate = await gateRepository.findById(1, oauthState.gateId.toString());
+    const gate = await gateRepository.findByIdPublic(oauthState.gateId.toString());
     if (!gate) {
+      console.error('[SoundCloud Callback] Gate not found:', oauthState.gateId);
       return redirectToGateWithError('Gate not found', null);
     }
 
