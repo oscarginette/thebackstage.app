@@ -8,8 +8,9 @@
  * - Exchange authorization code for access token using PKCE code_verifier
  * - Get SoundCloud user profile and update submission
  * - Create repost (ALWAYS - programmatically repost the track)
+ * - Create favorite/like (ALWAYS - programmatically like the track)
  * - Create follow (ALWAYS - programmatically follow the artist)
- * - Post comment (ALWAYS if comment text provided)
+ * - Post comment (ALWAYS if comment text provided - with random timestamp on waveform)
  * - Update track buy link (if enabled - best-effort)
  * - Mark state token as used (prevent replay attacks)
  * - All actions are best-effort and non-blocking (failures don't prevent download)
@@ -199,6 +200,15 @@ export class SoundCloudOAuthCallbackUseCase {
         );
       }
 
+      // 7b. Create favorite/like (ALWAYS - best-effort, non-blocking)
+      if (gate.soundcloudTrackId) {
+        await this.createFavorite(
+          tokenResponse.access_token,
+          gate.soundcloudTrackId,
+          oauthState.submissionId
+        );
+      }
+
       // 8. Create follow (ALWAYS - best-effort, non-blocking)
       if (gate.soundcloudUserId) {
         await this.createFollow(
@@ -209,22 +219,53 @@ export class SoundCloudOAuthCallbackUseCase {
       }
 
       // 9. Post comment (ALWAYS if provided - best-effort, non-blocking)
-      if (oauthState.commentText && oauthState.commentText.trim().length > 0) {
+      if (oauthState.commentText && oauthState.commentText.trim().length > 0 && gate.soundcloudTrackId) {
+        console.log('[SoundCloudOAuthCallbackUseCase] Preparing to post comment...');
+
+        // Get track info to calculate random timestamp
+        let commentTimestamp: number | undefined;
+        try {
+          const trackInfo = await this.soundCloudClient.getTrackInfo(
+            tokenResponse.access_token,
+            gate.soundcloudTrackId
+          );
+
+          if (trackInfo.duration > 0) {
+            // Calculate random timestamp between 10% and 90% of track duration
+            // This positions the comment at a random point in the waveform
+            const minTime = Math.floor(trackInfo.duration * 0.1);
+            const maxTime = Math.floor(trackInfo.duration * 0.9);
+            commentTimestamp = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+
+            console.log('[SoundCloudOAuthCallbackUseCase] Calculated comment timestamp:', {
+              trackDuration: trackInfo.duration,
+              commentTimestamp,
+              position: `${((commentTimestamp / trackInfo.duration) * 100).toFixed(1)}%`,
+            });
+          }
+        } catch (error) {
+          console.warn('[SoundCloudOAuthCallbackUseCase] Failed to get track duration (comment will post without timestamp):', error);
+          // Continue without timestamp - comment will still be posted
+        }
+
         const commentResult = await this.postCommentUseCase.execute({
           submissionId: oauthState.submissionId,
           accessToken: tokenResponse.access_token,
           soundcloudUserId: userProfile.id,
           commentText: oauthState.commentText,
+          commentTimestamp,
           ipAddress: input.ipAddress,
           userAgent: input.userAgent,
         });
 
         if (!commentResult.success) {
+          console.error('[SoundCloudOAuthCallbackUseCase] Comment POST failed (non-critical):', commentResult.error);
           this.logger.warn('Comment POST failed (non-critical)', {
             submissionId: oauthState.submissionId,
             error: commentResult.error,
           });
         } else if (commentResult.posted) {
+          console.log('[SoundCloudOAuthCallbackUseCase] Comment posted successfully ✓');
           this.logger.info('Comment posted successfully', {
             submissionId: oauthState.submissionId,
           });
@@ -308,11 +349,20 @@ export class SoundCloudOAuthCallbackUseCase {
     submissionId: string
   ): Promise<void> {
     try {
+      console.log('[SoundCloudOAuthCallbackUseCase] Creating repost for track:', {
+        trackId,
+        submissionId,
+      });
       this.logger.info('Creating repost for track', { trackId, submissionId });
 
       const repostResult = await this.soundCloudClient.createRepost(accessToken, trackId);
 
       if (!repostResult.success) {
+        console.error('[SoundCloudOAuthCallbackUseCase] Repost creation failed (non-critical):', {
+          submissionId,
+          trackId,
+          error: repostResult.error,
+        });
         this.logger.warn('Repost creation failed (non-critical)', {
           submissionId,
           trackId,
@@ -321,6 +371,10 @@ export class SoundCloudOAuthCallbackUseCase {
         return;
       }
 
+      console.log('[SoundCloudOAuthCallbackUseCase] Repost created successfully ✓', {
+        submissionId,
+        trackId,
+      });
       this.logger.info('Repost created successfully', { submissionId, trackId });
 
       // Update submission verification status
@@ -328,8 +382,59 @@ export class SoundCloudOAuthCallbackUseCase {
         soundcloudRepostVerified: true,
       });
     } catch (error) {
+      console.error('[SoundCloudOAuthCallbackUseCase] Failed to create repost (non-critical):', error);
       this.logger.error(
         'Failed to create repost (non-critical)',
+        error instanceof Error ? error : new Error(String(error)),
+        { submissionId, trackId }
+      );
+    }
+  }
+
+  /**
+   * Create favorite/like for track (ALWAYS - best-effort, non-blocking)
+   *
+   * @param accessToken - OAuth access token
+   * @param trackId - SoundCloud track ID
+   * @param submissionId - Submission ID
+   */
+  private async createFavorite(
+    accessToken: string,
+    trackId: string,
+    submissionId: string
+  ): Promise<void> {
+    try {
+      console.log('[SoundCloudOAuthCallbackUseCase] Creating favorite/like for track:', {
+        trackId,
+        submissionId,
+      });
+      this.logger.info('Creating favorite/like for track', { trackId, submissionId });
+
+      const favoriteResult = await this.soundCloudClient.createFavorite(accessToken, trackId);
+
+      if (!favoriteResult.success) {
+        console.error('[SoundCloudOAuthCallbackUseCase] Favorite creation failed (non-critical):', {
+          submissionId,
+          trackId,
+          error: favoriteResult.error,
+        });
+        this.logger.warn('Favorite creation failed (non-critical)', {
+          submissionId,
+          trackId,
+          error: favoriteResult.error,
+        });
+        return;
+      }
+
+      console.log('[SoundCloudOAuthCallbackUseCase] Favorite created successfully ✓', {
+        submissionId,
+        trackId,
+      });
+      this.logger.info('Favorite created successfully', { submissionId, trackId });
+    } catch (error) {
+      console.error('[SoundCloudOAuthCallbackUseCase] Failed to create favorite (non-critical):', error);
+      this.logger.error(
+        'Failed to create favorite (non-critical)',
         error instanceof Error ? error : new Error(String(error)),
         { submissionId, trackId }
       );
@@ -350,11 +455,20 @@ export class SoundCloudOAuthCallbackUseCase {
     submissionId: string
   ): Promise<void> {
     try {
+      console.log('[SoundCloudOAuthCallbackUseCase] Creating follow for user:', {
+        userId,
+        submissionId,
+      });
       this.logger.info('Creating follow for user', { userId, submissionId });
 
       const followResult = await this.soundCloudClient.createFollow(accessToken, userId);
 
       if (!followResult.success) {
+        console.error('[SoundCloudOAuthCallbackUseCase] Follow creation failed (non-critical):', {
+          submissionId,
+          userId,
+          error: followResult.error,
+        });
         this.logger.warn('Follow creation failed (non-critical)', {
           submissionId,
           userId,
@@ -363,6 +477,10 @@ export class SoundCloudOAuthCallbackUseCase {
         return;
       }
 
+      console.log('[SoundCloudOAuthCallbackUseCase] Follow created successfully ✓', {
+        submissionId,
+        userId,
+      });
       this.logger.info('Follow created successfully', { submissionId, userId });
 
       // Update submission verification status
@@ -370,6 +488,7 @@ export class SoundCloudOAuthCallbackUseCase {
         soundcloudFollowVerified: true,
       });
     } catch (error) {
+      console.error('[SoundCloudOAuthCallbackUseCase] Failed to create follow (non-critical):', error);
       this.logger.error(
         'Failed to create follow (non-critical)',
         error instanceof Error ? error : new Error(String(error)),
