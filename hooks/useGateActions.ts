@@ -118,9 +118,9 @@ export function useGateActions({
       // Mark download as completed
       onSubmissionPartialUpdate({ downloadCompleted: true });
 
-      // Redirect current page to landing page
+      // Redirect current page to success page (which auto-redirects to home after 10s)
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/download-success';
       }, 500); // Small delay to ensure download starts
     } catch (error) {
       console.error('Error generating download token:', error);
