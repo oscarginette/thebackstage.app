@@ -148,6 +148,7 @@ export async function GET(request: Request) {
 
       // 6. Verify repost (if required)
       if (gate.requireSoundcloudRepost) {
+        console.log('[SoundCloud Callback] Verifying repost for track:', gate.soundcloudTrackId);
         const verifyRepostUseCase = UseCaseFactory.createVerifySoundCloudRepostUseCase();
 
         const repostResult = await verifyRepostUseCase.execute({
@@ -158,19 +159,25 @@ export async function GET(request: Request) {
           userAgent,
         });
 
+        console.log('[SoundCloud Callback] Repost verification result:', repostResult);
+
         if (!repostResult.success) {
           console.error('Repost verification failed:', repostResult.error);
           // Continue anyway - user can retry
         } else if (!repostResult.verified) {
+          console.warn('[SoundCloud Callback] User has not reposted the track');
           return redirectToGateWithError(
             'You have not reposted the track. Please repost and try again.',
             gate.slug
           );
+        } else {
+          console.log('[SoundCloud Callback] Repost verified successfully ✓');
         }
       }
 
       // 7. Verify follow (if required)
       if (gate.requireSoundcloudFollow) {
+        console.log('[SoundCloud Callback] Verifying follow for user:', gate.soundcloudUserId);
         const verifyFollowUseCase = UseCaseFactory.createVerifySoundCloudFollowUseCase();
 
         const followResult = await verifyFollowUseCase.execute({
@@ -181,14 +188,19 @@ export async function GET(request: Request) {
           userAgent,
         });
 
+        console.log('[SoundCloud Callback] Follow verification result:', followResult);
+
         if (!followResult.success) {
           console.error('Follow verification failed:', followResult.error);
           // Continue anyway - user can retry
         } else if (!followResult.verified) {
+          console.warn('[SoundCloud Callback] User is not following the artist');
           return redirectToGateWithError(
             'You are not following the artist. Please follow and try again.',
             gate.slug
           );
+        } else {
+          console.log('[SoundCloud Callback] Follow verified successfully ✓');
         }
       }
 
